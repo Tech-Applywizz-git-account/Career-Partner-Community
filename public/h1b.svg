@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Navy Box - Tilted 12 degrees -->
+  <!-- We use a larger rect and center it so the tilt doesn't leave huge gaps -->
+  <g transform="rotate(12, 256, 256)">
+    <rect x="40" y="40" width="432" height="432" rx="60" fill="#24385E" />
+    <!-- White Text - Extremely bold and large -->
+    <text x="50%" y="54%" font-family="Arial, sans-serif" font-weight="900" font-size="160" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">H1B</text>
+  </g>
+  <!-- Yellow Accent Dot - Placed at the top right, bigger and with a thick white border for contrast -->
+  <circle cx="440" cy="72" r="65" fill="#EAB308" stroke="#ffffff" stroke-width="25" />
+</svg>
