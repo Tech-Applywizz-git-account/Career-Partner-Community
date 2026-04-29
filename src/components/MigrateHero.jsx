@@ -392,12 +392,12 @@ const MigrateHero = () => {
             <div className="relative pt-24 pb-16 px-6 overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 bottom-0 z-0">
                     <img src="/hero-bg.png" alt="Hero Background" className="w-full h-full object-cover object-center" />
-                    <div className="absolute inset-0 bg-[#24385E]/40"></div>
+                    <div className="absolute inset-0 bg-[#2C76FF]/40"></div>
                 </div>
 
                 <div className="relative z-10">
                     <div className="flex justify-center gap-0.5 mb-3">
-                        {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} className="fill-yellow-400 text-yellow-400 md:w-[16px] md:h-[16px]" />)}
+                        {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} className="fill-[#2C76FF] text-[#2C76FF] md:w-[16px] md:h-[16px]" />)}
                     </div>
                     <p className="text-white text-[10px] md:text-xs font-bold mb-4 tracking-wide drop-shadow-sm uppercase">Trusted by 30,000+ job seekers</p>
                     <h1 className="text-[24px] md:text-[44px] font-[900] text-white leading-[1.2] md:leading-[1.1] tracking-tight mb-6 drop-shadow-lg max-w-2xl mx-auto px-2">
@@ -414,15 +414,15 @@ const MigrateHero = () => {
                         {/* <div className="relative w-full">
                             <div className={`
                                 bg-white border-2 transition-all duration-300 flex items-center gap-2 md:gap-3 px-3 md:px-5 h-12 md:h-16 rounded-xl md:rounded-2xl shadow-sm
-                                ${companySearch ? 'border-[#24385E]' : 'border-[#e2e8f0]'}
-                                hover:border-[#24385E] group
+                                ${companySearch ? 'border-[#29FE29]' : 'border-[#e2e8f0]'}
+                                hover:border-[#29FE29] group
                             `}>
-                                <Search size={isMobile ? 18 : 24} className={`${companySearch ? 'text-[#24385E]' : 'text-gray-400'} transition-colors`} strokeWidth={2.5} />
+                                <Search size={isMobile ? 18 : 24} className={`${companySearch ? 'text-[#29FE29]' : 'text-gray-400'} transition-colors`} strokeWidth={2.5} />
                                 <input 
                                     value={companySearch}
                                     onChange={handleSearchChange}
                                     placeholder={isMobile ? "Search Role..." : "Search for your perfect role."}
-                                    className="flex-1 bg-transparent border-none outline-none text-[15px] md:text-lg font-black text-[#24385E] placeholder:text-gray-400 placeholder:font-black placeholder:tracking-tight min-w-0"
+                                    className="flex-1 bg-transparent border-none outline-none text-[15px] md:text-lg font-black text-[#29FE29] placeholder:text-gray-400 placeholder:font-black placeholder:tracking-tight min-w-0"
                                 />
                                 {companySearch && (
                                     <button onClick={() => setCompanySearch('')} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
@@ -447,7 +447,7 @@ const MigrateHero = () => {
                         }}>
                             <div style={{ position: 'relative', marginBottom: '16px' }}>
                                 <div style={{
-                                    background: showSuggestions && filteredSuggestions.length > 0 ? '#24385E' : '#fff',
+                                    background: showSuggestions && filteredSuggestions.length > 0 ? '#2C76FF' : '#fff',
                                     borderRadius: showSuggestions && filteredSuggestions.length > 0 ? '30px 30px 0 0' : '60px',
                                     border: showSuggestions && filteredSuggestions.length > 0 ? '1.5px solid rgba(255,255,255,0.1)' : '1.5px solid #d8d8d8',
                                     display: 'flex', alignItems: 'center', gap: '10px', padding: '0 16px', height: '52px',
@@ -477,7 +477,7 @@ const MigrateHero = () => {
                                     />
                                     {!isMobile && (
                                         <div style={{ height: '32px', padding: '0 14px', background: '#fff', border: '1.5px solid #ebebeb', borderRadius: '40px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#444' }}>
-                                            <Sliders size={14} className="text-yellow-500" /> Filters
+                                            <Sliders size={14} className="text-[#2C76FF]" /> Filters
                                         </div>
                                     )}
                                 </div>
@@ -489,7 +489,7 @@ const MigrateHero = () => {
                                         top: 0,
                                         left: 0,
                                         right: 0,
-                                        backgroundColor: '#24385E',
+                                        backgroundColor: '#2C76FF',
                                         borderRadius: '30px',
                                         boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
                                         zIndex: 2000,
@@ -535,7 +535,7 @@ const MigrateHero = () => {
 
                             <div style={{ padding: '0 4px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span style={{ fontSize: '12px', color: '#888', fontWeight: 500 }}>{totalCompanies.toLocaleString()} companies</span>
-                                <button onClick={() => setSortBy(p => p === 'most_jobs' ? 'highest_wage' : 'most_jobs')} style={{ fontSize: '12px', fontWeight: 700, color: '#24385E', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <button onClick={() => setSortBy(p => p === 'most_jobs' ? 'highest_wage' : 'most_jobs')} style={{ fontSize: '12px', fontWeight: 700, color: '#2C76FF', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     {sortBy === 'most_jobs' ? 'Most visas ↑' : 'Highest wage ↑'} <ArrowUpDown size={12} />
                                 </button>
                             </div>
@@ -543,7 +543,7 @@ const MigrateHero = () => {
                             {/* Company list scrollable area */}
                             <div style={{ overflowY: isMobile ? 'visible' : 'auto', maxHeight: isMobile ? 'none' : '800px', marginBottom: '12px', paddingRight: '4px' }} className="custom-scrollbar">
                                 {companiesLoading ? (
-                                    <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}><Loader2 className="animate-spin text-[#24385E]" /></div>
+                                    <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}><Loader2 className="animate-spin text-[#29FE29]" /></div>
                                 ) : companies.map((co) => (
                                     <CompanyCard
                                         key={co.company}
@@ -569,16 +569,16 @@ const MigrateHero = () => {
                                         display: 'block',
                                         padding: '12px',
                                         background: '#fff',
-                                        border: '1.5px solid #24385E',
+                                        border: '1.5px solid #2C76FF',
                                         borderRadius: '12px',
-                                        color: '#24385E',
+                                        color: '#2C76FF',
                                         fontSize: '13px',
                                         fontWeight: 700,
                                         textDecoration: 'none',
                                         transition: 'all 0.2s ease'
                                     }}
-                                    onMouseEnter={e => { e.currentTarget.style.background = '#24385E'; e.currentTarget.style.color = '#fff'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#24385E'; }}
+                                    onMouseEnter={e => { e.currentTarget.style.background = '#2C76FF'; e.currentTarget.style.color = '#fff'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#2C76FF'; }}
                                 >
                                     {user ? "Continue to Dashboard →" : "Get access to all companies →"}
                                 </Link>
@@ -597,7 +597,7 @@ const MigrateHero = () => {
                             {selectedCompany ? (
                                 <>
                                     {isMobile && (
-                                        <button onClick={() => setSelectedCompany(null)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#FDB913', border: 'none', color: '#24385E', fontWeight: 900, padding: '8px 16px', borderRadius: '12px', cursor: 'pointer', marginBottom: '16px', fontSize: '12px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
+                                        <button onClick={() => setSelectedCompany(null)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#2C76FF', border: 'none', color: '#fff', fontWeight: 900, padding: '8px 16px', borderRadius: '12px', cursor: 'pointer', marginBottom: '16px', fontSize: '12px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
                                             <ChevronLeft size={16} /> Back to companies
                                         </button>
                                     )}
@@ -613,13 +613,13 @@ const MigrateHero = () => {
                                                     rel="noopener noreferrer"
                                                     style={{
                                                         fontSize: '13px',
-                                                        color: '#24385E',
+                                                        color: '#2C76FF',
                                                         fontWeight: 700,
                                                         textDecoration: 'none',
                                                         transition: 'all 0.2s'
                                                     }}
-                                                    onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline'; e.currentTarget.style.color = '#FDB913'; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none'; e.currentTarget.style.color = '#24385E'; }}
+                                                    onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline'; e.currentTarget.style.color = '#2C76FF'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none'; e.currentTarget.style.color = '#2C76FF'; }}
                                                 >
                                                     {selectedCompany.toLowerCase().replace(/\s+/g, '')}.com
                                                 </a>
@@ -636,8 +636,8 @@ const MigrateHero = () => {
 
                                     {/* Work authorization note from app */}
                                     <div style={{ background: '#f9fafb', border: '1px solid #f1f1f1', borderRadius: '12px', padding: '12px', marginBottom: '16px' }}>
-                                        <h4 style={{ fontSize: '13px', fontWeight: 800, color: '#24385E', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                                            <Info size={16} className="text-yellow-500" /> Work authorization note
+                                        <h4 style={{ fontSize: '13px', fontWeight: 800, color: '#2C76FF', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                                            <Info size={16} className="text-[#2C76FF]" /> Work authorization note
                                         </h4>
                                         <p style={{ fontSize: '12px', color: '#666', lineHeight: 1.6, fontWeight: 500 }}>
                                             This company historically sponsors work visas. Wage level <b>{selectedCompanyData?.wageLevel}</b> indicates high salary percentiles relative to prevailing wages.
@@ -649,7 +649,7 @@ const MigrateHero = () => {
                                     {/* Job list scrollable */}
                                     <div style={{ overflowY: isMobile ? 'visible' : 'auto', marginBottom: '16px' }} className="custom-scrollbar">
                                         {jobsLoading ? (
-                                            <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}><Loader2 className="animate-spin text-[#24385E]" size={32} /></div>
+                                            <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}><Loader2 className="animate-spin text-[#29FE29]" size={32} /></div>
                                         ) : companyJobs.length > 0 ? (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                                 {companyJobs.map((job, jobIdx) => (
@@ -670,17 +670,17 @@ const MigrateHero = () => {
                                                 alignItems: 'center',
                                                 gap: '8px',
                                                 padding: '12px 28px',
-                                                background: '#24385E',
+                                                background: '#29FE29',
                                                 borderRadius: '60px',
-                                                color: '#fff',
+                                                color: '#1E1E1E',
                                                 fontSize: '14px',
                                                 fontWeight: 800,
                                                 textDecoration: 'none',
-                                                boxShadow: '0 4px 12px rgba(36,56,94,0.25)',
+                                                boxShadow: '0 4px 12px rgba(41,254,41,0.25)',
                                                 transition: 'all 0.2s ease'
                                             }}
-                                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(36,56,94,0.35)'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(36,56,94,0.25)'; }}
+                                            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(41,254,41,0.35)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(41,254,41,0.25)'; }}
                                         >
                                             {user ? "Go to Your Dashboard" : "Get access to all jobs"} <ChevronRight size={18} />
                                         </Link>

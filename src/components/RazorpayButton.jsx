@@ -51,7 +51,7 @@ const RazorpayButton = ({ amount = "39.99", onSuccess }) => {
                     email: user?.email || '',
                     contact: user?.user_metadata?.mobile_number || ''
                 },
-                theme: { color: "#FDB913" },
+                theme: { color: "#29FE29" },
                 handler: async function (response) {
                     setLoading(true);
                     try {
@@ -150,14 +150,14 @@ const RazorpayButton = ({ amount = "39.99", onSuccess }) => {
 
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-10 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                    <Loader2 className="w-12 h-12 text-[#24385E] animate-spin mb-4" />
-                    <p className="text-[#24385E] font-black text-lg">Processing Payment...</p>
+                    <Loader2 className="w-12 h-12 text-[#29FE29] animate-spin mb-4" />
+                    <p className="text-[#29FE29] font-black text-lg">Processing Payment...</p>
                     <p className="text-gray-400 text-sm mt-1 font-bold">Please do not close this window</p>
                 </div>
             ) : (
                 <button
                     onClick={handlePayment}
-                    className="w-full flex items-center justify-center py-4 bg-[#FDB913] hover:bg-[#e5a811] text-[#24385E] text-lg font-black rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full flex items-center justify-center py-4 bg-[#29FE29] hover:bg-[#e5a811] text-[#29FE29] text-lg font-black rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                     Pay Now
                 </button>

@@ -31,21 +31,21 @@ const PaymentModal = ({ job, onClose }) => {
 
                 {/* Lock icon */}
                 <div className="flex justify-center mb-5">
-                    <div className="w-16 h-16 bg-[#24385E]/10 rounded-full flex items-center justify-center">
-                        <Lock size={28} className="text-[#24385E]" />
+                    <div className="w-16 h-16 bg-[#2C76FF]/10 rounded-full flex items-center justify-center">
+                        <Lock size={28} className="text-[#2C76FF]" />
                     </div>
                 </div>
 
-                <h2 className="text-2xl font-black text-[#24385E] text-center mb-2">
+                <h2 className="text-2xl font-black text-[#1E1E1E] text-center mb-2">
                     Unlock Full Access
                 </h2>
                 <p className="text-gray-500 text-sm text-center font-medium mb-6">
                     Get access to <strong>verified H-1B sponsoring</strong> jobs including{' '}
-                    <span className="text-[#24385E] font-bold">{job?.title}</span> at{' '}
-                    <span className="text-[#24385E] font-bold">{job?.company}</span>.
+                    <span className="text-[#2C76FF] font-bold">{job?.title}</span> at{' '}
+                    <span className="text-[#2C76FF] font-bold">{job?.company}</span>.
                 </p>
 
-                <div className="bg-[#24385E]/5 rounded-2xl p-5 mb-6 space-y-2.5">
+                <div className="bg-[#2C76FF]/5 rounded-2xl p-5 mb-6 space-y-2.5">
                     {[
                         'Verified open roles',
                         'H-1B, OPT/CPT, TN, E-3, J-1 & Green Cards',
@@ -55,20 +55,20 @@ const PaymentModal = ({ job, onClose }) => {
                     ].map((f, i) => (
                         <div key={i} className="flex items-center gap-3">
                             <CheckCircle size={16} className="text-emerald-500 shrink-0" />
-                            <span className="text-sm font-medium text-[#24385E]">{f}</span>
+                            <span className="text-sm font-medium text-[#1E1E1E]">{f}</span>
                         </div>
                     ))}
                 </div>
 
                 <div className="text-center mb-5">
-                    <span className="text-3xl font-black text-[#24385E]">$30</span>
+                    <span className="text-3xl font-black text-[#2C76FF]">$30</span>
                     <span className="text-gray-400 font-medium text-sm">/month</span>
                     <p className="text-xs text-emerald-600 font-semibold mt-1">✨ 30-day free trial included</p>
                 </div>
 
                 <button
                     onClick={() => navigate('/pricing')}
-                    className="w-full py-4 bg-[#FDB913] hover:bg-[#e5a811] text-[#24385E] font-black text-base rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-[#2C76FF] hover:bg-[#1a60e6] text-white font-black text-base rounded-2xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                     <CreditCard size={18} />
                     Complete Payment to Access All Jobs
@@ -88,15 +88,15 @@ const TeaserJobCard = ({ job }) => {
     return (
         <div
             onClick={() => navigate('/pricing')}
-            className="flex items-center gap-4 p-4 bg-[#fafafa] rounded-2xl border border-[#f0f0f0] hover:border-[#FDB913]/40 hover:bg-[#fffdf0] cursor-pointer transition-all group"
+            className="flex items-center gap-4 p-4 bg-[#fafafa] rounded-2xl border border-[#f0f0f0] hover:border-[#2C76FF]/40 hover:bg-[#f0f5ff] cursor-pointer transition-all group"
         >
             {/* Company avatar */}
-            <div className="w-10 h-10 bg-gradient-to-br from-[#24385E] to-[#3a5a9c] rounded-xl flex items-center justify-center font-black text-white text-sm shrink-0">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#2C76FF] to-[#3a5a9c] rounded-xl flex items-center justify-center font-black text-white text-sm shrink-0">
                 {job.company.charAt(0)}
             </div>
 
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-[#24385E] truncate">{job.title}</p>
+                <p className="text-sm font-bold text-[#2C76FF] truncate">{job.title}</p>
                 <p className="text-[12px] text-gray-400 font-medium truncate">{job.company} • {job.location}</p>
                 <div className="flex items-center gap-2 mt-1">
                     <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{job.visa}</span>
@@ -104,7 +104,7 @@ const TeaserJobCard = ({ job }) => {
                 </div>
             </div>
 
-            <div className="shrink-0 flex items-center gap-1 text-[#24385E]/40 group-hover:text-[#FDB913] transition-colors">
+            <div className="shrink-0 flex items-center gap-1 text-[#2C76FF]/40 group-hover:text-[#2C76FF] transition-colors">
                 <Lock size={14} />
             </div>
         </div>
@@ -181,7 +181,7 @@ const UserOverview = () => {
         <div className="space-y-10">
             {/* Header */}
             <div>
-                <h2 className="text-[28px] font-black text-[#24385E] tracking-tight mb-1">
+                <h2 className="text-[28px] font-black text-[#1E1E1E] tracking-tight mb-1">
                     Dashboard {firstName ? `— Welcome, ${firstName}!` : ''}
                 </h2>
                 <p className="text-gray-400 font-medium">Here's a preview of what's available to you.</p>
@@ -189,7 +189,7 @@ const UserOverview = () => {
 
             {/* Stats grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-[#24385E] p-6 rounded-[32px] text-white shadow-xl shadow-blue-900/10 relative overflow-hidden group">
+                <div className="bg-[#2C76FF] p-6 rounded-[32px] text-white shadow-xl shadow-blue-900/10 relative overflow-hidden group">
                     <div className="relative z-10 flex flex-col h-full justify-between">
                         <div className="flex justify-between items-start mb-8">
                             <div className="p-3 bg-white/10 rounded-2xl"><Briefcase size={24} className="text-white" /></div>
@@ -210,18 +210,18 @@ const UserOverview = () => {
                     </div>
                     <div>
                         <p className="text-gray-400 text-[13px] font-bold uppercase tracking-wider mb-1">Saved Jobs</p>
-                        <h3 className="text-4xl font-black text-[#24385E]">{stats.savedJobs}</h3>
+                        <h3 className="text-4xl font-black text-[#2C76FF]">{stats.savedJobs}</h3>
                     </div>
                 </div>
 
                 <div className="bg-white p-6 rounded-[32px] border border-[#f0f0f0] shadow-sm hover:shadow-md transition-all duration-300">
                     <div className="flex justify-between items-start mb-8">
-                        <div className="p-3 bg-[#fffbeb] rounded-2xl border border-[#fef3c7]"><Flame size={24} className="text-yellow-500 fill-yellow-500" /></div>
-                        <span className="text-[12px] font-bold text-yellow-600">Premium</span>
+                        <div className="p-3 bg-blue-50 rounded-2xl border border-blue-100"><Flame size={24} className="text-[#2C76FF] fill-[#2C76FF]" /></div>
+                        <span className="text-[12px] font-bold text-[#2C76FF]">Premium</span>
                     </div>
                     <div>
                         <p className="text-gray-400 text-[13px] font-bold uppercase tracking-wider mb-1">Days Remaining</p>
-                        <h3 className="text-4xl font-black text-[#24385E]">{stats.daysLeft}</h3>
+                        <h3 className="text-4xl font-black text-[#2C76FF]">{stats.daysLeft}</h3>
                     </div>
                 </div>
             </div>
@@ -232,17 +232,17 @@ const UserOverview = () => {
                 {/* Company card */}
                 <div className="bg-white p-8 rounded-[32px] border border-[#f0f0f0] shadow-sm">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-[18px] font-black text-[#24385E]">Featured Sponsor</h3>
+                        <h3 className="text-[18px] font-black text-[#2C76FF]">Featured Sponsor</h3>
                         <button
                             onClick={() => navigate('/pricing')}
-                            className="text-[13px] font-bold text-[#FDB913] hover:underline flex items-center gap-1"
+                            className="text-[13px] font-bold text-[#2C76FF] hover:underline flex items-center gap-1"
                         >
                             Unlock All <ChevronRight size={14} />
                         </button>
                     </div>
 
                     {/* Company banner */}
-                    <div className="bg-gradient-to-br from-[#24385E] to-[#3a5a9c] rounded-2xl p-6 mb-5 text-white">
+                    <div className="bg-gradient-to-br from-[#2C76FF] to-[#3a5a9c] rounded-2xl p-6 mb-5 text-white">
                         <div className="flex items-center gap-4 mb-4">
                             <div
                                 className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-2xl text-white shadow-lg"
@@ -261,7 +261,7 @@ const UserOverview = () => {
                                 <p className="text-white font-black text-lg">{TEASER_COMPANY.sponsorsPerYear}</p>
                             </div>
                             <div className="ml-auto flex items-center gap-1">
-                                <Star size={14} className="text-[#FDB913] fill-[#FDB913]" />
+                                <Star size={14} className="text-[#29FE29] fill-[#29FE29]" />
                                 <span className="text-white font-bold text-sm">{TEASER_COMPANY.rating}</span>
                             </div>
                         </div>
@@ -270,7 +270,7 @@ const UserOverview = () => {
                     {/* 2 locked jobs */}
                     <div className="space-y-3">
                         <p className="text-[12px] font-bold uppercase tracking-wider text-gray-400 mb-3">
-                            Open Positions · <span className="text-[#24385E]">Preview Only</span>
+                            Open Positions · <span className="text-[#2C76FF]">Preview Only</span>
                         </p>
                         {TEASER_JOBS.map((job) => (
                             <TeaserJobCard key={job.id} job={job} onLock={setSelectedJob} />
@@ -279,17 +279,17 @@ const UserOverview = () => {
                 </div>
 
                 {/* CTA panel */}
-                <div className="bg-gradient-to-br from-[#FDB913]/10 to-[#FDB913]/5 p-8 rounded-[32px] border border-[#FDB913]/20 flex flex-col items-center justify-center text-center">
-                    <div className="w-16 h-16 bg-[#FDB913]/20 rounded-2xl flex items-center justify-center mb-6">
-                        <Lock size={28} className="text-[#24385E]" />
+                <div className="bg-gradient-to-br from-[#2C76FF]/10 to-[#2C76FF]/5 p-8 rounded-[32px] border border-[#2C76FF]/20 flex flex-col items-center justify-center text-center">
+                    <div className="w-16 h-16 bg-[#2C76FF]/20 rounded-2xl flex items-center justify-center mb-6">
+                        <Lock size={28} className="text-[#2C76FF]" />
                     </div>
-                    <h3 className="text-[20px] font-black text-[#24385E] mb-3">Unlock More Jobs</h3>
+                    <h3 className="text-[20px] font-black text-[#1E1E1E] mb-3">Unlock More Jobs</h3>
                     <p className="text-gray-500 text-sm max-w-[240px] mb-8 font-medium">
                         Get full access to every H-1B sponsoring company and all open roles with salary & contact info.
                     </p>
                     <button
                         onClick={() => navigate('/pricing')}
-                        className="px-8 py-3.5 bg-[#FDB913] hover:bg-[#e5a811] text-[#24385E] text-[14px] font-black rounded-2xl hover:shadow-lg transition-all active:scale-95"
+                        className="px-8 py-3.5 bg-[#2C76FF] hover:bg-[#1a60e6] text-white text-[14px] font-black rounded-2xl hover:shadow-lg transition-all active:scale-95"
                     >
                         Complete Payment →
                     </button>

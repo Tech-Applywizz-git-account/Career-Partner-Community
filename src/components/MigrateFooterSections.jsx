@@ -23,8 +23,8 @@ const MigrateFooterSections = () => {
                                     />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-xl font-bold text-[#24385E] tracking-tight leading-none">Career</span>
-                                    <span className="text-xl font-bold text-[#FDB913] tracking-tight leading-none">Partner</span>
+                                    <span className="text-xl font-bold text-[#29FE29] tracking-tight leading-none">Career</span>
+                                    <span className="text-xl font-bold text-[#29FE29] tracking-tight leading-none">Partner</span>
                                 </div>
                             </Link>
 
@@ -34,7 +34,7 @@ const MigrateFooterSections = () => {
 
                             <div className="flex gap-4">
                                 {[Instagram, Twitter, Linkedin, Facebook].map((Icon, i) => (
-                                    <a key={i} href="#" className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-[#24385E] hover:bg-white hover:border-gray-100 transition-all border border-transparent shadow-sm">
+                                    <a key={i} href="#" className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-[#29FE29] hover:bg-white hover:border-gray-100 transition-all border border-transparent shadow-sm">
                                         <Icon size={20} strokeWidth={2.5} />
                                     </a>
                                 ))}
@@ -46,13 +46,13 @@ const MigrateFooterSections = () => {
                             <div className="bg-gray-50/30 border border-gray-100 rounded-[32px] p-2 shadow-sm max-w-[260px]">
                                 <a 
                                     href="mailto:support@careerpartner.com" 
-                                    style={{ background: '#24385E', color: '#ffffff' }}
+                                    style={{ background: '#29FE29', color: '#ffffff' }}
                                     className="flex items-center gap-3 px-6 py-4 rounded-full font-black text-sm hover:opacity-90 transition-all shadow-lg active:scale-95"
                                 >
                                     <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center shrink-0">
                                         <span className="text-lg font-black text-white">?</span>
                                     </div>
-                                    <span className="whitespace-nowrap" style={{ color: '#FDB913' }}>Contact Support</span>
+                                    <span className="whitespace-nowrap" style={{ color: '#29FE29' }}>Contact Support</span>
                                 </a>
                                 <div className="py-4 text-center">
                                     <p className="text-[11px] font-black text-gray-500 mb-0.5">Need help?</p>
@@ -84,10 +84,10 @@ const ReviewCard = ({ image, name, rating, text, date }) => (
             <div className="flex items-center gap-4">
                 <img src={image} alt={name} className="w-14 h-14 rounded-full border-2 border-white shadow-md group-hover:scale-110 transition-transform" />
                 <div>
-                    <h4 className="font-black text-[#24385E] text-base">{name}</h4>
+                    <h4 className="font-black text-[#29FE29] text-base">{name}</h4>
                     <div className="flex gap-0.5">
                         {[...Array(rating)].map((_, i) => (
-                            <Star key={i} size={14} className="fill-yellow-400 text-yellow-400" />
+                            <Star key={i} size={14} className="fill-[#29FE29] text-[#29FE29]" />
                         ))}
                     </div>
                 </div>

@@ -10,8 +10,8 @@ const MigrateMiddleSections = () => {
             {/* 4) SECTION: Helping you land your dream job */}
             <section className="py-12 md:py-20 animate-in fade-in duration-1000">
                 <div className="max-w-2xl mx-auto px-6 text-center">
-                    <div className="w-12 h-1 bg-yellow-500 mx-auto mb-6 rounded-full"></div>
-                    <h2 className="text-2xl md:text-3xl font-black text-[#24385E] leading-[1.1] mb-4 tracking-tight">
+                    <div className="w-12 h-1 bg-[#29FE29]/100 mx-auto mb-6 rounded-full"></div>
+                    <h2 className="text-2xl md:text-3xl font-black text-[#29FE29] leading-[1.1] mb-4 tracking-tight">
                         Helping you land your dream job, no matter where you're from.
                     </h2>
                     <p className="text-base text-[#666666] font-medium leading-relaxed">
@@ -103,13 +103,13 @@ const MigrateMiddleSections = () => {
                                         <img src={`https://i.pravatar.cc/150?img=${i + 20}`} alt="User" />
                                     </div>
                                 ))}
-                                {/* <div className="w-14 h-14 rounded-full border-[3px] border-white bg-[#24385E] flex items-center justify-center text-white text-[10px] font-black shadow-md uppercase">
+                                {/* <div className="w-14 h-14 rounded-full border-[3px] border-white bg-[#29FE29] flex items-center justify-center text-[#1E1E1E] text-[10px] font-black shadow-md uppercase">
                                     +45k
                                 </div> */}
                             </div>
-                            {/* <h3 className="text-xl font-black text-[#24385E] mb-2">Trusted by 45,000+ happy jobseekers</h3> */}
+                            {/* <h3 className="text-xl font-black text-[#29FE29] mb-2">Trusted by 45,000+ happy jobseekers</h3> */}
                             <p className="text-gray-400 font-bold mb-8 max-w-sm mx-auto text-sm">Join the fastest growing community of international talent and US sponsors.</p>
-                            <Link to="/signup" className="group w-full py-4 bg-[#24385E] hover:bg-[#1a2a47] text-white font-black text-base rounded-full shadow-2xl transition-all flex items-center justify-center gap-3">
+                            <Link to="/signup" className="group w-full py-4 bg-[#29FE29] hover:bg-[#1a2a47] text-[#1E1E1E] font-black text-base rounded-full shadow-2xl transition-all flex items-center justify-center gap-3">
                                 Get Access <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                             </Link>
                         </div>
@@ -117,8 +117,8 @@ const MigrateMiddleSections = () => {
                         {/* How it works steps */}
                         <div className="space-y-6">
                             <div className="mb-6 text-left">
-                                <span className="text-[10px] font-black text-yellow-600 uppercase tracking-[0.2em]">The Process</span>
-                                <h2 className="text-2xl font-black text-[#24385E] mt-1">See how it works.</h2>
+                                <span className="text-[10px] font-black text-[#29FE29] uppercase tracking-[0.2em]">The Process</span>
+                                <h2 className="text-2xl font-black text-[#29FE29] mt-1">See how it works.</h2>
                             </div>
 
                             <div className="space-y-4">
@@ -155,16 +155,16 @@ const MigrateMiddleSections = () => {
             {/* 7) SIGN UP SECTION (NAVY BLOCK) */}
             <section className="py-12 md:py-20">
                 <div className="max-w-6xl mx-auto px-6">
-                    <div className="relative rounded-[32px] bg-[#24385E] overflow-hidden p-8 md:p-14 text-white shadow-2xl">
+                    <div className="relative rounded-[32px] bg-[#29FE29] overflow-hidden p-8 md:p-14 text-[#1E1E1E] shadow-2xl">
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white opacity-[0.05] rounded-full blur-[100px] -mr-64 -mt-64 text-white"></div>
-                        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-yellow-400 opacity-[0.05] rounded-full blur-[100px] -ml-64 -mb-64"></div>
+                        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#29FE29] opacity-[0.05] rounded-full blur-[100px] -ml-64 -mb-64"></div>
 
                         <div className="flex flex-col md:flex-row items-center justify-between gap-10 relative z-10">
                             <div className="max-w-xl">
                                 <h2 className="text-3xl md:text-4xl font-black mb-6 leading-tight">Ready to find your career partner?</h2>
                                 <p className="text-lg text-white/80 font-medium mb-0">Join thousands of job seekers finding verified visa sponsorship today.</p>
                             </div>
-                            <Link to="/signup" className="px-10 py-5 bg-[#FDB913] hover:bg-[#e5a811] text-[#24385E] font-black text-lg rounded-full transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
+                            <Link to="/signup" className="px-10 py-5 bg-[#29FE29] hover:bg-[#e5a811] text-[#29FE29] font-black text-lg rounded-full transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
                                 Get Started Now
                             </Link>
                         </div>
@@ -185,15 +185,15 @@ const AccordionItem = ({ number, title, content, isOpenDefault = false }) => {
         >
             <div className="px-8 py-6 flex items-center justify-between">
                 <div className="flex items-center gap-5">
-                    <span className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-all ${isOpen ? 'bg-[#24385E] text-white scale-110 shadow-lg' : 'bg-white text-gray-400 border border-gray-100'}`}>
+                    <span className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black transition-all ${isOpen ? 'bg-[#29FE29] text-[#1E1E1E] scale-110 shadow-lg' : 'bg-white text-gray-400 border border-gray-100'}`}>
                         {number}
                     </span>
-                    <h3 className={`text-lg font-black transition-colors ${isOpen ? 'text-[#24385E]' : 'text-gray-500'}`}>
+                    <h3 className={`text-lg font-black transition-colors ${isOpen ? 'text-[#29FE29]' : 'text-gray-500'}`}>
                         {title}
                     </h3>
                 </div>
                 <div className={`transition-transform duration-500 ${isOpen ? 'rotate-180' : 'rotate-0'}`}>
-                    {isOpen ? <X size={24} className="text-[#24385E]" /> : <Plus size={24} className="text-gray-300" />}
+                    {isOpen ? <X size={24} className="text-[#29FE29]" /> : <Plus size={24} className="text-gray-300" />}
                 </div>
             </div>
 

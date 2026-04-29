@@ -28,7 +28,7 @@ const LogoBox = ({ name, officialUrl = null, size = 40, fontSize = 12, className
         border: '1.5px solid #f3f4f6',
         // Dual-tone background: Blue at bottom, Yellow at top or vice versa
         background: (error || !logoUrl) 
-            ? 'linear-gradient(135deg, #24385E 50%, #FDB913 50%)' 
+            ? 'linear-gradient(135deg, #29FE29 50%, #29FE29 50%)' 
             : '#ffffff',
         display: 'flex',
         alignItems: 'center',

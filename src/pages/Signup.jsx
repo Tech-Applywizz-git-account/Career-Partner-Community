@@ -83,13 +83,13 @@ const OtpInput = ({ value, onChange, disabled }) => {
                         borderTop: 'none',
                         borderLeft: 'none',
                         borderRight: 'none',
-                        borderBottom: `2px solid ${digits[idx] ? '#6B5CF6' : '#d1d5db'}`,
+                        borderBottom: `2px solid ${digits[idx] ? '#2C76FF' : '#d1d5db'}`,
                         background: 'transparent',
                         outline: 'none',
                         color: digits[idx] ? '#1a1a2e' : '#9ca3af',
                         opacity: disabled ? 0.5 : 1,
                         cursor: disabled ? 'not-allowed' : 'text',
-                        caretColor: '#6B5CF6',
+                        caretColor: '#2C76FF',
                         transition: 'border-color 0.2s',
                         padding: '4px 0',
                         minWidth: 0,
@@ -354,7 +354,7 @@ const Signup = () => {
             style={{
                 width: '100%',
                 padding: '12px 0',
-                background: disabled ? '#a0a0a0' : '#6B5CF6',
+                background: disabled ? '#a0a0a0' : '#78EB54',
                 color: 'white',
                 fontWeight: 700,
                 fontSize: 14,
@@ -365,7 +365,7 @@ const Signup = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: 8,
-                boxShadow: '0 4px 14px rgba(107,92,246,0.35)',
+                boxShadow: '0 4px 14px rgba(120,235,84,0.3)',
                 transition: 'all 0.2s',
                 opacity: disabled ? 0.6 : 1,
             }}
@@ -475,14 +475,14 @@ const Signup = () => {
                         <Link to="/" className="inline-flex items-center gap-3 group">
                             <div className="relative">
                                 <img 
-                                    src="/cp-logo.png" 
-                                    alt="Career Partner" 
+                                    src="https://res.cloudinary.com/dpuziwnvl/image/upload/v1751357541/apply_wizz_logo_hrvtmm.jpg" 
+                                    alt="Apply Wizz" 
                                     className="w-10 h-10 rounded-xl object-contain shadow-lg"
                                 />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-xl font-bold text-[#24385E] tracking-tight leading-none">Career</span>
-                                <span className="text-xl font-bold text-[#FDB913] tracking-tight leading-none">Partner</span>
+                            <div className="flex flex-col text-left">
+                                <span className="text-xl font-bold text-[#1E1E1E] tracking-tight leading-none">Career</span>
+                                <span className="text-xl font-bold text-[#2C76FF] tracking-tight leading-none">Partner</span>
                             </div>
                         </Link>
                     </div>
@@ -490,8 +490,8 @@ const Signup = () => {
                     {/* ─── EMAIL STEP ─── */}
                     {step === 'email' && (
                         <div>
-                            <h1 className="text-2xl font-black text-gray-900 text-center mb-1">Let's verify your email</h1>
-                            <p className="text-sm text-gray-400 text-center mb-8 font-medium">
+                            <h1 className="text-2xl font-black text-[#1E1E1E] text-center mb-1">Let's verify your email</h1>
+                            <p className="text-sm text-[#1E1E1E]/40 text-center mb-8 font-medium">
                                 Enter email you use for job applications
                             </p>
 
@@ -500,7 +500,7 @@ const Signup = () => {
                                 onClick={handleGoogleSignIn}
                                 disabled={googleLoading || loading}
                                 className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-200 rounded-2xl
-                  hover:bg-gray-50 transition-all mb-5 font-semibold text-gray-700 text-sm shadow-sm"
+                  hover:bg-gray-50 transition-all mb-5 font-semibold text-[#1E1E1E] text-sm shadow-sm"
                             >
                                 {googleLoading
                                     ? <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
@@ -516,20 +516,20 @@ const Signup = () => {
 
                             <div className="relative mb-5">
                                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-100" /></div>
-                                <div className="relative flex justify-center text-xs text-gray-400 font-medium">
+                                <div className="relative flex justify-center text-xs text-[#1E1E1E]/40 font-medium">
                                     <span className="bg-white px-3">or continue with email</span>
                                 </div>
                             </div>
 
                             <form onSubmit={handleSendOtp} className="space-y-4">
-                                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 focus-within:border-[#6B5CF6]/40 focus-within:ring-1 focus-within:ring-[#6B5CF6]/20 transition-all">
-                                    <Mail size={17} className="text-gray-400 shrink-0" />
+                                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 focus-within:border-[#2C76FF]/40 focus-within:ring-1 focus-within:ring-[#2C76FF]/20 transition-all">
+                                    <Mail size={17} className="text-[#1E1E1E]/40 shrink-0" />
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="Enter your email address"
-                                        className="flex-1 bg-transparent text-sm font-medium text-gray-700 outline-none placeholder:text-gray-400"
+                                        className="flex-1 bg-transparent text-sm font-medium text-[#1E1E1E] outline-none placeholder:text-[#1E1E1E]/40"
                                         autoComplete="email"
                                         required
                                     />
@@ -542,9 +542,9 @@ const Signup = () => {
                                 </PurpleBtn>
                             </form>
 
-                            <p className="text-center text-sm text-gray-400 mt-8 font-medium">
+                            <p className="text-center text-sm text-[#1E1E1E]/40 mt-8 font-medium">
                                 Already have an account?{' '}
-                                <Link to="/login" className="text-[#6B5CF6] font-bold hover:underline">Log in</Link>
+                                <Link to="/login" className="text-[#2C76FF] font-bold hover:underline">Log in</Link>
                             </p>
                         </div>
                     )}
@@ -568,7 +568,7 @@ const Signup = () => {
                             </div>
 
                             <p style={{ fontSize: 14, fontWeight: 700, color: '#1f2937', textAlign: 'center', marginBottom: 4 }}>
-                                We've emailed <span style={{ color: '#24385E' }}>{email}</span>
+                                We've emailed <span style={{ color: '#2C76FF' }}>{email}</span>
                             </p>
                             <p style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center', marginBottom: 8, fontWeight: 500 }}>
                                 Check your inbox or spam folder
@@ -588,7 +588,7 @@ const Signup = () => {
                                     <div style={{
                                         width: 20, height: 20,
                                         border: '2px solid #e5e7eb',
-                                        borderTopColor: '#6B5CF6',
+                                        borderTopColor: '#2C76FF',
                                         borderRadius: '50%',
                                         animation: 'spin 0.7s linear infinite',
                                     }} />
@@ -601,7 +601,7 @@ const Signup = () => {
                                     Used the wrong email?{' '}
                                     <button
                                         onClick={() => { setStep('email'); setError(''); setOtp(''); }}
-                                        style={{ color: '#6B5CF6', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
+                                        style={{ color: '#2C76FF', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12 }}
                                     >
                                         Update email
                                     </button>
@@ -612,7 +612,7 @@ const Signup = () => {
                                         onClick={handleResend}
                                         disabled={resendCooldown > 0}
                                         style={{
-                                            color: resendCooldown > 0 ? '#d1d5db' : '#6B5CF6',
+                                            color: resendCooldown > 0 ? '#d1d5db' : '#2C76FF',
                                             fontWeight: 700,
                                             background: 'none',
                                             border: 'none',
@@ -634,8 +634,8 @@ const Signup = () => {
                     {/* ─── DETAILS STEP ─── */}
                     {step === 'details' && (
                         <div>
-                            <h1 className="text-2xl font-black text-gray-900 text-center mb-1">Complete your profile</h1>
-                            <p className="text-sm text-gray-400 text-center mb-6 font-medium">A few more details to get you started</p>
+                            <h1 className="text-2xl font-black text-[#1E1E1E] text-center mb-1">Complete your profile</h1>
+                            <p className="text-sm text-[#1E1E1E]/40 text-center mb-6 font-medium">A few more details to get you started</p>
 
                             <form onSubmit={handleCompleteProfile} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-3">
@@ -644,9 +644,9 @@ const Signup = () => {
                                         { field: 'lastName', label: 'Last Name', placeholder: 'Doe' },
                                     ].map(({ field, label, placeholder }) => (
                                         <div key={field}>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">{label} *</label>
-                                            <div className="flex items-center gap-2 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 focus-within:border-[#6B5CF6]/40">
-                                                <User size={14} className="text-gray-400 shrink-0" />
+                                            <label className="block text-xs font-bold text-[#1E1E1E]/60 uppercase tracking-wider mb-1.5">{label} *</label>
+                                            <div className="flex items-center gap-2 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 focus-within:border-[#2C76FF]/40">
+                                                <User size={14} className="text-[#1E1E1E]/40 shrink-0" />
                                                 <input
                                                     type="text"
                                                     value={formData[field]}
@@ -661,7 +661,7 @@ const Signup = () => {
                                                         setFormData((p) => ({ ...p, [field]: val }));
                                                     }}
                                                     placeholder={placeholder}
-                                                    className="flex-1 bg-transparent text-sm font-medium text-gray-700 outline-none placeholder:text-gray-400"
+                                                    className="flex-1 bg-transparent text-sm font-medium text-[#1E1E1E] outline-none placeholder:text-[#1E1E1E]/40"
                                                     required
                                                 />
                                             </div>
@@ -673,19 +673,19 @@ const Signup = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Mobile Number *</label>
+                                    <label className="block text-xs font-bold text-[#1E1E1E]/60 uppercase tracking-wider mb-1.5">Mobile Number *</label>
                                     <div className="flex gap-2">
                                         <select
                                             value={formData.countryCode}
                                             onChange={(e) => setFormData((p) => ({ ...p, countryCode: e.target.value }))}
-                                            className="bg-gray-50 border border-gray-100 rounded-2xl px-3 py-3 text-sm font-medium text-gray-700 outline-none"
+                                            className="bg-gray-50 border border-gray-100 rounded-2xl px-3 py-3 text-sm font-medium text-[#1E1E1E] outline-none"
                                         >
                                             {COUNTRY_CODES.map((c) => (
                                                 <option key={c.code} value={c.code}>{c.country} ({c.code})</option>
                                             ))}
                                         </select>
-                                        <div className="flex-1 flex items-center gap-2 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 focus-within:border-[#6B5CF6]/40">
-                                            <Phone size={14} className="text-gray-400 shrink-0" />
+                                        <div className="flex-1 flex items-center gap-2 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-100 focus-within:border-[#2C76FF]/40">
+                                            <Phone size={14} className="text-[#1E1E1E]/40 shrink-0" />
                                             <input
                                                 type="tel"
                                                 value={formData.mobileNumber}
@@ -701,7 +701,7 @@ const Signup = () => {
                                                 }}
                                                 maxLength={10}
                                                 placeholder="1234567890"
-                                                className="flex-1 bg-transparent text-sm font-medium text-gray-700 outline-none placeholder:text-gray-400"
+                                                className="flex-1 bg-transparent text-sm font-medium text-[#1E1E1E] outline-none placeholder:text-[#1E1E1E]/40"
                                                 required
                                             />
                                         </div>
@@ -712,11 +712,11 @@ const Signup = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Experience Level</label>
+                                    <label className="block text-xs font-bold text-[#1E1E1E]/60 uppercase tracking-wider mb-1.5">Experience Level</label>
                                     <select
                                         value={formData.experience}
                                         onChange={(e) => setFormData((p) => ({ ...p, experience: e.target.value }))}
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 outline-none"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium text-[#1E1E1E] outline-none"
                                     >
                                         <option value="">Select experience level</option>
                                         <option value="0-1">0–1 years</option>
@@ -728,13 +728,13 @@ const Signup = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Promo Code (Optional)</label>
+                                    <label className="block text-xs font-bold text-[#1E1E1E]/60 uppercase tracking-wider mb-1.5">Promo Code (Optional)</label>
                                     <input
                                         type="text"
                                         value={formData.promoCode}
                                         onChange={(e) => setFormData((p) => ({ ...p, promoCode: e.target.value }))}
                                         placeholder="Enter promo code"
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 outline-none placeholder:text-gray-400"
+                                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium text-[#1E1E1E] outline-none placeholder:text-[#1E1E1E]/40"
                                     />
                                 </div>
 
@@ -751,13 +751,13 @@ const Signup = () => {
                     {step === 'success' && (
                         <div className="text-center">
                             <div className="flex justify-center mb-6">
-                                <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center">
-                                    <CheckCircle className="w-12 h-12 text-emerald-500" />
+                                <div className="w-20 h-20 bg-[#78EB54]/10 rounded-full flex items-center justify-center">
+                                    <CheckCircle className="w-12 h-12 text-[#78EB54]" />
                                 </div>
                             </div>
 
-                            <h1 className="text-2xl font-black text-gray-900 mb-3">You're all set! 🎉</h1>
-                            <p className="text-sm text-gray-500 font-medium mb-6">Your account has been created successfully.</p>
+                            <h1 className="text-2xl font-black text-[#1E1E1E] mb-3">You're all set! 🎉</h1>
+                            <p className="text-sm text-[#1E1E1E]/60 font-medium mb-6">Your account has been created successfully.</p>
 
                             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-6 text-left">
                                 <p className="text-sm text-blue-800 font-bold mb-2">📧 Check your inbox</p>
@@ -773,7 +773,7 @@ const Signup = () => {
 
                             <button
                                 onClick={() => navigate('/login')}
-                                className="w-full py-3 bg-[#24385E] hover:bg-[#1a2a47] text-white font-bold text-sm rounded-2xl
+                                className="w-full py-3 bg-[#2C76FF] hover:bg-[#1a2a47] text-white font-bold text-sm rounded-2xl
                   transition-all shadow-lg hover:shadow-xl active:scale-95"
                             >
                                 Go to Login →

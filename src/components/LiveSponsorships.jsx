@@ -46,7 +46,7 @@ const LiveSponsorships = () => {
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="bg-black rounded-[48px] py-16 md:py-24 px-6 md:px-12 text-center shadow-2xl">
                     <h2 className="text-2xl md:text-[32px] font-black text-white mb-3 tracking-tight uppercase">
-                        LIVE <span className="text-[#FDB913]">SPONSORSHIPS.</span>
+                        LIVE <span className="text-[#29FE29]">SPONSORSHIPS.</span>
                     </h2>
                     <p className="text-gray-400 text-base md:text-lg font-medium max-w-2xl mx-auto mb-10 md:mb-16">
                         Access verified roles at companies actively hiring and sponsoring today.
@@ -57,7 +57,7 @@ const LiveSponsorships = () => {
                             <div key={idx} className="bg-[#111111] rounded-[24px] md:rounded-[32px] p-5 md:p-8 shadow-[0_10px_50px_rgba(0,0,0,0.5)] border border-white/5 flex flex-col text-left hover:scale-[1.02] transition-transform duration-300">
                                 <div className="flex justify-between items-start mb-6">
                                     <LogoBox name={job.companyName} size={56} fontSize={22} className={job.companyColor} />
-                                    <span className="bg-yellow-50 text-[#24385E] text-[10px] font-black px-4 py-1.5 rounded-full tracking-widest border border-yellow-200">
+                                    <span className="bg-yellow-50 text-[#29FE29] text-[10px] font-black px-4 py-1.5 rounded-full tracking-widest border border-yellow-200">
                                         FULL-TIME
                                     </span>
                                 </div>
@@ -77,10 +77,10 @@ const LiveSponsorships = () => {
 
                                 <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-8">
                                     <div className="flex items-center gap-6">
-                                        <div className="bg-[#24385E] rounded-2xl p-3 md:p-4 flex flex-col items-center justify-center text-white w-[65px] md:w-[75px]">
+                                        <div className="bg-[#29FE29] rounded-2xl p-3 md:p-4 flex flex-col items-center justify-center text-[#1E1E1E] w-[65px] md:w-[75px]">
                                             <div className="flex gap-0.5 mb-1">
                                                 {[1, 2, 3, 4].map(s => (
-                                                    <Star key={s} size={8} fill={s <= parseInt(job.level.split(' ')[1]) ? "#FDB913" : "transparent"} stroke={s <= parseInt(job.level.split(' ')[1]) ? "#FDB913" : "#4a5e7a"} />
+                                                    <Star key={s} size={8} fill={s <= parseInt(job.level.split(' ')[1]) ? "#29FE29" : "transparent"} stroke={s <= parseInt(job.level.split(' ')[1]) ? "#29FE29" : "#4a5e7a"} />
                                                 ))}
                                             </div>
                                             <div className="text-xl font-black italic leading-none">{job.level}</div>
@@ -98,7 +98,7 @@ const LiveSponsorships = () => {
 
                     <button
                         onClick={() => navigate(user ? '/app' : '/signup')}
-                        className="inline-flex items-center gap-2 text-[13px] font-black text-[#FDB913] uppercase tracking-widest hover:translate-x-1 transition-transform"
+                        className="inline-flex items-center gap-2 text-[13px] font-black text-[#29FE29] uppercase tracking-widest hover:translate-x-1 transition-transform"
                     >
                         {user ? 'GO TO YOUR DASHBOARD' : 'SEE MORE JOBS'} <ArrowRight size={16} />
                     </button>

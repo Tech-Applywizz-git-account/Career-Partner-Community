@@ -48,7 +48,7 @@ const PaymentDetailsTab = () => {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="w-10 h-10 text-[#24385E] animate-spin mb-4" />
+                <Loader2 className="w-10 h-10 text-[#29FE29] animate-spin mb-4" />
                 <p className="text-gray-500 font-medium">Loading payment history...</p>
             </div>
         );
@@ -57,26 +57,26 @@ const PaymentDetailsTab = () => {
     return (
         <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
             <div className="mb-8">
-                <h2 className="text-2xl font-black text-[#24385E] mb-2 flex items-center gap-3">
-                    <CreditCard className="w-8 h-8 text-[#FDB913]" />
+                <h2 className="text-2xl font-black text-[#29FE29] mb-2 flex items-center gap-3">
+                    <CreditCard className="w-8 h-8 text-[#29FE29]" />
                     Billing & Plan
                 </h2>
                 <p className="text-gray-500 font-medium">View your subscription history and manage payment details.</p>
             </div>
 
             {/* Current Plan Summary */}
-            <div className="bg-[#24385E] rounded-3xl p-8 mb-10 text-white relative overflow-hidden shadow-xl">
+            <div className="bg-[#29FE29] rounded-3xl p-8 mb-10 text-[#1E1E1E] relative overflow-hidden shadow-xl">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <span className="inline-block px-3 py-1 bg-[#FDB913] text-[#24385E] text-[10px] font-black uppercase tracking-widest rounded-full mb-3">Active Subscription</span>
+                        <span className="inline-block px-3 py-1 bg-[#29FE29] text-[#29FE29] text-[10px] font-black uppercase tracking-widest rounded-full mb-3">Active Subscription</span>
                         <h3 className="text-3xl font-black mb-1">Premium Plan</h3>
                         <p className="text-white/70 font-bold">$39.99 / 6 Months</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20">
                         <p className="text-white/60 text-xs font-black uppercase tracking-widest mb-1">Upcoming Renewal</p>
                         <div className="flex items-center gap-2">
-                            <Calendar size={18} className="text-[#FDB913]" />
+                            <Calendar size={18} className="text-[#29FE29]" />
                             <span className="text-lg font-bold">
                                 {payments.length > 0 ? (
                                     (() => {
@@ -94,7 +94,7 @@ const PaymentDetailsTab = () => {
             {/* Payment History */}
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-8 py-6 border-b border-gray-50 bg-gray-50/30">
-                    <h4 className="text-sm font-black text-[#24385E] uppercase tracking-widest">Payment History</h4>
+                    <h4 className="text-sm font-black text-[#29FE29] uppercase tracking-widest">Payment History</h4>
                 </div>
 
                 {error ? (
@@ -122,15 +122,15 @@ const PaymentDetailsTab = () => {
                                 {payments.map((p, i) => (
                                     <tr key={i} className="border-t border-gray-50 hover:bg-gray-50/50 transition-colors">
                                         <td className="px-8 py-5">
-                                            <p className="text-sm font-bold text-[#24385E]">{formatDate(p.time_of_payment)}</p>
+                                            <p className="text-sm font-bold text-[#29FE29]">{formatDate(p.time_of_payment)}</p>
                                         </td>
                                         <td className="px-8 py-5">
                                             <p className="text-xs font-medium text-gray-400 font-mono tracking-tight">{p.transaction_id || 'N/A'}</p>
                                         </td>
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-1">
-                                                <DollarSign size={14} className="text-[#24385E]" />
-                                                <span className="text-sm font-black text-[#24385E]">{p.amount?.toFixed(2)}</span>
+                                                <DollarSign size={14} className="text-[#29FE29]" />
+                                                <span className="text-sm font-black text-[#29FE29]">{p.amount?.toFixed(2)}</span>
                                                 <span className="text-[10px] font-black text-gray-400 ml-1">{p.currency}</span>
                                             </div>
                                         </td>
@@ -150,7 +150,7 @@ const PaymentDetailsTab = () => {
 
             <div className="mt-8 text-center p-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                 <p className="text-sm text-gray-500 font-medium">
-                    Questions about your billing? <a href="mailto:manasa@wagetrail.com" className="text-[#24385E] border-b border-[#24385E] hover:text-[#FDB913] hover:border-[#FDB913] transition-colors font-bold">Contact Support</a>
+                    Questions about your billing? <a href="mailto:manasa@wagetrail.com" className="text-[#29FE29] border-b border-[#29FE29] hover:text-[#29FE29] hover:border-[#29FE29] transition-colors font-bold">Contact Support</a>
                 </p>
             </div>
         </div>

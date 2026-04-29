@@ -61,7 +61,7 @@ const CompanyCard = ({ company, jobCount, wageLevel, wageLevels, industries, isS
                                 {company}
                             </p>
                             {lca_filings !== undefined && lca_filings !== null && lca_filings > 0 && (
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, color: '#24385E', background: '#f1f5f9', padding: '2px 6px', borderRadius: '6px' }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, color: '#29FE29', background: '#f1f5f9', padding: '2px 6px', borderRadius: '6px' }}>
                                     <Globe size={11} strokeWidth={2.5} />
                                     {lca_filings.toLocaleString()} Filings
                                 </span>
@@ -76,7 +76,7 @@ const CompanyCard = ({ company, jobCount, wageLevel, wageLevels, industries, isS
 
                         {!isMobile && (
                             <p style={{ fontSize: '12px', color: '#aaa', margin: 0 }}>
-                                Visa inquiries: <span style={{ color: '#24385E', fontWeight: 500 }}>{company?.toLowerCase().replace(/\s+/g, '')}@careers.com</span>
+                                Visa inquiries: <span style={{ color: '#29FE29', fontWeight: 500 }}>{company?.toLowerCase().replace(/\s+/g, '')}@careers.com</span>
                             </p>
                         )}
                     </div>

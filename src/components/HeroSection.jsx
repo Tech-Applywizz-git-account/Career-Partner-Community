@@ -33,9 +33,9 @@ const HeroSection = () => {
     const job = jobExamples[currentJob];
 
     return (
-        <div className="bg-[#24385E]">
+        <div className="bg-[#29FE29]">
             {/* Hero */}
-            <section className="relative overflow-hidden min-h-[90vh] flex items-center" style={{ background: '#24385E' }}>
+            <section className="relative overflow-hidden min-h-[90vh] flex items-center" style={{ background: '#29FE29' }}>
                 {/* Subtle grid pattern */}
                 <div className="absolute inset-0 opacity-5" style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -62,7 +62,7 @@ const HeroSection = () => {
                             <div className="flex flex-col sm:flex-row gap-4 px-2 sm:px-0 max-w-md mx-auto lg:mx-0">
                                 <button
                                     onClick={() => navigate('/signup')}
-                                    className="w-full sm:w-auto inline-flex items-center justify-center bg-[#FDB913] text-black font-black px-8 py-4 rounded-2xl hover:bg-[#e5a811] transition-all text-base shadow-[0_10px_30px_rgba(253,185,19,0.3)] active:scale-95 px-10"
+                                    className="w-full sm:w-auto inline-flex items-center justify-center bg-[#29FE29] text-black font-black px-8 py-4 rounded-2xl hover:brightness-90 transition-all text-base shadow-[0_10px_30px_rgba(44,118,255,0.2)] active:scale-95 px-10"
                                 >
                                     Get Access Now
                                 </button>
@@ -87,7 +87,7 @@ const HeroSection = () => {
                                 </div>
                                 <div className="hidden lg:block w-px h-12 bg-white/10"></div>
                                 <div className="col-span-2 lg:col-span-1 border-t lg:border-t-0 border-white/10 pt-6 lg:pt-0 text-center lg:text-left">
-                                    <div className="text-xl md:text-3xl font-black text-[#FDB913]">DAILY UPDATES</div>
+                                    <div className="text-xl md:text-3xl font-black text-[#29FE29]">DAILY UPDATES</div>
                                     <div className="text-[9px] md:text-[11px] text-gray-500 uppercase tracking-widest font-bold mt-1">New job postings</div>
                                 </div>
                             </div>
@@ -112,7 +112,7 @@ const HeroSection = () => {
                                     <div className="flex gap-2 flex-wrap">
                                         <span className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-medium">H-1B</span>
                                         <span className="text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full font-medium">Green Card</span>
-                                        <span className="text-xs bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full font-medium">OPT</span>
+                                        <span className="text-xs bg-[#29FE29]/10 text-[#29FE29] px-2.5 py-1 rounded-full font-medium">OPT</span>
                                     </div>
                                 </div>
 
@@ -150,7 +150,7 @@ const HeroSection = () => {
 
                     {/* Company Marquee */}
                     <div className="mt-12 md:mt-20">
-                        <p className="text-center text-[11px] md:text-[13px] font-medium text-[#c49b5d]/60 uppercase tracking-[0.2em] md:tracking-[0.3em] mb-6 md:mb-10">
+                        <p className="text-center text-[11px] md:text-[13px] font-medium text-white/40 uppercase tracking-[0.2em] md:tracking-[0.3em] mb-6 md:mb-10">
                             Top Companies Where Our Clients Landed Interviews
                         </p>
                         <div className="relative overflow-hidden bg-[#0a0a0a]/80 backdrop-blur-xl py-8 md:py-12 rounded-[30px] md:rounded-[50px] border border-white/5 shadow-[0_20px_80px_rgba(0,0,0,0.5)] mx-2 md:mx-4">
@@ -164,7 +164,7 @@ const HeroSection = () => {
                                         <div key={`r1-${i}`} className="flex items-center justify-center mx-8 md:mx-14">
                                             <span className="text-xl md:text-3xl font-black text-white/40 tracking-tighter hover:text-white transition-opacity cursor-default">
                                                 {company === 'Walmart' ? (
-                                                    <span className="flex items-center gap-1">Walmart<span className="text-[#FDB913]">✻</span></span>
+                                                    <span className="flex items-center gap-1">Walmart<span className="text-[#29FE29]">✻</span></span>
                                                 ) : company === 'Goldman Sachs' ? (
                                                     <span className="text-lg leading-tight text-center block">Goldman<br /><span className="text-xs -mt-1 block">Sachs</span></span>
                                                 ) : company}
@@ -186,7 +186,7 @@ const HeroSection = () => {
                                                 ) : company === 'Apple' ? (
                                                     <span className="text-3xl"></span>
                                                 ) : company === 'Deloitte' ? (
-                                                    <span>Deloitte<span className="text-[#FDB913]">.</span></span>
+                                                    <span>Deloitte<span className="text-[#29FE29]">.</span></span>
                                                 ) : company}
                                             </span>
                                         </div>

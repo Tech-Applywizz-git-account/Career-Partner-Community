@@ -23,14 +23,14 @@ const LandingPage = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#24385E] flex items-center justify-center">
+            <div className="min-h-screen bg-[#29FE29] flex items-center justify-center">
                 <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <div className="mm-landing bg-slate-50 min-h-screen font-sans selection:bg-[#24385E]/20">
+        <div className="mm-landing bg-slate-50 min-h-screen font-sans selection:bg-[#29FE29]/20">
             {/* 1) TOP NAVBAR (Sticky) */}
             <MigrateNavbar />
 

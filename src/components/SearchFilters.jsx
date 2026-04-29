@@ -163,7 +163,7 @@ const SearchFilters = ({ onFilterChange }) => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`inline-flex items-center gap-2 px-4 md:px-6 py-3 md:py-4 border-b-[3px] font-black text-[11px] md:text-xs uppercase tracking-wider whitespace-nowrap transition-all ${isActive
-                                    ? 'text-[#24385E] border-[#24385E]'
+                                    ? 'text-[#1E1E1E] border-[#2C76FF]'
                                     : 'text-gray-300 hover:text-gray-500 border-transparent hover:border-gray-100'
                                     }`}
                             >
@@ -199,8 +199,8 @@ const SearchFilters = ({ onFilterChange }) => {
                                     onClick={() => toggleFilter(activeTab, option)}
                                     className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold border transition-all 
                                     ${isFilterActive(activeTab, option)
-                                            ? 'bg-[#24385E] border-[#24385E] text-white shadow-md'
-                                            : 'bg-white hover:bg-gray-100 text-gray-600 border-gray-200'
+                                            ? 'bg-[#2C76FF] border-[#2C76FF] text-white shadow-sm'
+                                            : 'bg-white hover:bg-gray-50 text-[#1E1E1E] border-gray-200'
                                         }`}
                                 >
                                     {option}
@@ -225,7 +225,7 @@ const SearchFilters = ({ onFilterChange }) => {
                                                 if (activeTab === 'company') { setCustomCompany(''); setShowCompanyInput(false); }
                                                 if (activeTab === 'experience') { setCustomExperience(''); setShowExperienceInput(false); }
                                             }}
-                                            className="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 hover:text-[#24385E] font-medium transition-colors"
+                                            className="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 hover:text-[#2C76FF] font-medium transition-colors"
                                         >
                                             {suggestion}
                                         </button>
@@ -235,7 +235,7 @@ const SearchFilters = ({ onFilterChange }) => {
 
                             {activeTab === 'location' && (
                                 showLocationInput ? (
-                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#24385E] rounded-lg shadow-sm w-64">
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#2C76FF] rounded-lg shadow-sm w-64">
                                         <input
                                             type="text"
                                             autoFocus
@@ -264,7 +264,7 @@ const SearchFilters = ({ onFilterChange }) => {
 
                             {activeTab === 'role' && (
                                 showRoleInput ? (
-                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#24385E] rounded-lg shadow-sm w-64">
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#2C76FF] rounded-lg shadow-sm w-64">
                                         <input
                                             type="text"
                                             autoFocus
@@ -293,7 +293,7 @@ const SearchFilters = ({ onFilterChange }) => {
 
                             {activeTab === 'company' && (
                                 showCompanyInput ? (
-                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#24385E] rounded-lg shadow-sm w-64">
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#2C76FF] rounded-lg shadow-sm w-64">
                                         <input
                                             type="text"
                                             autoFocus
@@ -322,7 +322,7 @@ const SearchFilters = ({ onFilterChange }) => {
 
                             {activeTab === 'experience' && (
                                 showExperienceInput ? (
-                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#24385E] rounded-lg shadow-sm w-64">
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-[#2C76FF] rounded-lg shadow-sm w-64">
                                         <input
                                             type="text"
                                             autoFocus
@@ -356,12 +356,12 @@ const SearchFilters = ({ onFilterChange }) => {
                 {allActiveFilters.length > 0 && (
                     <div className="py-4 border-t border-gray-50 bg-white">
                         <div className="flex items-center gap-3 flex-wrap justify-center max-w-[1400px] mx-auto px-4">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-[#24385E]">Active Filters:</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[#1E1E1E]">Active Filters:</span>
 
                             {allActiveFilters.map(({ category, value }) => (
                                 <span
                                     key={`${category}-${value}`}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-lg text-xs font-bold text-indigo-700 shadow-sm"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2C76FF]/10 border border-[#2C76FF]/20 rounded-lg text-xs font-bold text-[#2C76FF] shadow-sm"
                                 >
                                     {category === 'role' && <Briefcase size={12} />}
                                     {category === 'location' && <MapPin size={12} />}

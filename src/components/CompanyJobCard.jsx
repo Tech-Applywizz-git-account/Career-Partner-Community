@@ -88,8 +88,8 @@ const CompanyJobCard = ({ job, onSave, isSaved = false, isLandingPage = false, i
     }, [job.company, job.title, job.lca_filings]);
 
     const baseButtonStyle = isLandingPage
-        ? "h-9 px-5 bg-[#FDB913] text-[#1a1a1a] rounded-full flex items-center justify-center gap-2 font-extrabold text-[12px] hover:bg-[#f0af0e] transition-all shadow-[0_4px_12px rgba(253,185,19,0.2)] active:scale-95 shrink-0"
-        : "h-12 px-8 bg-[#FDB913] text-[#1a1a1a] rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] hover:bg-[#f0af0e] transition-all shadow-[0_6px_20px_rgba(253,185,19,0.3)] active:scale-95 shrink-0";
+        ? "h-9 px-5 bg-[#29FE29] text-[#1E1E1E] rounded-full flex items-center justify-center gap-2 font-extrabold text-[12px] hover:bg-[#25e525] transition-all shadow-[0_4px_12px_rgba(41,254,41,0.2)] active:scale-95 shrink-0"
+        : "h-12 px-8 bg-[#29FE29] text-[#1E1E1E] rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] hover:bg-[#25e525] transition-all shadow-[0_6px_20px_rgba(41,254,41,0.3)] active:scale-95 shrink-0";
 
     return (
         <div className={`bg-white rounded-2xl border border-[#ebebeb] ${isLandingPage ? 'p-3 mb-2' : 'p-5 mb-3'} shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row gap-3 relative overflow-hidden group`}>
@@ -101,12 +101,12 @@ const CompanyJobCard = ({ job, onSave, isSaved = false, isLandingPage = false, i
                     <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                             {job.salary && (
-                                <span className="text-[10px] font-bold text-[#24385E] bg-[#eef2f8] px-2 py-0.5 rounded-full font-black">
+                                <span className="text-[10px] font-bold text-[#2C76FF] bg-[#eef2f8] px-2 py-0.5 rounded-full font-black">
                                     {job.salary}
                                 </span>
                             )}
                         </div>
-                        <h3 className={`${isLandingPage ? 'text-[14px]' : 'text-[17px]'} font-extrabold text-[#111] leading-tight mb-0.5 truncate group-hover:text-[#EAB308] transition-colors`}>
+                        <h3 className={`${isLandingPage ? 'text-[14px]' : 'text-[17px]'} font-extrabold text-[#111] leading-tight mb-0.5 truncate group-hover:text-[#2C76FF] transition-colors`}>
                             {job.isTeaser ? (
                                 <Link to="/pricing">{job.title}</Link>
                             ) : (
@@ -151,19 +151,19 @@ const CompanyJobCard = ({ job, onSave, isSaved = false, isLandingPage = false, i
                     )}
 
                     {/* Mobile Wage Level Badge - Match Apply button size */}
-                    <div className="md:hidden flex flex-1 items-center justify-center bg-[#24385E] px-4 py-3.5 rounded-full border-b-4 border-[#1a2a47] shadow-lg shrink-0 h-full">
+                    <div className="md:hidden flex flex-1 items-center justify-center bg-[#2C76FF] px-4 py-3.5 rounded-full border-b-4 border-[#1a3a8c] shadow-lg shrink-0 h-full">
                         <div className="flex items-center justify-center mr-2">
-                            <span className="text-[12px] font-black text-[#FDB913] leading-none whitespace-nowrap">
+                            <span className="text-[12px] font-black text-white leading-none whitespace-nowrap">
                                 {wageInfo.level.replace(/Level\s+/i, 'Lv ')}
                             </span>
                         </div>
-                        <span className="text-[11px] font-black text-white uppercase tracking-wider whitespace-nowrap">Wage Level</span>
+                        <span className="text-[11px] font-black text-white/80 uppercase tracking-wider whitespace-nowrap">Wage Level</span>
                     </div>
                 </div>
             </div>
 
             {/* Wage Level Panel (Desktop Only) */}
-            <div className={`hidden md:flex ${isLandingPage ? 'w-[80px] p-2' : 'w-[120px] p-4'} bg-[#24385E] rounded-xl flex-col items-center justify-center text-center text-white shrink-0`}>
+            <div className={`hidden md:flex ${isLandingPage ? 'w-[80px] p-2' : 'w-[120px] p-4'} bg-[#29FE29] rounded-xl flex-col items-center justify-center text-center text-[#1E1E1E] shrink-0`}>
                 <div className={`relative ${isLandingPage ? 'w-10 h-10 mb-1' : 'w-14 h-14 mb-2'} flex items-center justify-center`}>
                     <svg className="w-full h-full transform -rotate-90">
                         <circle
@@ -176,7 +176,7 @@ const CompanyJobCard = ({ job, onSave, isSaved = false, isLandingPage = false, i
                             cx={isLandingPage ? "20" : "28"}
                             cy={isLandingPage ? "20" : "28"}
                             r={isLandingPage ? "18" : "24"}
-                            stroke="#EAB308" strokeWidth={isLandingPage ? "3" : "4"} fill="transparent"
+                            stroke="#2C76FF" strokeWidth={isLandingPage ? "3" : "4"} fill="transparent"
                             strokeDasharray={isLandingPage ? 2 * Math.PI * 18 : 2 * Math.PI * 24}
                             strokeDashoffset={(isLandingPage ? 2 * Math.PI * 18 : 2 * Math.PI * 24) * (1 - levelPercent / 100)}
                             strokeLinecap="round"

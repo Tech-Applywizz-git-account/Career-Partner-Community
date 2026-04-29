@@ -34,9 +34,9 @@ const JobDetailsPanel = ({ job, onClose }) => {
 
       {/* Header */}
       <div className="flex justify-between items-center px-6 py-5 border-b border-gray-50 bg-white">
-        <h2 className="font-black text-[#24385E] text-lg tracking-tight">{job.title}</h2>
+        <h2 className="font-black text-[#29FE29] text-lg tracking-tight">{job.title}</h2>
         <button onClick={onClose} className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors">
-          <X className="text-gray-400 hover:text-[#24385E]" size={20} />
+          <X className="text-gray-400 hover:text-[#29FE29]" size={20} />
         </button>
       </div>
 
@@ -111,8 +111,8 @@ const JobDetailsPanel = ({ job, onClose }) => {
         <button
           onClick={handleSave}
           className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-xl border text-xs font-black uppercase tracking-widest transition-all ${isSaved
-            ? "bg-white text-[#24385E] border-gray-200 shadow-sm"
-            : "bg-white border-gray-200 text-gray-500 hover:bg-white hover:border-[#24385E] hover:text-[#24385E]"
+            ? "bg-white text-[#29FE29] border-gray-200 shadow-sm"
+            : "bg-white border-gray-200 text-gray-500 hover:bg-white hover:border-[#29FE29] hover:text-[#29FE29]"
             }`}
         >
           {isSaved ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
@@ -124,7 +124,7 @@ const JobDetailsPanel = ({ job, onClose }) => {
           onClick={handleApply}
           className={`flex-1 py-3 rounded-xl text-white text-xs font-black uppercase tracking-widest shadow-lg transition-all ${isApplied
             ? "bg-emerald-500 cursor-default"
-            : "bg-[#24385E] hover:bg-blue-800 active:scale-95"
+            : "bg-[#29FE29] hover:bg-blue-800 active:scale-95"
             }`}
         >
           {isApplied ? "Applied ✓" : "Apply Now"}

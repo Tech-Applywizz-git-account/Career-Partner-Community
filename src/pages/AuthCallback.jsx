@@ -65,9 +65,9 @@ const AuthCallback = () => {
     }, [navigate]);
 
     return (
-        <div className="min-h-screen bg-[#24385E] flex items-center justify-center">
+        <div className="min-h-screen bg-[#29FE29] flex items-center justify-center">
             <div className="text-center text-white">
-                <Loader2 className="w-10 h-10 animate-spin mx-auto mb-4 text-[#FDB913]" />
+                <Loader2 className="w-10 h-10 animate-spin mx-auto mb-4 text-[#29FE29]" />
                 <p className="font-semibold">Completing sign in...</p>
             </div>
         </div>

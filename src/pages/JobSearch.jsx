@@ -165,9 +165,9 @@ const JobSearch = () => {
             <Navbar />
 
             {/* Premium Header */}
-            <div className="bg-[#24385E] pt-24 pb-32 px-6 text-center">
+            <div className="bg-[#2C76FF] pt-24 pb-32 px-6 text-center">
                 <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
-                    Find Your Next <span className="text-[#FDB913]">Sponsored Role</span>
+                    Find Your Next <span className="text-[#1E1E1E] bg-[#29FE29] px-2 rounded-lg">Sponsored Role</span>
                 </h1>
                 <p className="text-blue-100 text-lg mb-10 max-w-2xl mx-auto opacity-90">
                     Search through thousands of verified H-1B and Green Card roles from top companies.
@@ -188,7 +188,7 @@ const JobSearch = () => {
                             onFocus={() => searchQuery && setShowSuggestions(true)}
                             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                         />
-                        <button className="mr-3 bg-[#24385E] text-white px-8 py-3 rounded-xl font-bold hover:bg-[#1a2a47] transition-colors shadow-lg shadow-blue-900/20">
+                        <button className="mr-3 bg-[#29FE29] text-[#1E1E1E] px-8 py-3 rounded-xl font-bold hover:bg-[#25e525] transition-colors shadow-lg shadow-[#29FE29]/20">
                             Search
                         </button>
                     </div>
@@ -240,7 +240,7 @@ const JobSearch = () => {
                                                 <div
                                                     onClick={() => toggleFilter(cat, opt)}
                                                     className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${activeFilters[cat].includes(opt)
-                                                        ? 'bg-[#24385E] border-[#24385E]'
+                                                        ? 'bg-[#2C76FF] border-[#2C76FF]'
                                                         : 'bg-white border-gray-300 group-hover:border-blue-400'
                                                         }`}
                                                 >
@@ -287,7 +287,7 @@ const JobSearch = () => {
                                 <p className="text-gray-500 mb-8 max-w-sm mx-auto">Try adjusting your filters or searching for more general role names.</p>
                                 <button
                                     onClick={() => { setSearchQuery(''); setActiveFilters({ visa: [], location: [], education: [], experience: [] }); }}
-                                    className="px-8 py-3 bg-[#24385E] text-white rounded-xl font-bold shadow-lg"
+                                    className="px-8 py-3 bg-[#29FE29] text-[#1E1E1E] rounded-xl font-bold shadow-lg"
                                 >
                                     Reset all searches
                                 </button>
@@ -302,7 +302,7 @@ const JobSearch = () => {
                                             }`}
                                     >
                                         <div className="flex items-start gap-5">
-                                            <div className="w-14 h-14 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center text-xl font-black text-[#24385E] flex-shrink-0 group-hover:scale-110 transition-transform">
+                                            <div className="w-14 h-14 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center text-xl font-black text-[#2C76FF] flex-shrink-0 group-hover:scale-110 transition-transform">
                                                 {getLogo(job.company)}
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -324,7 +324,7 @@ const JobSearch = () => {
                                                                 href={job.url || job.apply_url || '#'}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
-                                                                className="text-gray-900 hover:text-[#24385E]"
+                                                                className="text-gray-900 hover:text-[#2C76FF]"
                                                                 style={{ textDecoration: 'none' }}
                                                                 onClick={e => { if (!job.url && !job.apply_url) e.preventDefault(); e.stopPropagation(); }}
                                                             >
@@ -333,7 +333,7 @@ const JobSearch = () => {
                                                         </h3>
 
                                                         {/* Row 3: Company Name as Subtext */}
-                                                        <div className="text-[#24385E] font-bold text-sm flex items-center gap-1.5 opacity-75">
+                                                        <div className="text-[#2C76FF] font-bold text-sm flex items-center gap-1.5 opacity-75">
                                                             <Briefcase size={14} /> {job.company}
                                                         </div>
                                                     </div>
@@ -348,7 +348,7 @@ const JobSearch = () => {
                                                             Sponsorship Verified
                                                         </span>
                                                     )}
-                                                    <span className="px-3 py-1 bg-yellow-50 text-yellow-700 text-[11px] font-bold rounded-lg border border-yellow-100">
+                                                    <span className="px-3 py-1 bg-[#2C76FF]/10 text-[#2C76FF] text-[11px] font-bold rounded-lg border border-[#2C76FF]/20">
                                                         {job.wage_level || 'Lv 2'}
                                                     </span>
                                                 </div>

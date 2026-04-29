@@ -90,12 +90,12 @@ const parseLoc = (str) => {
         const country = (str.match(/country=['"]?([^'"]+)['"]?/) || [])[1];
         const city = (str.match(/city=['"]?([^'"]+)['"]?/) || [])[1];
         const state = (str.match(/state=['"]?([^'"]+)['"]?/) || [])[1];
-        
+
         let loc = null;
         if (city && state) loc = `${city}, ${state}`;
         else if (city) loc = city;
         else if (state) loc = state;
-        
+
         return { c: country || null, l: loc };
     } catch (e) { return { c: null, l: null }; }
 };
@@ -105,7 +105,7 @@ const parseLoc = (str) => {
 const applyDateFilter = (query, df) => {
     if (!df || df.quickDate === 'all' || (!df.from && !df.to)) return query;
     if (df.from) query = query.gte('date_posted', df.from);
-    if (df.to)   query = query.lte('date_posted', df.to);
+    if (df.to) query = query.lte('date_posted', df.to);
     return query;
 };
 
@@ -199,7 +199,7 @@ const JobRow = ({ job, isSaved, onSave }) => {
 
     return (
         <div
-            className="bg-white rounded-[24px] border border-[#f0f0f0] mb-5 shadow-sm hover:shadow-xl hover:border-[#FDB913]/20 transition-all duration-300 flex flex-col lg:flex-row overflow-hidden group"
+            className="bg-white rounded-[24px] border border-[#f0f0f0] mb-5 shadow-sm hover:shadow-xl hover:border-[#2C76FF]/20 transition-all duration-300 flex flex-col lg:flex-row overflow-hidden group"
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
@@ -208,40 +208,40 @@ const JobRow = ({ job, isSaved, onSave }) => {
                 {/* Top Badges */}
                 <div className="flex flex-wrap gap-2 mb-5">
                     {getCompanyRank(job.company) !== Infinity && (
-                        <div className="bg-[#fffbeb] text-[#d97706] px-3 py-1 rounded-full text-[11px] font-bold border border-[#fef3c7] flex items-center gap-1.5 shadow-sm">
-                            <TrendingUp size={12} className="stroke-[3]" /> Top Tier
+                        <div className="bg-[#eaffea] text-[#1E1E1E] px-3 py-1 rounded-full text-[11px] font-bold border border-[#29FE29]/30 flex items-center gap-1.5 shadow-sm">
+                            <TrendingUp size={12} className="stroke-[3] text-[#29FE29]" /> Top Tier
                         </div>
                     )}
                     {filingCount !== null && (
-                        <div className="bg-[#f5f3ff] text-[#7c3aed] px-3 py-1 rounded-full text-[11px] font-bold border border-[#ddd6fe]">
+                        <div className="bg-[#f0f7ff] text-[#2C76FF] px-3 py-1 rounded-full text-[11px] font-bold border border-[#2C76FF]/10">
                             📊 {filingCount.toLocaleString()} LCA Filings
                         </div>
                     )}
                     {filingCount > 100 && (
-                        <div className="bg-[#fdf2f8] text-[#be185d] px-3 py-1 rounded-full text-[11px] font-bold border border-[#fce7f3]">
-                            🔥 High Sponsorship Volume
+                        <div className="bg-[#eaffea] text-[#1E1E1E] px-3 py-1 rounded-full text-[11px] font-bold border border-[#29FE29]/20">
+                            🔥 High Volume
                         </div>
                     )}
-                    <div className="bg-[#f0f9ff] text-[#0369a1] px-3 py-1 rounded-full text-[11px] font-bold border border-[#e0f2fe]">
-                        ✨ Be an early applicant
+                    <div className="bg-[#f8fafc] text-[#64748b] px-3 py-1 rounded-full text-[11px] font-bold border border-[#f1f5f9]">
+                        ✨ Early Applicant
                     </div>
                 </div>
 
                 {/* Title & Company Section */}
                 <div className="flex items-start gap-4 mb-6">
-                    <div className="shrink-0 bg-white border border-[#f1f5f9] rounded-2xl p-2 shadow-sm group-hover:border-[#FDB913]/30 transition-colors">
+                    <div className="shrink-0 bg-white border border-[#f1f5f9] rounded-2xl p-2 shadow-sm group-hover:border-[#2C76FF]/20 transition-colors">
                         <LogoBox name={job.company} officialUrl={job.url} size={52} fontSize={18} />
                     </div>
                     <div className="min-w-0 pt-1">
-                        <h3 className="text-[20px] font-black text-[#1e293b] leading-[1.3] mb-1.5 h-[52px] line-clamp-2">
+                        <h3 className="text-[20px] font-black text-[#1E1E1E] leading-[1.3] mb-1.5 h-[52px] line-clamp-2">
                             {job.isTeaser ? (
-                                <Link to="/pricing" className="hover:text-[#FDB913] transition-colors">{job.title}</Link>
+                                <Link to="/pricing" className="hover:text-[#2C76FF] transition-colors">{job.title}</Link>
                             ) : (
-                                <a href={job.url || job.apply_url} target="_blank" rel="noopener noreferrer" className="hover:text-[#FDB913] transition-colors">{job.title}</a>
+                                <a href={job.url || job.apply_url} target="_blank" rel="noopener noreferrer" className="hover:text-[#2C76FF] transition-colors">{job.title}</a>
                             )}
                         </h3>
                         <div className="flex items-center gap-2 text-[#64748b] text-[14px] font-semibold">
-                            <span className="text-[#1e293b] font-bold">{job.company}</span>
+                            <span className="text-[#1E1E1E] font-bold">{job.company}</span>
                             <span className="opacity-30">/</span>
                             <span className="truncate">{job.role || 'Software Engineering'}</span>
                         </div>
@@ -308,11 +308,11 @@ const JobRow = ({ job, isSaved, onSave }) => {
                         </div>
                     )}
                     {job.isVerified && (
-                        <div className="flex items-center bg-[#f0fdf4] border border-[#bbf7d0] px-3 py-1 rounded-lg">
-                            <span className="text-[10px] font-black text-[#15803d] uppercase tracking-wider mr-2">HUMAN VERIFIED</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#15803d" xmlns="http://www.w3.org/2000/svg">
+                        <div className="flex items-center bg-[#eaffea] border border-[#29FE29]/30 px-3 py-1 rounded-lg">
+                            <span className="text-[10px] font-black text-[#1E1E1E] uppercase tracking-wider mr-2">HUMAN VERIFIED</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#29FE29" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 2L14.43 3.63L17.29 2.89L18.47 5.56L21.31 6.36L21.14 9.3L23 11.5L21.14 13.7L21.31 16.64L18.47 17.44L17.29 20.11L14.43 19.37L12 21L9.57 19.37L6.71 20.11L5.53 17.44L2.69 16.64L2.86 13.7L1 11.5L2.86 9.3L2.69 6.36L5.53 5.56L6.71 2.89L9.57 3.63L12 2Z" />
-                                <path d="M10 14.5L7.5 12L6.5 13L10 16.5L17.5 9L16.5 8L10 14.5Z" fill="white" />
+                                <path d="M10 14.5L7.5 12L6.5 13L10 16.5L17.5 9L16.5 8L10 14.5Z" fill="#1E1E1E" />
                             </svg>
                         </div>
                     )}
@@ -330,7 +330,8 @@ const JobRow = ({ job, isSaved, onSave }) => {
                         {job.isTeaser ? (
                             <Link
                                 to="/pricing"
-                                className="h-12 px-8 bg-[#FDB913] text-[#1a1a1a] rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] hover:bg-[#f0af0e] transition-all shadow-[0_6px_20px_rgba(253,185,19,0.3)] active:scale-95"
+                                className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
+                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF', boxShadow: '0 6px 20px rgba(41,254,41,0.3)' }}
                             >
                                 Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
                             </Link>
@@ -339,7 +340,8 @@ const JobRow = ({ job, isSaved, onSave }) => {
                                 href={job.url || job.apply_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="h-12 px-8 bg-[#FDB913] text-[#1a1a1a] rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] hover:bg-[#f0af0e] transition-all shadow-[0_6px_20px_rgba(253,185,19,0.3)] active:scale-95"
+                                className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
+                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF', boxShadow: '0 6px 20px rgba(41,254,41,0.3)' }}
                             >
                                 Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
                             </a>
@@ -354,10 +356,10 @@ const JobRow = ({ job, isSaved, onSave }) => {
 // SUGGESTED_ROLES is now fetched dynamically from Supabase via rolesSuggestions utility
 
 // ── Main Component ─────────────────────────────────────────────────────────
-const AllJobsTab = ({ 
-    searchTerm: propSearchTerm = '', 
-    activeFilter: propActiveFilter = 'all', 
-    countryFilter = null, 
+const AllJobsTab = ({
+    searchTerm: propSearchTerm = '',
+    activeFilter: propActiveFilter = 'all',
+    countryFilter = null,
     dateFilter = null,
     fixedCompany = null,
     fixedDomain = null
@@ -554,10 +556,10 @@ const AllJobsTab = ({
         // 4. Categorize into Pools
         // Pool A: Famous OR Verified (Aggressive Priority)
         const primaryPool = enriched.filter(j => j._isFamous || j.isVerified);
-        
+
         // Pool B: Everyone else but have salary info
         const secondaryPool = enriched.filter(j => !(j._isFamous || j.isVerified) && j._isEligible).sort(jobSorter);
-        
+
         // Pool C: Everyone else with no salary info
         const tertiaryPool = enriched.filter(j => !(j._isFamous || j.isVerified) && !j._isEligible).sort((a, b) => b._timestamp - a._timestamp);
 
@@ -589,9 +591,9 @@ const AllJobsTab = ({
                 if (!group) {
                     // Fallback to partial match if exact match in map fails
                     for (const [key, jobs] of coMap.entries()) {
-                        if (key.includes(searchKey) || searchKey.includes(key)) { 
-                            group = jobs; 
-                            break; 
+                        if (key.includes(searchKey) || searchKey.includes(key)) {
+                            group = jobs;
+                            break;
                         }
                     }
                 }
@@ -649,7 +651,7 @@ const AllJobsTab = ({
     const fetchJobs = async (page, filter, search, level = 'all', country = null) => {
         // Use fixed props if available to bypass fuzzy search
         const activeSearch = (fixedCompany || fixedDomain) ? '' : search;
-        
+
         setLoading(true);
         setError(null);
         try {
@@ -663,10 +665,10 @@ const AllJobsTab = ({
             const dateStr = dateFilter?.quickDate === 'all' || !dateFilter
                 ? 'all'
                 : `${dateFilter.from || ''}_${dateFilter.to || ''}`;
-            
+
             const fixedStr = (fixedCompany || 'none') + '_' + (fixedDomain || 'none');
             const listCacheKey = `${filter}|${(activeSearch || '').trim().toLowerCase() || 'none'}|${levelStr}|${country || 'all'}|${dateStr}|${fixedStr}`;
-            
+
             // country is a COUNTRY_MAP key like "USA", "INDIA", "UK" — look it up directly
             const countryEntry = country ? COUNTRY_MAP[country] : null;
             const fullName = countryEntry?.label || null; // e.g. "United States", "India"
@@ -804,11 +806,11 @@ const AllJobsTab = ({
 
                     const vSetLocal = verifiedSet || await getVerifiedSet();
                     const directJobs = finalData.map(j => ({
-                        ...j, 
+                        ...j,
                         company: j.company_name,
                         url: j.job_url_direct,
                         apply_url: j.job_url,
-                        job_id: j.id, 
+                        job_id: j.id,
                         role: j.role_name,
                         job_role_name: j.role_name,
                         isVerified: vSetLocal.has(j.company_name) || false,
@@ -946,16 +948,16 @@ const AllJobsTab = ({
             } catch (_deepErr) { /* non-fatal */ }
 
             const qSponsored = [...(qRankedRes.data || []), ...(qStdRes.data || []), ...qDeepSpon]
-                .map(j => ({ 
-                    ...j, 
+                .map(j => ({
+                    ...j,
                     company: j.company_name,
                     role: j.role_name,
                     job_role_name: j.role_name,
                     url: j.job_url_direct,
                     apply_url: j.job_url,
-                    job_id: j.id, 
-                    isVerified: j.isVerified || quickVSet.has(j.company_name) || false, 
-                    isTeaser: paymentStatus === 'pending' 
+                    job_id: j.id,
+                    isVerified: j.isVerified || quickVSet.has(j.company_name) || false,
+                    isTeaser: paymentStatus === 'pending'
                 }));
 
             const qMetaStore = new Map();
@@ -1162,7 +1164,7 @@ const AllJobsTab = ({
                         rankedQuery = rankedQuery.eq('indeed_search_country', country);
                         standardQuery = standardQuery.eq('indeed_search_country', country);
                     }
-                    rankedQuery   = applyDateFilter(rankedQuery,   dateFilter);
+                    rankedQuery = applyDateFilter(rankedQuery, dateFilter);
                     standardQuery = applyDateFilter(standardQuery, dateFilter);
 
                     let syncRes, backupRes, rankedRes, standardRes;
@@ -1219,16 +1221,16 @@ const AllJobsTab = ({
                     } catch (_deepErr) { /* non-fatal */ }
 
                     const sponsoredJobs = [...(rankedRes.data || []), ...(standardRes.data || [])]
-                        .map(j => ({ 
-                            ...j, 
+                        .map(j => ({
+                            ...j,
                             company: j.company_name,
                             role: j.role_name,
                             job_role_name: j.role_name,
                             url: j.job_url_direct,
                             apply_url: j.job_url,
-                            job_id: j.id, 
-                            isVerified: j.isVerified || vSet.has(j.company_name) || false, 
-                            isTeaser: paymentStatus === 'pending' 
+                            job_id: j.id,
+                            isVerified: j.isVerified || vSet.has(j.company_name) || false,
+                            isTeaser: paymentStatus === 'pending'
                         }));
 
                     const fullMetaMap = new Map();
@@ -1441,16 +1443,16 @@ const AllJobsTab = ({
                     }
 
                     const sponsoredJobs = [...(rankedRes.data || []), ...(standardRes.data || [])]
-                        .map(j => ({ 
-                            ...j, 
+                        .map(j => ({
+                            ...j,
                             company: j.company_name,
                             role: j.role_name,
                             job_role_name: j.role_name,
                             url: j.job_url_direct,
                             apply_url: j.job_url,
-                            job_id: j.id, 
-                            isVerified: j.isVerified || vSet.has(j.company_name) || false, 
-                            isTeaser: paymentStatus === 'pending' 
+                            job_id: j.id,
+                            isVerified: j.isVerified || vSet.has(j.company_name) || false,
+                            isTeaser: paymentStatus === 'pending'
                         }));
 
                     const fullMetaMap = new Map();

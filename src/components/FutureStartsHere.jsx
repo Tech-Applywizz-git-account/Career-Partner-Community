@@ -24,7 +24,7 @@ const FutureStartsHere = () => {
                     {/* Left Content */}
                     <div className="lg:w-1/2 relative z-10 text-center lg:text-left">
                         <div className="inline-flex items-center gap-2 bg-[#1A1C23] border border-white/10 rounded-full px-5 py-2 mb-8">
-                            <span className="text-[11px] font-black text-[#FDB913] uppercase tracking-widest italic">READY TO START? <span className="text-white/40 not-italic">us</span></span>
+                            <span className="text-[11px] font-black text-[#29FE29] uppercase tracking-widest italic">READY TO START? <span className="text-white/40 not-italic">us</span></span>
                         </div>
 
                         <h2 className="text-3xl md:text-7xl font-black text-white leading-[1] mb-8 uppercase">
@@ -47,7 +47,7 @@ const FutureStartsHere = () => {
                     <div className="lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-y-10 gap-x-12 relative z-10">
                         {features.map((feature, idx) => (
                             <div key={idx} className="flex gap-4 items-start group">
-                                <div className="w-10 h-10 rounded-2xl bg-[#1A1C23] border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-[#FDB913] transition-colors duration-300">
+                                <div className="w-10 h-10 rounded-2xl bg-[#1A1C23] border border-white/10 flex items-center justify-center shrink-0 group-hover:bg-[#29FE29] transition-colors duration-300">
                                     <Check size={20} className="text-white" />
                                 </div>
                                 <p className="text-white font-bold text-[14px] leading-snug pt-1">

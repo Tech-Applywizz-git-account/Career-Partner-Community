@@ -364,7 +364,7 @@
 //                   <div style={{ background: '#FFF7ED', border: '1.5px solid #FFEDD5', borderRadius: '16px', padding: '20px', marginBottom: '24px', textAlign: 'center' }}>
 //                     <p style={{ color: '#9A3412', fontWeight: 800, fontSize: '14px', marginBottom: '8px' }}>🔒 UNLOCK ALL JOBS</p>
 //                     <p style={{ color: '#C2410C', fontSize: '12px', fontWeight: 500, marginBottom: '16px' }}>Get access to direct apply links and salary data for {selectedTeaserCompany.company}.</p>
-//                     <button onClick={() => navigate('/pricing')} style={{ background: '#FDB913', color: '#111', fontWeight: 800, padding: '10px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '13px', width: '100%' }}>Get Full Access →</button>
+//                     <button onClick={() => navigate('/pricing')} style={{ background: '#2C76FF', color: '#111', fontWeight: 800, padding: '10px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '13px', width: '100%' }}>Get Full Access →</button>
 //                   </div>
 
 //                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -401,12 +401,12 @@
 //                     padding: isMobile ? '24px' : '40px', background: 'linear-gradient(135deg, #24385E 0%, #1a2b4b 100%)',
 //                     borderRadius: 24, textAlign: 'center', color: '#fff', boxShadow: '0 12px 32px rgba(36,56,94,0.2)'
 //                   }}>
-//                     <Sparkles size={32} color="#FDB913" style={{ margin: '0 auto 16px' }} />
+//                     <Sparkles size={32} color="#2C76FF" style={{ margin: '0 auto 16px' }} />
 //                     <h3 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 900, marginBottom: 12 }}>Go Premium</h3>
 //                     <p style={{ color: '#94a3b8', marginBottom: 24, fontSize: isMobile ? 14 : 15, maxWidth: 400, margin: '0 auto 24px' }}>
 //                       Access direct application links, historical wage data, and exclusive sponsorship insights.
 //                     </p>
-//                     <button onClick={() => navigate('/pricing')} style={{ padding: '14px 40px', background: '#FDB913', color: '#24385E', border: 'none', borderRadius: 12, fontWeight: 900, cursor: 'pointer', fontSize: 15 }}>Upgrade Now →</button>
+//                     <button onClick={() => navigate('/pricing')} style={{ padding: '14px 40px', background: '#2C76FF', color: '#24385E', border: 'none', borderRadius: 12, fontWeight: 900, cursor: 'pointer', fontSize: 15 }}>Upgrade Now →</button>
 //                   </div>
 //                 </>
 //               ) : (
@@ -2019,7 +2019,7 @@
 //                           <p style={{ color: '#C2410C', fontSize: '12px', fontWeight: 500, marginBottom: '16px' }}>Get access to direct apply links and salary data.</p>
 //                           <button
 //                             onClick={() => navigate('/pricing')}
-//                             style={{ background: '#FDB913', color: '#111', fontWeight: 800, padding: '10px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '13px', width: '100%' }}
+//                             style={{ background: '#2C76FF', color: '#111', fontWeight: 800, padding: '10px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '13px', width: '100%' }}
 //                           >
 //                             Get Full Access →
 //                           </button>
@@ -2716,18 +2716,18 @@ const TeaserDashboard = ({ user, signOut, navigate, isMobile }) => {
                     </button>
                   )}
 
-                  <div style={{ background: '#FFF7ED', border: '1.5px solid #FFEDD5', borderRadius: '16px', padding: '20px', marginBottom: '24px', textAlign: 'center' }}>
-                    <p style={{ color: '#9A3412', fontWeight: 800, fontSize: '14px', marginBottom: '8px' }}>🔒 UNLOCK ALL JOBS</p>
-                    <p style={{ color: '#C2410C', fontSize: '12px', fontWeight: 500, marginBottom: '16px' }}>Get access to direct apply links and salary data for {selectedTeaserCompany.company}.</p>
-                    <button onClick={() => navigate('/pricing')} style={{ background: '#FDB913', color: '#111', fontWeight: 800, padding: '10px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '13px', width: '100%' }}>Get Full Access →</button>
+                  <div style={{ background: '#2C76FF/10', border: '1.5px solid #2C76FF/20', borderRadius: '16px', padding: '20px', marginBottom: '24px', textAlign: 'center' }}>
+                    <p style={{ color: '#2C76FF', fontWeight: 800, fontSize: '14px', marginBottom: '8px' }}>🔒 UNLOCK ALL JOBS</p>
+                    <p style={{ color: '#1E1E1E', fontSize: '12px', fontWeight: 500, marginBottom: '16px' }}>Get access to direct apply links and salary data for {selectedTeaserCompany.company}.</p>
+                    <button onClick={() => navigate('/pricing')} style={{ background: '#2C76FF', color: '#fff', fontWeight: 800, padding: '10px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontSize: '13px', width: '100%' }}>Get Full Access →</button>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                    <LogoBox 
-                      name={selectedTeaserCompany.company} 
+                    <LogoBox
+                      name={selectedTeaserCompany.company}
                       officialUrl={selectedTeaserCompany.domain ? (selectedTeaserCompany.domain.startsWith('http') ? selectedTeaserCompany.domain : `https://${selectedTeaserCompany.domain}`) : null}
-                      size={isMobile ? 50 : 64} 
-                      fontSize={isMobile ? 16 : 18} 
+                      size={isMobile ? 50 : 64}
+                      fontSize={isMobile ? 16 : 18}
                     />
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
@@ -2761,12 +2761,12 @@ const TeaserDashboard = ({ user, signOut, navigate, isMobile }) => {
                     padding: isMobile ? '24px' : '40px', background: 'linear-gradient(135deg, #24385E 0%, #1a2b4b 100%)',
                     borderRadius: 24, textAlign: 'center', color: '#fff', boxShadow: '0 12px 32px rgba(36,56,94,0.2)'
                   }}>
-                    <Sparkles size={32} color="#FDB913" style={{ margin: '0 auto 16px' }} />
+                    <Sparkles size={32} color="#2C76FF" style={{ margin: '0 auto 16px' }} />
                     <h3 style={{ fontSize: isMobile ? 20 : 24, fontWeight: 900, marginBottom: 12 }}>Go Premium</h3>
                     <p style={{ color: '#94a3b8', marginBottom: 24, fontSize: isMobile ? 14 : 15, maxWidth: 400, margin: '0 auto 24px' }}>
                       Access direct application links, historical wage data, and exclusive sponsorship insights.
                     </p>
-                    <button onClick={() => navigate('/pricing')} style={{ padding: '14px 40px', background: '#FDB913', color: '#24385E', border: 'none', borderRadius: 12, fontWeight: 900, cursor: 'pointer', fontSize: 15 }}>Upgrade Now →</button>
+                    <button onClick={() => navigate('/pricing')} style={{ padding: '14px 40px', background: '#2C76FF', color: '#fff', border: 'none', borderRadius: 12, fontWeight: 900, cursor: 'pointer', fontSize: 15 }}>Upgrade Now →</button>
                   </div>
                 </>
               ) : (
@@ -3269,13 +3269,13 @@ const Homepage = () => {
               if (!jobBoards.some(board => dom.includes(board))) {
                 s.domain = dom;
               }
-            } catch (_) {}
+            } catch (_) { }
           }
           let currentWage = parseInt(j.wage_num || j.wage_level?.match(/\d/)?.[0] || '0');
           if (currentWage === 0) {
             currentWage = getHeuristicLevel(j.job_role_name, j.wage_level);
           }
-          
+
           if (currentWage > 0) {
             s.wageLevels.add(`Lv ${currentWage}`);
             if (currentWage > s.maxWageNum) {
@@ -3331,9 +3331,9 @@ const Homepage = () => {
         setIsInitialLoadDone(true);
         try {
           // Sets don't stringify to JSON arrays automatically, so we map them
-          const serializable = finalArr.map(c => ({ 
-            ...c, 
-            industries: Array.from(c.industries), 
+          const serializable = finalArr.map(c => ({
+            ...c,
+            industries: Array.from(c.industries),
             wageLevels: Array.from(c.wageLevels).sort() // Sort for consistency
           }));
           sessionStorage.setItem('_companiesCache_v10', JSON.stringify(serializable));
@@ -3861,76 +3861,77 @@ const Homepage = () => {
   /*  INLINE STYLES MATCHING SCREENSHOT 1   */
   /* ─────────────────────────────────────── */
   const S = {
-    page: { display: 'flex', height: '100vh', overflow: 'hidden', background: '#f5f5f7', fontFamily: "'Inter', sans-serif" },
+    page: { display: 'flex', height: '100vh', overflow: 'hidden', background: '#FFFFFF', fontFamily: "'Inter', sans-serif" },
     sidebar: {
       width: isMobile ? (mobileMenuOpen ? '280px' : '0') : '260px',
       minWidth: isMobile ? (mobileMenuOpen ? '280px' : '0') : '260px',
       background: '#ffffff',
-      borderRight: '1px solid #e8e8e8',
+      borderRight: '1px solid #f0f0f0',
       display: 'flex',
       flexDirection: 'column',
       flexShrink: 0,
       position: isMobile ? 'fixed' : 'relative',
-      zIndex: 9999,  // Must be above search pill (2010) and suggestions (2000)
+      zIndex: 9999,
       height: '100vh',
       left: 0,
       top: 0,
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden',
-      boxShadow: isMobile && mobileMenuOpen ? '0 0 40px rgba(0,0,0,0.1)' : 'none'
+      boxShadow: isMobile && mobileMenuOpen ? '0 0 40px rgba(0,0,0,0.05)' : 'none'
     },
     sidebarLogo: { padding: '24px 24px 20px', minWidth: '260px' },
     sidebarNav: { flex: 1, padding: '0 12px', overflowY: 'auto', minWidth: '260px' },
     navItem: (active) => ({
       width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
-      padding: '10px 14px', borderRadius: '12px', fontSize: '14px', fontWeight: active ? 600 : 400,
-      color: active ? '#24385E' : '#666', background: active ? '#FDB91315' : 'transparent',
-      borderLeft: active ? '4px solid #FDB913' : '4px solid transparent', cursor: 'pointer', transition: 'all 180ms ease', marginBottom: '4px',
+      padding: '12px 14px', borderRadius: '12px', fontSize: '14px', fontWeight: active ? 700 : 500,
+      color: active ? '#FFFFFF' : '#555', background: active ? '#2C76FF' : 'transparent',
+      border: 'none', cursor: 'pointer', transition: 'all 200ms ease', marginBottom: '6px',
       textAlign: 'left',
     }),
-    sidebarBottom: { padding: '12px 12px 20px', borderTop: '1px solid #efefef', minWidth: '260px' },
+    sidebarBottom: { padding: '12px 12px 20px', borderTop: '1px solid #f0f0f0', minWidth: '260px' },
     userRow: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 12px 0' },
-    main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' },
+    main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden', background: '#FFFFFF' },
     topBar: {
-      background: '#fff',
-      borderBottom: '1px solid #e8e8e8',
+      background: '#FFFFFF',
+      borderBottom: '1px solid #f0f0f0',
       display: 'flex',
       alignItems: 'center',
       justifyContent: isMobile ? 'space-between' : 'center',
       gap: '12px',
-      padding: isMobile ? '0 16px' : '11px 24px',
+      padding: isMobile ? '0 16px' : '12px 24px',
       height: isMobile ? '60px' : 'auto',
       flexShrink: 0
     },
-    content: { flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' },
+    content: { flex: 1, display: 'flex', overflow: 'hidden', position: 'relative', background: '#FFFFFF' },
     leftCol: {
       width: isMobile ? '100%' : '460px',
       minWidth: isMobile ? '0' : '460px',
-      background: '#f5f5f7',
+      background: '#FFFFFF',
       display: (isMobile && mobileActiveCol === 'right') ? 'none' : 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
-      flexShrink: 0
+      flexShrink: 0,
+      borderRight: '1px solid #f0f0f0'
     },
     searchWrap: { padding: isMobile ? '16px 12px' : '20px 20px 12px' },
     searchRow: { display: 'flex', alignItems: 'center', gap: '10px' },
-    searchPill: { flex: 1, display: 'flex', alignItems: 'center', gap: '10px', background: '#fff', border: '1.5px solid #d8d8d8', borderRadius: '60px', padding: '0 16px', height: isMobile ? '46px' : '52px', boxShadow: '0 2px 8px rgba(0,0,0,0.07)' },
-    searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: isMobile ? '14px' : '15px', color: '#333', background: 'transparent', minWidth: 0 },
-    filterBtn: { display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1.5px solid #d8d8d8', borderRadius: '60px', padding: isMobile ? '0 14px' : '0 18px', height: isMobile ? '46px' : '52px', fontSize: '14px', fontWeight: 500, color: '#555', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.07)', whiteSpace: 'nowrap', flexShrink: 0 },
-    countRow: { padding: '0 20px 8px', textAlign: 'center', fontSize: '13px', color: '#888' },
+    searchPill: { flex: 1, display: 'flex', alignItems: 'center', gap: '10px', background: '#fff', border: '1.5px solid #eee', borderRadius: '60px', padding: '0 16px', height: isMobile ? '46px' : '52px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', transition: 'all 0.2s ease' },
+    searchInput: { flex: 1, border: 'none', outline: 'none', fontSize: isMobile ? '14px' : '15px', color: '#1E1E1E', background: 'transparent', minWidth: 0, fontWeight: 500 },
+    filterBtn: { display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1.5px solid #eee', borderRadius: '60px', padding: isMobile ? '0 14px' : '0 18px', height: isMobile ? '46px' : '52px', fontSize: '14px', fontWeight: 600, color: '#1E1E1E', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.2s ease' },
+    countRow: { padding: '0 20px 8px', textAlign: 'center', fontSize: '13px', color: '#888', fontWeight: 500 },
     companyList: { flex: 1, overflowY: 'auto', padding: isMobile ? '0 10px 24px' : '0 16px 24px', scrollbarWidth: 'none' },
     rightCol: {
       flex: 1,
-      background: '#fff',
+      background: '#FFFFFF',
       display: (isMobile && mobileActiveCol === 'left') ? 'none' : 'flex',
       flexDirection: 'column',
       overflow: 'hidden'
     },
     rightScroll: { flex: 1, overflowY: 'auto', padding: isMobile ? '20px' : '32px 40px', scrollbarWidth: 'none' },
-    coLogo: { width: isMobile ? '48px' : '56px', height: isMobile ? '48px' : '56px', borderRadius: '16px', background: '#24385E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '16px' : '18px', fontWeight: 900, color: '#fff', flexShrink: 0 },
-    jobSearchPill: { flex: 1, display: 'flex', alignItems: 'center', gap: '10px', background: '#f9f9f9', border: '1.5px solid #e0e0e0', borderRadius: '60px', padding: '0 16px', height: isMobile ? '46px' : '50px' },
-    jobSearchInput: { flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: '#333', background: 'transparent', minWidth: 0 },
-    searchBtn: { height: isMobile ? '46px' : '50px', padding: isMobile ? '0 20px' : '0 28px', background: '#24385E', color: '#fff', border: 'none', borderRadius: '60px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', flexShrink: 0, boxShadow: '0 2px 6px rgba(36,56,94,0.3)' }
+    coLogo: { width: isMobile ? '48px' : '56px', height: isMobile ? '48px' : '56px', borderRadius: '16px', background: '#1E1E1E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '16px' : '18px', fontWeight: 900, color: '#fff', flexShrink: 0 },
+    jobSearchPill: { flex: 1, display: 'flex', alignItems: 'center', gap: '10px', background: '#fcfcfc', border: '1.5px solid #f0f0f0', borderRadius: '60px', padding: '0 16px', height: isMobile ? '46px' : '50px' },
+    jobSearchInput: { flex: 1, border: 'none', outline: 'none', fontSize: '14px', color: '#1E1E1E', background: 'transparent', minWidth: 0, fontWeight: 500 },
+    searchBtn: { height: isMobile ? '46px' : '50px', padding: isMobile ? '0 20px' : '0 28px', background: '#2C76FF', color: '#fff', border: 'none', borderRadius: '60px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', flexShrink: 0, boxShadow: '0 4px 14px rgba(44,118,255,0.25)', transition: 'all 0.2s ease' }
   };
 
   return (
@@ -3952,14 +3953,14 @@ const Homepage = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => navigate('/')}>
               <div style={{ position: 'relative' }}>
                 <img
-                  src="/cp-logo.png"
+                  src="https://res.cloudinary.com/dpuziwnvl/image/upload/v1751357541/apply_wizz_logo_hrvtmm.jpg"
                   alt="Career Partner"
-                  style={{ width: '58px', height: '58px', borderRadius: '14px', objectFit: 'contain' }}
+                  style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'contain' }}
                 />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-                <span style={{ fontSize: '20px', fontWeight: 900, color: '#24385E', letterSpacing: '-0.03em' }}>Career</span>
-                <span style={{ fontSize: '20px', fontWeight: 900, color: '#FDB913', letterSpacing: '-0.03em' }}>Partner</span>
+                <span style={{ fontSize: '20px', fontWeight: 900, color: '#1E1E1E', letterSpacing: '-0.03em' }}>Career</span>
+                <span style={{ fontSize: '20px', fontWeight: 900, color: '#2C76FF', letterSpacing: '-0.03em' }}>Partner</span>
               </div>
             </div>
             {isMobile && (
@@ -3980,18 +3981,18 @@ const Homepage = () => {
             const active = activeView === item.id;
             const isMultiLine = item.label.includes('\n');
             return (
-              <button key={item.id} style={S.navItem(active || item.id === 'consultation')} onClick={() => { 
+              <button key={item.id} style={S.navItem(active || item.id === 'consultation')} onClick={() => {
                 if (item.external) {
                   window.open(item.url, '_blank', 'noopener,noreferrer');
                 } else {
-                  setActiveView(item.id); 
+                  setActiveView(item.id);
                 }
-                if (isMobile) setMobileMenuOpen(false); 
+                if (isMobile) setMobileMenuOpen(false);
               }}
                 onMouseEnter={e => { if (!active && item.id !== 'consultation') { e.currentTarget.style.background = 'rgba(0,0,0,0.03)'; } }}
                 onMouseLeave={e => { if (!active && item.id !== 'consultation') { e.currentTarget.style.background = 'transparent'; } }}
               >
-                <Icon size={18} strokeWidth={active || item.id === 'consultation' ? 2.2 : 1.6} color={active || item.id === 'consultation' ? '#24385E' : '#666'} />
+                <Icon size={18} strokeWidth={active ? 2.5 : 2} color={active ? '#1E1E1E' : '#555'} />
                 {isMultiLine
                   ? <span style={{ lineHeight: '1.2' }}>{item.label.split('\n').map((line, i) => i === 0 ? <React.Fragment key="l0">{line}</React.Fragment> : <React.Fragment key={i}><br />{line}</React.Fragment>)}</span>
                   : <span>{item.label}</span>
@@ -4046,12 +4047,12 @@ const Homepage = () => {
           </button>
 
           <div style={S.userRow}>
-            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#24385E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#2C76FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
               {(user?.email?.[0] || 'U').toUpperCase()}
             </div>
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: '13px', fontWeight: 600, color: '#1a1a1a', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email?.split('@')[0] || 'User'}</p>
-              <p style={{ fontSize: '11px', color: '#999', margin: 0 }}>software engineer</p>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: '#1E1E1E', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email?.split('@')[0] || 'User'}</p>
+              <p style={{ fontSize: '11px', color: '#888', margin: 0, fontWeight: 500 }}>Software Engineer</p>
             </div>
           </div>
         </div>
@@ -4068,30 +4069,30 @@ const Homepage = () => {
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {activeView === 'all_companies' ? <Building2 size={20} color="#24385E" /> : <Briefcase size={20} color="#24385E" />}
-            <span style={{ fontSize: isMobile ? '13px' : '15px', fontWeight: 700, color: '#1a1a1a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {activeView === 'all_companies' ? 'Search open roles by company' : 'Verified Sponsored Jobs'}
+            {activeView === 'all_companies' ? <Building2 size={20} color="#2C76FF" /> : <Briefcase size={20} color="#2C76FF" />}
+            <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 700, color: '#1E1E1E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {activeView === 'all_companies' ? 'Search open roles by company' : 'Global Career Acceleration'}
             </span>
           </div>
 
           {!isMobile && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#24385E' }} />
-              <div style={{ width: '36px', height: '3px', background: '#24385E', borderRadius: '3px' }} />
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#24385E' }} />
-              <div style={{ width: '36px', height: '3px', background: '#ddd', borderRadius: '3px' }} />
-              <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ddd' }} />
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2C76FF' }} />
+              <div style={{ width: '32px', height: '2px', background: '#2C76FF', opacity: 0.2, borderRadius: '3px' }} />
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#eee' }} />
+              <div style={{ width: '32px', height: '2px', background: '#eee', borderRadius: '3px' }} />
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#eee' }} />
             </div>
           )}
           {isMobile && <div style={{ width: '32px' }} />}
         </div>
 
         <div style={{ ...S.content, flexDirection: 'column', padding: isMobile ? '16px' : '32px', overflowY: 'auto' }}>
-          
+
           {/* Global Search Header - Always visible at top of content for main views */}
           {(activeView === 'all_jobs' || activeView === 'all_companies' || activeView === 'domains' || activeView === 'all_companies_list') && (
-            <GlobalSearchHeader 
-              selectedCountry={countryFilter} 
+            <GlobalSearchHeader
+              selectedCountry={countryFilter}
               onCountryChange={setCountryFilter}
               dateRange={dateFilter}
               onDateRangeChange={setDateFilter}
@@ -4101,50 +4102,50 @@ const Homepage = () => {
           {/* ━━━━━━ ALL JOBS VIEW ━━━━━━ */}
           {activeView === 'all_jobs' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <AllJobsTab 
-                activeFilter={activeJobFilter} 
-                searchTerm={companySearch} 
+              <AllJobsTab
+                activeFilter={activeJobFilter}
+                searchTerm={companySearch}
                 countryFilter={countryFilter}
                 dateFilter={dateFilter}
               />
             </div>
           )}
 
-           {/* ━━━━━━ ALL COMPANIES LIST VIEW ━━━━━━ */}
-           {activeView === 'all_companies_list' && (
-             <AllCompaniesListTab
-               selectedCountry={countryFilter}
-               dateFilter={dateFilter}
-               onSelectCompany={(companyName) => {
-                 setCompanySearch(companyName);
-                 setActiveView('all_jobs');
-               }}
-             />
-           )}
+          {/* ━━━━━━ ALL COMPANIES LIST VIEW ━━━━━━ */}
+          {activeView === 'all_companies_list' && (
+            <AllCompaniesListTab
+              selectedCountry={countryFilter}
+              dateFilter={dateFilter}
+              onSelectCompany={(companyName) => {
+                setCompanySearch(companyName);
+                setActiveView('all_jobs');
+              }}
+            />
+          )}
 
-           {/* ━━━━━━ DOMAINS VIEW ━━━━━━ */}
-           {activeView === 'domains' && (
-             <DomainsTab 
-               selectedCountry={countryFilter}
-               dateFilter={dateFilter}
-               onSelectDomain={(domainName) => {
-                 setCompanySearch(domainName);
-                 setActiveView('all_jobs');
-               }} 
-             />
-           )}
+          {/* ━━━━━━ DOMAINS VIEW ━━━━━━ */}
+          {activeView === 'domains' && (
+            <DomainsTab
+              selectedCountry={countryFilter}
+              dateFilter={dateFilter}
+              onSelectDomain={(domainName) => {
+                setCompanySearch(domainName);
+                setActiveView('all_jobs');
+              }}
+            />
+          )}
 
-           {/* ━━━━━━ ALL COMPANIES CARD VIEW ━━━━━━ */}
-           {activeView === 'all_companies' && (
-             <CompaniesTab 
-               selectedCountry={countryFilter}
-               dateFilter={dateFilter}
-               onSelectCompany={(companyName) => {
-                 setCompanySearch(companyName);
-                 setActiveView('all_jobs');
-               }} 
-             />
-           )}
+          {/* ━━━━━━ ALL COMPANIES CARD VIEW ━━━━━━ */}
+          {activeView === 'all_companies' && (
+            <CompaniesTab
+              selectedCountry={countryFilter}
+              dateFilter={dateFilter}
+              onSelectCompany={(companyName) => {
+                setCompanySearch(companyName);
+                setActiveView('all_jobs');
+              }}
+            />
+          )}
 
           {/* ━━━━━━ BILLING VIEW ━━━━━━ */}
           {activeView === 'billing' && (

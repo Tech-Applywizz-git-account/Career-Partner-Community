@@ -738,8 +738,8 @@ const H1BSponsorFinder = ({ isMobile }) => {
 
     // Refined Palette: Blue + Yellow (Wage Trail Theme)
     const COLORS = {
-        primary: '#24385E',
-        secondary: '#EAB308',
+        primary: '#2C76FF',
+        secondary: '#2C76FF',
         background: '#f1f3f6',
         white: '#ffffff',
         textMain: '#1e293b',
@@ -857,7 +857,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{
                         padding: '10px',
-                        background: `linear-gradient(135deg, ${COLORS.primary} 0%, #3d5a8c 100%)`,
+                        background: `linear-gradient(135deg, ${COLORS.primary} 0%, #1e40af 100%)`,
                         borderRadius: '12px',
                         boxShadow: '0 4px 12px rgba(36, 56, 94, 0.2)'
                     }}>
@@ -883,10 +883,10 @@ const H1BSponsorFinder = ({ isMobile }) => {
                 padding: '20px 24px'
             }}>
                 {[
-                    { label: 'Sponsors', value: stats.uniqueCompanies.toLocaleString(), icon: Globe, color: '#3b82f6' },
-                    { label: 'Total Filings', value: stats.totalLcaFilings.toLocaleString(), icon: Briefcase, color: '#f59e0b' },
-                    { label: 'Positions', value: stats.workerPositions.toLocaleString(), icon: Users, color: '#10b981' },
-                    { label: 'H-1B Verified', value: stats.h1bSponsors.toLocaleString(), icon: BarChart3, color: '#6366f1' },
+                    { label: 'Sponsors', value: stats.uniqueCompanies.toLocaleString(), icon: Globe, color: '#2C76FF' },
+                    { label: 'Total Filings', value: stats.totalLcaFilings.toLocaleString(), icon: Briefcase, color: '#2C76FF' },
+                    { label: 'Positions', value: stats.workerPositions.toLocaleString(), icon: Users, color: '#2C76FF' },
+                    { label: 'H-1B Verified', value: stats.h1bSponsors.toLocaleString(), icon: BarChart3, color: '#2C76FF' },
                 ].map((s, i) => (
                     <div key={i} style={{
                         background: COLORS.white,
@@ -928,7 +928,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                     <div style={{ width: '230px', marginRight: '24px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div style={{ background: COLORS.white, padding: '24px', borderRadius: '20px', border: `1.5px solid ${COLORS.border}`, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
                             <div style={{ fontSize: '12px', fontWeight: 900, color: COLORS.primary, textTransform: 'uppercase', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div style={{ width: '3px', height: '14px', background: COLORS.secondary, borderRadius: '2px' }} />
+                                <div style={{ width: '3px', height: '14px', background: COLORS.primary, borderRadius: '2px' }} />
                                 Filters
                             </div>
 
@@ -949,7 +949,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                         <label style={{ fontSize: '13px', fontWeight: 800, color: COLORS.textMain }}>Min Filings</label>
-                                        <span style={{ fontSize: '11px', fontWeight: 900, color: COLORS.primary, background: '#fef3c7', padding: '2px 8px', borderRadius: '6px' }}>{minSponsorships}+</span>
+                                        <span style={{ fontSize: '11px', fontWeight: 900, color: COLORS.primary, background: '#eff6ff', padding: '2px 8px', borderRadius: '6px' }}>{minSponsorships}+</span>
                                     </div>
                                     <input type="range" min="1" max="500" value={minSponsorships} onChange={e => setMinSponsorships(parseInt(e.target.value))} style={{ width: '100%', accentColor: COLORS.secondary, cursor: 'pointer' }} />
                                 </div>
@@ -991,7 +991,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                     <div style={{ borderBottom: `1.5px solid ${COLORS.border}`, padding: '0 24px', background: '#fafbfc' }}>
                         <div style={{ display: 'flex', gap: '32px' }}>
                             {['company', 'role'].map(tab => (
-                                <button key={tab} onClick={() => setSearchType(tab)} style={{ padding: '20px 4px', fontSize: '13px', fontWeight: 900, border: 'none', borderBottom: searchType === tab ? `3px solid ${COLORS.secondary}` : '3px solid transparent', color: searchType === tab ? COLORS.primary : COLORS.textMuted, background: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                <button key={tab} onClick={() => setSearchType(tab)} style={{ padding: '20px 4px', fontSize: '13px', fontWeight: 900, border: 'none', borderBottom: searchType === tab ? `3px solid ${COLORS.primary}` : '3px solid transparent', color: searchType === tab ? COLORS.primary : COLORS.textMuted, background: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                     {tab === 'company' ? 'Sponsor Directory' : 'Job Roles Analysis'}
                                 </button>
                             ))}
@@ -1022,13 +1022,13 @@ const H1BSponsorFinder = ({ isMobile }) => {
                             </thead>
                             <tbody>
                                 {loading ? (
-                                    <tr><td colSpan="8" style={{ padding: '60px', textAlign: 'center' }}><Loader2 size={32} className="animate-spin mx-auto" color={COLORS.secondary} /></td></tr>
+                                    <tr><td colSpan="8" style={{ padding: '60px', textAlign: 'center' }}><Loader2 size={32} className="animate-spin mx-auto" color={COLORS.primary} /></td></tr>
                                 ) : data.length > 0 ? data.map(row => (
                                     <React.Fragment key={row.id}>
-                                        <tr onClick={() => toggleCompany(row)} style={{ borderBottom: `1.5px solid #f1f5f9`, cursor: 'pointer', background: expandedRows.has(row.id) ? 'rgba(234,179,8,0.04)' : COLORS.white, transition: 'background 0.2s' }}>
+                                        <tr onClick={() => toggleCompany(row)} style={{ borderBottom: `1.5px solid #f1f5f9`, cursor: 'pointer', background: expandedRows.has(row.id) ? 'rgba(44,118,255,0.04)' : COLORS.white, transition: 'background 0.2s' }}>
                                             <td style={{ padding: '16px 24px', fontWeight: 800, color: COLORS.primary, fontSize: '13px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    {expandedRows.has(row.id) ? <ChevronUp size={14} color={COLORS.secondary} strokeWidth={3} /> : <ChevronDown size={14} color="#cbd5e1" strokeWidth={3} />}
+                                                    {expandedRows.has(row.id) ? <ChevronUp size={14} color={COLORS.primary} strokeWidth={3} /> : <ChevronDown size={14} color="#cbd5e1" strokeWidth={3} />}
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                                         <span>{row.Company}</span>
                                                         <div style={{ display: 'flex', gap: '4px' }}>
@@ -1052,7 +1052,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                                             <td style={{ padding: '16px 10px', textAlign: 'left', color: COLORS.textMain, fontSize: '12.5px', fontWeight: 600, maxWidth: '280px', lineHeight: '1.4' }}>
                                                 {row["Common Job Titles"]?.split('|').map((title, i) => (
                                                     <span key={i} style={{ display: i > 0 ? 'inline' : 'inline' }}>
-                                                        {i > 0 && <span style={{ color: COLORS.secondary, margin: '0 4px', fontWeight: 900 }}>|</span>}
+                                                        {i > 0 && <span style={{ color: COLORS.primary, margin: '0 4px', fontWeight: 900 }}>|</span>}
                                                         {title.trim()}
                                                     </span>
                                                 ))}
@@ -1067,7 +1067,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                                                     <tr onClick={(e) => { e.stopPropagation(); toggleRole(row.Company, role.title); }} style={{ background: '#f8fafc', cursor: 'pointer', borderBottom: `1.5px solid ${COLORS.border}` }}>
                                                         <td colSpan="3" style={{ padding: '12px 24px 12px 58px', color: COLORS.primary, fontWeight: 800, fontSize: '14px' }}>
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                {expandedRoles.get(row.Company)?.has(role.title) ? <ChevronUp size={14} color={COLORS.secondary} strokeWidth={3} /> : <ChevronDown size={14} color="#cbd5e1" strokeWidth={2.5} />}
+                                                                {expandedRoles.get(row.Company)?.has(role.title) ? <ChevronUp size={14} color={COLORS.primary} strokeWidth={3} /> : <ChevronDown size={14} color="#cbd5e1" strokeWidth={2.5} />}
                                                                 {role.title}
                                                             </div>
                                                         </td>

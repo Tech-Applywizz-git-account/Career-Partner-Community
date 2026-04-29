@@ -29,7 +29,7 @@ const S = {
     navBtn: (active) => ({
         width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
         padding: '9px 12px', borderRadius: '10px', fontSize: '13px', fontWeight: active ? 700 : 500,
-        color: active ? '#fff' : '#555', background: active ? '#24385E' : 'transparent',
+        color: active ? '#fff' : '#555', background: active ? '#29FE29' : 'transparent',
         border: 'none', cursor: 'pointer', marginBottom: '4px', textAlign: 'left', transition: 'all 150ms',
     }),
     sidebarBottom: { padding: '12px 10px 20px', borderTop: '1px solid #f0f0f0' },
@@ -42,9 +42,9 @@ const S = {
     statCard: { background: '#fff', borderRadius: '14px', border: '1px solid #eee', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' },
     input: { width: '100%', border: '1.5px solid #e0e0e0', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' },
     select: { width: '100%', border: '1.5px solid #e0e0e0', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', background: '#fff' },
-    btn: (color) => ({ padding: '9px 18px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '13px', background: color || '#24385E', color: color ? '#333' : '#fff', fontFamily: 'inherit' }),
+    btn: (color) => ({ padding: '9px 18px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '13px', background: color || '#29FE29', color: color ? '#333' : '#fff', fontFamily: 'inherit' }),
     badge: (type) => {
-        const map = { completed: '#d1fae5:#065f46', paid: '#d1fae5:#065f46', pending: '#fef3c7:#92400e', failed: '#fee2e2:#991b1b', cancelled: '#f3f4f6:#666', admin: '#ede9fe:#5b21b6', user: '#dbeafe:#1e40af', active: '#d1fae5:#065f46', anonymous: '#f1f5f9:#475569', india: '#eff6ff:#1d4ed8', international: '#f0fdf4:#166534' };
+        const map = { completed: '#d1fae5:#065f46', paid: '#d1fae5:#065f46', pending: '#e9f1ff:#2C76FF', failed: '#fee2e2:#991b1b', cancelled: '#f3f4f6:#666', admin: '#ede9fe:#5b21b6', user: '#dbeafe:#1e40af', active: '#d1fae5:#065f46', anonymous: '#f1f5f9:#475569', india: '#eff6ff:#1d4ed8', international: '#f0fdf4:#166534' };
         const [bg, col] = (map[type] || map.pending).split(':');
         return { display: 'inline-block', padding: '2px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, background: bg, color: col, textTransform: 'capitalize' };
     },
@@ -142,7 +142,7 @@ const OverviewTab = ({ setActiveTab }) => {
             <div style={{ ...S.grid4, marginBottom: 16 }}>
                 <StatCard icon={Users} label="Total Users" value={stats.totalUsers} sub="Registered" iconBg="#dbeafe" iconColor="#1d4ed8" />
                 <StatCard icon={CheckCircle} label="Paid Users" value={stats.paidUsers} sub="Active subs" iconBg="#d1fae5" iconColor="#059669" />
-                <StatCard icon={Clock} label="Pending" value={stats.pendingUsers} sub="Checkout open" iconBg="#fef3c7" iconColor="#d97706" />
+                <StatCard icon={Clock} label="Pending" value={stats.pendingUsers} sub="Checkout open" iconBg="#e9f1ff" iconColor="#2C76FF" />
                 <StatCard icon={XCircle} label="Failed" value={stats.failedUsers} sub="Payment errors" iconBg="#fee2e2" iconColor="#dc2626" />
             </div>
 
@@ -193,7 +193,7 @@ const OverviewTab = ({ setActiveTab }) => {
                 </div>
 
                 {/* Quick Actions */}
-                <div style={{ ...S.card, padding: 20, background: 'linear-gradient(135deg, #1e2d4a 0%, #24385E 100%)', color: '#fff', border: 'none' }}>
+                <div style={{ ...S.card, padding: 20, background: 'linear-gradient(135deg, #1e2d4a 0%, #29FE29 100%)', color: '#fff', border: 'none' }}>
                     <p style={{ fontWeight: 800, fontSize: 15, marginBottom: 16, margin: '0 0 16px' }}>Quick Actions</p>
                     {[
                         { label: 'Manage Users', sub: 'Edit & view accounts', tab: 'users', icon: Users },
@@ -289,7 +289,7 @@ const UsersTab = () => {
                 {[
                     { label: 'Total Users', val: users.length, bg: '#dbeafe', col: '#1d4ed8' },
                     { label: 'Paid', val: paidCount, bg: '#d1fae5', col: '#059669' },
-                    { label: 'Pending', val: users.filter(u => u.role !== 'admin' && u.payment_status === 'pending').length, bg: '#fef3c7', col: '#d97706' },
+                    { label: 'Pending', val: users.filter(u => u.role !== 'admin' && u.payment_status === 'pending').length, bg: '#e9f1ff', col: '#2C76FF' },
                     { label: 'Admins', val: adminCount, bg: '#ede9fe', col: '#7c3aed' },
                 ].map(({ label, val, bg, col }) => (
                     <div key={label} style={{ background: bg, borderRadius: 12, padding: '14px 18px' }}>
@@ -310,7 +310,7 @@ const UsersTab = () => {
                     <div style={{ display: 'flex', gap: 6 }}>
                         {['all', 'completed', 'pending', 'admin'].map(f => (
                             <button key={f} onClick={() => { setFilter(f); setPage(1); }}
-                                style={{ padding: '7px 13px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: filter === f ? '#24385E' : '#f0f0f0', color: filter === f ? '#fff' : '#555', textTransform: 'capitalize' }}>
+                                style={{ padding: '7px 13px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: filter === f ? '#29FE29' : '#f0f0f0', color: filter === f ? '#fff' : '#555', textTransform: 'capitalize' }}>
                                 {f === 'all' ? 'All' : f}
                             </button>
                         ))}
@@ -411,7 +411,7 @@ const UsersTab = () => {
                         </div>
                         <div style={{ padding: '0 20px 18px', display: 'flex', gap: 10 }}>
                             <button onClick={() => setEditUser(null)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1.5px solid #e0e0e0', background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Cancel</button>
-                            <button onClick={saveEdit} style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: '#24385E', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><Save size={14} /> Save</button>
+                            <button onClick={saveEdit} style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: '#29FE29', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><Save size={14} /> Save</button>
                         </div>
                     </div>
                 </div>
@@ -462,7 +462,7 @@ const PaymentsTab = () => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 20 }}>
                 <StatCard icon={DollarSign} label="Est. Revenue" value={fmt$(paid.length * 39.99)} sub={`${paid.length} paid users`} iconBg="#d1fae5" iconColor="#059669" />
                 <StatCard icon={CheckCircle} label="Completed Payments" value={paid.length} sub="Active" iconBg="#dbeafe" iconColor="#1d4ed8" />
-                <StatCard icon={Clock} label="Pending Payments" value={profiles.filter(p => p.payment_status === 'pending').length} sub="Awaiting" iconBg="#fef3c7" iconColor="#d97706" />
+                <StatCard icon={Clock} label="Pending Payments" value={profiles.filter(p => p.payment_status === 'pending').length} sub="Awaiting" iconBg="#e9f1ff" iconColor="#2C76FF" />
             </div>
 
             <div style={{ ...S.card, overflow: 'hidden' }}>
@@ -552,7 +552,7 @@ const AnalyticsTab = () => {
                         <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                             <span style={{ fontSize: 11, fontWeight: 700, color: '#555' }}>{m.count}</span>
                             <div style={{ width: '100%', background: '#f0f0f0', borderRadius: 6, height: 80, display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
-                                <div style={{ width: '100%', background: 'linear-gradient(to top, #24385E, #6366f1)', borderRadius: 6, height: `${(m.count / maxC) * 100}%`, minHeight: m.count > 0 ? 4 : 0, transition: 'height 0.6s' }} />
+                                <div style={{ width: '100%', background: 'linear-gradient(to top, #29FE29, #6366f1)', borderRadius: 6, height: `${(m.count / maxC) * 100}%`, minHeight: m.count > 0 ? 4 : 0, transition: 'height 0.6s' }} />
                             </div>
                             <span style={{ fontSize: 10, color: '#aaa', fontWeight: 600 }}>{m.label}</span>
                         </div>
@@ -568,12 +568,12 @@ const AnalyticsTab = () => {
                     <svg width={100} height={100} viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', flexShrink: 0 }}>
                         <circle cx={50} cy={50} r={38} fill="none" stroke="#f0f0f0" strokeWidth={10} />
                         {total > 0 && <circle cx={50} cy={50} r={38} fill="none" stroke="#10b981" strokeWidth={10} strokeDasharray={`${(paidC / total) * 238.76} 238.76`} />}
-                        {total > 0 && <circle cx={50} cy={50} r={38} fill="none" stroke="#f59e0b" strokeWidth={10} strokeDasharray={`${(pendC / total) * 238.76} 238.76`} strokeDashoffset={`-${(paidC / total) * 238.76}`} />}
+                        {total > 0 && <circle cx={50} cy={50} r={38} fill="none" stroke="#2C76FF" strokeWidth={10} strokeDasharray={`${(pendC / total) * 238.76} 238.76`} strokeDashoffset={`-${(paidC / total) * 238.76}`} />}
                     </svg>
                     <div>
                         <p style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#1e2d4a' }}>{total}</p>
                         <p style={{ margin: '2px 0 12px', fontSize: 11, color: '#aaa' }}>Total users</p>
-                        {[['Paid', paidC, '#10b981'], ['Pending', pendC, '#f59e0b'], ['Admins', adminC, '#8b5cf6']].map(([label, count, col]) => (
+                        {[['Paid', paidC, '#10b981'], ['Pending', pendC, '#2C76FF'], ['Admins', adminC, '#8b5cf6']].map(([label, count, col]) => (
                             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: col, flexShrink: 0 }} />
                                 <span style={{ fontSize: 12, color: '#555', width: 52 }}>{label}</span>
@@ -646,7 +646,7 @@ const VisitorsTab = () => {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                             <Avatar name={v.user_email || 'A'} size={28} />
                                             <div>
-                                                <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: v.user_email ? '#24385E' : '#666' }}>
+                                                <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: v.user_email ? '#29FE29' : '#666' }}>
                                                     {v.user_email || 'Anonymous Guest'}
                                                 </p>
                                                 <p style={{ margin: 0, fontSize: 10, color: '#aaa', fontFamily: 'monospace' }}>ID: {v.session_id.slice(0, 8)}...</p>
@@ -701,7 +701,7 @@ const AdminDashboard = () => {
     }, [loading, user, isAdmin, role, navigate]);
 
     if (loading || (user && role === null)) {
-        return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f8fc' }}><RefreshCw size={28} color="#24385E" style={{ animation: 'spin 1s linear infinite' }} /><style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style></div>;
+        return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f8fc' }}><RefreshCw size={28} color="#29FE29" style={{ animation: 'spin 1s linear infinite' }} /><style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style></div>;
     }
     if (!isAdmin) return null;
 
@@ -741,8 +741,8 @@ const AdminDashboard = () => {
             }}>
                 {/* Logo */}
                 <div style={S.logo}>
-                    <div style={{ width: 36, height: 36, background: '#24385E', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Shield size={16} color="#EAB308" />
+                    <div style={{ width: 36, height: 36, background: '#29FE29', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Shield size={16} color="#2C76FF" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ margin: 0, fontWeight: 900, color: '#1e2d4a', fontSize: 13, lineHeight: 1.2 }}>Admin</p>
@@ -764,7 +764,7 @@ const AdminDashboard = () => {
                             <button key={id} onClick={() => handleNavClick(id)} style={S.navBtn(active)}
                                 onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f5'; }}
                                 onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
-                                <Icon size={16} color={active ? '#EAB308' : '#888'} />
+                                <Icon size={16} color={active ? '#2C76FF' : '#888'} />
                                 {label}
                             </button>
                         );
@@ -809,7 +809,7 @@ const AdminDashboard = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#ede9fe', borderRadius: 20, padding: '4px 10px' }}>
                             <Shield size={12} color="#7c3aed" /><span style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed' }}>Admin</span>
                         </div>
-                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#24385E', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 12 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#29FE29', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 12 }}>
                             {(user?.email?.[0] || 'A').toUpperCase()}
                         </div>
                     </div>

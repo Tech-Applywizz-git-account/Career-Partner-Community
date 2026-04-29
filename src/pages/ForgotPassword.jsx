@@ -45,7 +45,7 @@ const OtpInput = ({ value, onChange, disabled }) => {
                     onPaste={handlePaste}
                     disabled={disabled}
                     className={`w-10 h-12 text-center text-xl font-bold border-b-2 outline-none transition-all ${
-                        digits[idx] ? 'border-[#6B5CF6] text-gray-900' : 'border-gray-200 text-gray-400'
+                        digits[idx] ? 'border-[#29FE29] text-gray-900' : 'border-gray-200 text-gray-400'
                     } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-text'}`}
                     style={{ background: 'transparent' }}
                 />
@@ -172,11 +172,11 @@ const ForgotPassword = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#24385E] flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-[#29FE29] flex items-center justify-center p-4 relative overflow-hidden">
             {/* Background Decorations */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#FDB913]/10 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#29FE29]/10 rounded-full -translate-y-1/2 translate-x-1/3"></div>
             <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/5 rounded-full translate-y-1/2 -translate-x-1/3"></div>
-            <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-[#FDB913]/5 rounded-full -translate-y-1/2"></div>
+            <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-[#29FE29]/5 rounded-full -translate-y-1/2"></div>
 
             <style>{`
                 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -211,8 +211,8 @@ const ForgotPassword = () => {
                             />
                         </div>
                         <div className="flex flex-col text-left">
-                            <span className="text-xl font-bold text-[#24385E] tracking-tight leading-none">Career</span>
-                            <span className="text-xl font-bold text-[#FDB913] tracking-tight leading-none">Partner</span>
+                            <span className="text-xl font-bold text-[#29FE29] tracking-tight leading-none">Career</span>
+                            <span className="text-xl font-bold text-[#29FE29] tracking-tight leading-none">Partner</span>
                         </div>
                     </div>
                 </div>
@@ -226,7 +226,7 @@ const ForgotPassword = () => {
                         </p>
 
                         <form onSubmit={handleSendOtp} className="space-y-4">
-                            <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-4 border border-gray-100 focus-within:border-[#24385E]/30 focus-within:ring-1 focus-within:ring-[#24385E]/10 transition-all">
+                            <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-4 border border-gray-100 focus-within:border-[#29FE29]/30 focus-within:ring-1 focus-within:ring-[#29FE29]/10 transition-all">
                                 <Mail size={18} className="text-gray-300 shrink-0" />
                                 <input
                                     type="email"
@@ -243,7 +243,7 @@ const ForgotPassword = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-4 bg-[#24385E] hover:bg-[#1a2a47] text-white font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                                className="w-full py-4 bg-[#29FE29] hover:bg-[#1a2a47] text-[#1E1E1E] font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50"
                             >
                                 {loading ? 'Sending...' : 'Send Reset Link'}
                             </button>
@@ -257,7 +257,7 @@ const ForgotPassword = () => {
                         <h1 className="text-2xl font-black text-gray-900 text-center mb-2">Check your email</h1>
                         <p className="text-sm text-gray-400 text-center mb-6 font-medium">
                             We've sent a 6-digit code to <br/>
-                            <span className="text-[#24385E] font-bold">{email}</span>
+                            <span className="text-[#29FE29] font-bold">{email}</span>
                         </p>
 
                         <OtpInput value={otp} onChange={setOtp} disabled={loading} />
@@ -271,7 +271,7 @@ const ForgotPassword = () => {
                                     onClick={handleResend}
                                     disabled={resendCooldown > 0}
                                     className={`font-black uppercase tracking-wider ${
-                                        resendCooldown > 0 ? 'text-gray-300 cursor-not-allowed' : 'text-[#FDB913] hover:text-[#e5a811]'
+                                        resendCooldown > 0 ? 'text-gray-300 cursor-not-allowed' : 'text-[#29FE29] hover:text-[#e5a811]'
                                     }`}
                                 >
                                     {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Now'}
@@ -282,7 +282,7 @@ const ForgotPassword = () => {
                         <button
                             onClick={handleVerifyOtp}
                             disabled={otp.length < 6 || loading}
-                            className="w-full py-4 bg-[#24385E] hover:bg-[#1a2a47] text-white font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                            className="w-full py-4 bg-[#29FE29] hover:bg-[#1a2a47] text-[#1E1E1E] font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50"
                         >
                             {loading ? 'Verifying...' : 'Verify Code'}
                         </button>
@@ -299,7 +299,7 @@ const ForgotPassword = () => {
 
                         <form onSubmit={handleResetPassword} className="space-y-4">
                             <div className="space-y-3">
-                                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-4 border border-gray-100 focus-within:border-[#24385E]/30 transition-all">
+                                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-4 border border-gray-100 focus-within:border-[#29FE29]/30 transition-all">
                                     <Lock size={18} className="text-gray-300 shrink-0" />
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -318,7 +318,7 @@ const ForgotPassword = () => {
                                     </button>
                                 </div>
 
-                                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-4 border border-gray-100 focus-within:border-[#24385E]/30 transition-all">
+                                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-4 border border-gray-100 focus-within:border-[#29FE29]/30 transition-all">
                                     <ShieldCheck size={18} className="text-gray-300 shrink-0" />
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -336,7 +336,7 @@ const ForgotPassword = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-4 bg-[#24385E] hover:bg-[#1a2a47] text-white font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                                className="w-full py-4 bg-[#29FE29] hover:bg-[#1a2a47] text-[#1E1E1E] font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50"
                             >
                                 {loading ? 'Resetting...' : 'Create New Password'}
                             </button>
@@ -360,7 +360,7 @@ const ForgotPassword = () => {
 
                         <button
                             onClick={() => navigate('/login')}
-                            className="w-full py-4 bg-[#24385E] hover:bg-[#1a2a47] text-white font-black text-base rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
+                            className="w-full py-4 bg-[#29FE29] hover:bg-[#1a2a47] text-[#1E1E1E] font-black text-base rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
                         >
                             Go to Login →
                         </button>
@@ -372,7 +372,7 @@ const ForgotPassword = () => {
                     <div className="mt-8 text-center border-t border-gray-100 pt-6">
                         <p className="text-gray-400 font-medium text-sm">
                             Remember your password?{' '}
-                            <Link to="/login" className="text-[#FDB913] font-bold hover:underline">Log in</Link>
+                            <Link to="/login" className="text-[#29FE29] font-bold hover:underline">Log in</Link>
                         </p>
                     </div>
                 )}

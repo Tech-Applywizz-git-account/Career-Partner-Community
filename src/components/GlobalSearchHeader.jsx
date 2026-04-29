@@ -75,7 +75,9 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
   const handleClearAll = () => {
     setActiveCountry(null);
     onCountryChange?.(null);
-    setQuickDate('all');
+    onDateRangeChange?.(computeRange('all'));
+    setCustomFrom('');
+    setCustomTo('');
   };
 
   const currentCountry = countries.find(c => c.id === activeCountry);
@@ -101,12 +103,12 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
     <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm p-6 mb-8">
       {/* Country Selection */}
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2 text-sm font-medium text-gray-500">
-          Showing: <span className="text-[#24385E] font-bold">{currentCountry ? currentCountry.name : 'All Countries'}</span>
+        <div className="flex items-center gap-2 text-sm font-medium text-gray-400">
+          Showing: <span className="text-[#1E1E1E] font-bold">{currentCountry ? currentCountry.name : 'All Countries'}</span>
         </div>
         <button 
           onClick={handleClearAll}
-          className="text-[#2563EB] text-xs font-bold hover:underline"
+          className="text-[#2C76FF] text-xs font-bold hover:underline"
         >
           Clear All
         </button>
@@ -117,12 +119,17 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
           <button
             key={c.id}
             onClick={() => handleCountryClick(c.id)}
-            className={`
-              flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all border
-              ${activeCountry === c.id 
-                ? 'bg-[#FDB913] text-[#24385E] border-[#FDB913] shadow-md shadow-[#FDB913]/20' 
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'}
-            `}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all border"
+            style={activeCountry === c.id ? {
+              backgroundColor: '#2C76FF',
+              color: '#FFFFFF',
+              borderColor: '#2C76FF',
+              boxShadow: '0 4px 6px rgba(44, 118, 255, 0.2)'
+            } : {
+              backgroundColor: '#FFFFFF',
+              color: '#1E1E1E',
+              borderColor: '#E2E8F0'
+            }}
           >
             <img 
               src={`https://flagcdn.com/w40/${c.flagCode}.png`} 
@@ -150,7 +157,7 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
           <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest shrink-0">
-            <Calendar size={14} className="text-[#FDB913]" /> DATE RANGE
+            <Calendar size={14} className="text-[#2C76FF]" /> DATE RANGE
           </div>
           
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
@@ -160,7 +167,7 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
                 type="date" 
                 value={customFrom}
                 onChange={handleCustomFrom}
-                className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[13px] font-bold text-[#24385E] outline-none focus:border-[#FDB913] focus:ring-1 focus:ring-[#FDB913] transition-all w-full sm:w-auto"
+                className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[13px] font-bold text-[#1E1E1E] outline-none focus:border-[#2C76FF] focus:ring-1 focus:ring-[#2C76FF] transition-all w-full sm:w-auto"
               />
             </div>
             
@@ -172,7 +179,7 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
                 type="date"
                 value={customTo}
                 onChange={handleCustomTo}
-                className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[13px] font-bold text-[#24385E] outline-none focus:border-[#FDB913] focus:ring-1 focus:ring-[#FDB913] transition-all w-full sm:w-auto"
+                className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[13px] font-bold text-[#1E1E1E] outline-none focus:border-[#2C76FF] focus:ring-1 focus:ring-[#2C76FF] transition-all w-full sm:w-auto"
               />
             </div>
           </div>
@@ -188,14 +195,18 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
             <button
               key={d.id}
               onClick={() => handleQuickDate(d.id)}
-              className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black transition-all
-                ${quickDate === d.id 
-                  ? 'bg-white text-[#24385E] shadow-sm ring-1 ring-[#FDB913]' 
-                  : 'text-gray-500 hover:text-gray-700'}
-              `}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black transition-all"
+              style={quickDate === d.id ? {
+                backgroundColor: '#2C76FF',
+                color: '#FFFFFF',
+                border: '1px solid #2C76FF',
+                boxShadow: '0 2px 4px rgba(44, 118, 255, 0.2)'
+              } : {
+                backgroundColor: 'transparent',
+                color: '#6B7280', // text-gray-500
+              }}
             >
-              {d.icon && <span className={quickDate === d.id ? 'text-[#FDB913]' : ''}>{d.icon}</span>}
+              {d.icon && <span style={{ color: quickDate === d.id ? '#FFFFFF' : 'inherit' }}>{d.icon}</span>}
               {d.label}
             </button>
           ))}
@@ -203,8 +214,8 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
       </div>
 
       <div className="mt-6 pt-4 border-t border-gray-50 flex items-center gap-4">
-        <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Showing:</div>
-        <div className="bg-[#FDB913]/10 px-3 py-1 rounded-full text-[11px] font-black text-[#24385E] flex items-center gap-2 border border-[#FDB913]/30">
+        <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Current Selection:</div>
+        <div className="bg-[#2C76FF]/10 px-3 py-1 rounded-full text-[11px] font-black text-[#2C76FF] flex items-center gap-2 border border-[#2C76FF]/20">
           {currentCountry ? (
             <>
               <img 
@@ -216,12 +227,12 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
             </>
           ) : (
             <>
-              <Globe size={12} className="text-[#24385E]" />
+              <Globe size={12} className="text-[#2C76FF]" />
               All Countries
             </>
           )}
         </div>
-        <div className="text-[11px] font-black text-[#24385E]">
+        <div className="text-[11px] font-black text-[#1E1E1E]">
           {(() => {
             const range = dateRange;
             if (!range || range.quickDate === 'all' || (!range.from && !range.to)) {
@@ -244,7 +255,7 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
             if (fromStr && toStr) {
               return (
                 <>
-                  {fromStr} <span className="mx-2 text-[#FDB913]">→</span> {toStr}
+                  {fromStr} <span className="mx-2 text-[#2C76FF]">→</span> {toStr}
                 </>
               );
             }

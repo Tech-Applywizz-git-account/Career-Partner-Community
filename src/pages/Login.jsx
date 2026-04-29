@@ -7,26 +7,26 @@ import useAuth from '../hooks/useAuth';
 
 // ─── Dummy Users (for demo / dev use only) ───────────────────────────────────
 const DUMMY_USERS = [
-  {
-    label: 'Demo User',
-    icon: 'user',
-    email: 'demo@wagetrail.com',
-    password: 'demo1234',
-    role: 'user',
-    firstName: 'Demo',
-    lastName: 'User',
-    redirectTo: '/app',
-  },
-  {
-    label: 'Demo Admin',
-    icon: 'admin',
-    email: 'admin@wagetrail.com',
-    password: 'admin1234',
-    role: 'admin',
-    firstName: 'Admin',
-    lastName: 'User',
-    redirectTo: '/admin',
-  },
+    {
+        label: 'Demo User',
+        icon: 'user',
+        email: 'demo@wagetrail.com',
+        password: 'demo1234',
+        role: 'user',
+        firstName: 'Demo',
+        lastName: 'User',
+        redirectTo: '/app',
+    },
+    {
+        label: 'Demo Admin',
+        icon: 'admin',
+        email: 'admin@wagetrail.com',
+        password: 'admin1234',
+        role: 'admin',
+        firstName: 'Admin',
+        lastName: 'User',
+        redirectTo: '/admin',
+    },
 ];
 
 const Login = () => {
@@ -120,34 +120,33 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#24385E] flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-[#FFFFFF] flex items-center justify-center p-4 relative overflow-hidden">
             {/* Decorative background elements */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#FDB913]/10 rounded-full -translate-y-1/2 translate-x-1/3"></div>
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/5 rounded-full translate-y-1/2 -translate-x-1/3"></div>
-            <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-[#FDB913]/5 rounded-full -translate-y-1/2"></div>
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#29FE29]/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2C76FF]/10 rounded-full translate-y-1/2 -translate-x-1/3 blur-3xl"></div>
 
-            <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 md:p-10">
+            <div className="relative bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 max-w-md w-full p-8 md:p-10">
                 {/* Logo */}
                 <div className="text-center mb-8">
                     <Link to="/" className="inline-flex items-center gap-3 group">
                         <div className="relative">
-                            <img 
-                                src="/cp-logo.png" 
-                                alt="Career Partner" 
+                            <img
+                                src="https://res.cloudinary.com/dpuziwnvl/image/upload/v1751357541/apply_wizz_logo_hrvtmm.jpg"
+                                alt="Apply Wizz"
                                 className="w-10 h-10 rounded-xl object-contain shadow-lg"
                             />
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-xl font-bold text-[#24385E] tracking-tight leading-none">Career</span>
-                            <span className="text-xl font-bold text-[#FDB913] tracking-tight leading-none">Partner</span>
+                        <div className="flex flex-col text-left">
+                            <span className="text-xl font-bold text-[#1E1E1E] tracking-tight leading-none">Career</span>
+                            <span className="text-xl font-bold text-[#2C76FF] tracking-tight leading-none">Partner</span>
                         </div>
                     </Link>
                 </div>
 
-                <h1 className="text-2xl font-black text-[#24385E] mb-2 text-center">
+                <h1 className="text-2xl font-black text-[#1E1E1E] mb-2 text-center">
                     Welcome Back
                 </h1>
-                <p className="text-gray-400 text-sm font-medium text-center mb-8">
+                <p className="text-gray-500 text-sm font-medium text-center mb-8">
                     Login to access your dashboard
                 </p>
 
@@ -155,7 +154,7 @@ const Login = () => {
                 <button
                     onClick={handleGoogleSignIn}
                     disabled={googleLoading || loading}
-                    className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all mb-5 font-semibold text-gray-700 text-sm shadow-sm"
+                    className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all mb-5 font-bold text-[#1E1E1E] text-sm shadow-sm"
                 >
                     {googleLoading ? (
                         <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
@@ -174,14 +173,14 @@ const Login = () => {
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-100" />
                     </div>
-                    <div className="relative flex justify-center text-xs text-gray-400 font-medium">
+                    <div className="relative flex justify-center text-xs text-gray-400 font-bold">
                         <span className="bg-white px-3">or sign in with email</span>
                     </div>
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-                        <p className="text-red-600 font-semibold text-sm text-center">
+                    <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
+                        <p className="text-red-600 font-bold text-sm text-center">
                             {error}
                         </p>
                     </div>
@@ -190,12 +189,12 @@ const Login = () => {
                 <form onSubmit={handleSubmit} className="space-y-5">
                     {/* Email */}
                     <div>
-                        <label htmlFor="email" className="block text-xs font-black text-[#24385E] uppercase tracking-wider mb-2">
+                        <label htmlFor="email" className="block text-xs font-black text-[#1E1E1E] uppercase tracking-wider mb-2">
                             Email Address
                         </label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Mail className="h-5 w-5 text-gray-300" />
+                                <Mail className="h-5 w-5 text-gray-400" />
                             </div>
                             <input
                                 id="email"
@@ -204,7 +203,7 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FDB913] focus:border-transparent text-[#24385E] font-medium placeholder:text-gray-300 bg-gray-50/50"
+                                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2C76FF] focus:border-transparent text-[#1E1E1E] font-bold placeholder:text-gray-300 bg-gray-50/50"
                                 aria-label="Email address"
                             />
                         </div>
@@ -212,12 +211,12 @@ const Login = () => {
 
                     {/* Password */}
                     <div>
-                        <label htmlFor="password" className="block text-xs font-black text-[#24385E] uppercase tracking-wider mb-2">
+                        <label htmlFor="password" className="block text-xs font-black text-[#1E1E1E] uppercase tracking-wider mb-2">
                             Password
                         </label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Lock className="h-5 w-5 text-gray-300" />
+                                <Lock className="h-5 w-5 text-gray-400" />
                             </div>
                             <input
                                 id="password"
@@ -226,7 +225,7 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="w-full pl-12 pr-12 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FDB913] focus:border-transparent text-[#24385E] font-medium placeholder:text-gray-300 bg-gray-50/50"
+                                className="w-full pl-12 pr-12 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2C76FF] focus:border-transparent text-[#1E1E1E] font-bold placeholder:text-gray-300 bg-gray-50/50"
                                 aria-label="Password"
                             />
                             <button
@@ -236,14 +235,14 @@ const Login = () => {
                                 aria-label={showPassword ? "Hide password" : "Show password"}
                             >
                                 {showPassword ? (
-                                    <EyeOff className="h-5 w-5 text-gray-300 hover:text-[#24385E] transition-colors" />
+                                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-[#1E1E1E] transition-colors" />
                                 ) : (
-                                    <Eye className="h-5 w-5 text-gray-300 hover:text-[#24385E] transition-colors" />
+                                    <Eye className="h-5 w-5 text-gray-400 hover:text-[#1E1E1E] transition-colors" />
                                 )}
                             </button>
                         </div>
                         <div className="mt-2.5 text-right">
-                            <Link to="/forgot-password" className="text-sm font-bold text-[#FDB913] hover:text-[#e5a811] transition-colors">
+                            <Link to="/forgot-password" style={{ color: '#2C76FF' }} className="text-sm font-bold hover:underline transition-colors">
                                 Forgot password?
                             </Link>
                         </div>
@@ -252,7 +251,27 @@ const Login = () => {
                     <button
                         type="submit"
                         disabled={loading || googleLoading}
-                        className="w-full flex items-center justify-center gap-2 py-4 bg-[#24385E] hover:bg-[#1a2a47] text-white font-black text-base rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+                        style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            padding: '16px 0',
+                            backgroundColor: '#78EB54',
+                            color: '#FFFFFF',
+                            fontWeight: 900,
+                            fontSize: '16px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            cursor: (loading || googleLoading) ? 'not-allowed' : 'pointer',
+                            boxShadow: '0 10px 20px rgba(120,235,84,0.3)',
+                            marginTop: '24px',
+                            transition: 'all 0.2s',
+                            opacity: (loading || googleLoading) ? 0.7 : 1,
+                            zIndex: 10,
+                            position: 'relative'
+                        }}
                     >
                         {loading ? (
                             <>
@@ -267,9 +286,9 @@ const Login = () => {
 
                 <div className="mt-8 pt-6 border-t border-gray-100">
                     <div className="text-center">
-                        <p className="text-gray-400 font-medium">
+                        <p className="text-[#1E1E1E] font-bold">
                             Don't have an account?{' '}
-                            <Link to="/signup" className="text-[#FDB913] font-bold hover:text-[#e5a811] transition-colors">
+                            <Link to="/signup" style={{ color: '#2C76FF' }} className="font-black hover:underline transition-colors">
                                 Sign up now
                             </Link>
                         </p>
@@ -277,10 +296,10 @@ const Login = () => {
                 </div>
 
                 {/* ── Demo / Dummy Logins ── */}
-                <div className="mt-6 rounded-2xl border border-dashed border-[#FDB913]/40 bg-[#FDB913]/5 p-5">
+                <div className="mt-6 rounded-2xl bg-[#78EB54]/5 p-5">
                     <div className="flex items-center gap-2 mb-4">
-                        <Zap size={14} className="text-[#FDB913]" />
-                        <span className="text-xs font-black text-[#24385E] uppercase tracking-wider">Quick Demo Login</span>
+                        <Zap size={14} style={{ color: '#1E1E1E' }} />
+                        <span className="text-xs font-black text-[#1E1E1E] uppercase tracking-wider">Quick Demo Login</span>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         {DUMMY_USERS.map((dummy) => (
@@ -288,14 +307,10 @@ const Login = () => {
                                 key={dummy.label}
                                 onClick={() => handleDummyLogin(dummy)}
                                 disabled={!!dummyLoading || loading || googleLoading}
-                                className={`relative flex flex-col items-center gap-2 py-3 px-2 rounded-xl border transition-all font-semibold text-sm ${
-                                    dummy.role === 'admin'
-                                        ? 'border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 hover:border-purple-300'
-                                        : 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300'
-                                } disabled:opacity-60 disabled:cursor-not-allowed`}
+                                className={`relative flex flex-col items-center gap-2 py-3 px-2 rounded-xl border border-gray-200 transition-all font-bold text-sm bg-white text-[#1E1E1E] hover:bg-gray-50 hover:border-gray-300 disabled:opacity-60 disabled:cursor-not-allowed`}
                             >
                                 {dummyLoading === dummy.label ? (
-                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                    <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
                                 ) : dummy.role === 'admin' ? (
                                     <ShieldCheck size={20} />
                                 ) : (
@@ -306,7 +321,6 @@ const Login = () => {
                             </button>
                         ))}
                     </div>
-                    <p className="text-[10px] text-gray-400 text-center mt-3 font-medium">⚡ Demo accounts — no real auth required</p>
                 </div>
             </div>
         </div>

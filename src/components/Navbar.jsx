@@ -49,7 +49,7 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="sticky top-0 z-50 bg-[#24385E] border-b border-white/5 shadow-2xl">
+        <nav className="sticky top-0 z-50 bg-[#2C76FF] border-b border-white/5 shadow-2xl">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* -------- Desktop Layout -------- */}
@@ -73,7 +73,7 @@ const Navbar = () => {
                                     navigate('/jobs');
                                 }
                             }}
-                            className={`text-sm font-medium transition-colors px-3 py-2 rounded-md hover:bg-white/5 ${location.pathname === '/jobs' ? 'text-[#FDB913] bg-white/5' : 'text-gray-300 hover:text-white'}`}
+                            className={`text-sm font-medium transition-colors px-3 py-2 rounded-md hover:bg-white/5 ${location.pathname === '/jobs' ? 'text-white bg-white/10 font-bold' : 'text-gray-200 hover:text-white'}`}
                         >
                             Find Jobs
                         </button>
@@ -92,7 +92,7 @@ const Navbar = () => {
                                     </Link>
                                     <Link
                                         to="/signup"
-                                        className="bg-[#FDB913] hover:bg-[#e5a811] text-black text-sm font-bold px-5 py-2 rounded-full transition-all shadow-[0_0_15px_rgba(253,185,19,0.3)]"
+                                        className="bg-[#29FE29] hover:brightness-90 text-black text-sm font-bold px-5 py-2 rounded-full transition-all shadow-[0_0_15px_rgba(44,118,255,0.2)]"
                                     >
                                         Get Access
                                     </Link>
@@ -178,7 +178,7 @@ const Navbar = () => {
                         {user ? (
                             <div className="space-y-4">
                                 <div className="space-y-1">
-                                    <p className="px-3 text-[10px] font-black uppercase tracking-widest text-[#FDB913]/60 mb-2">My Account</p>
+                                    <p className="px-3 text-[10px] font-black uppercase tracking-widest text-white/60 mb-2">My Account</p>
                                     {[
                                         { id: "all-jobs", label: "Find Jobs", icon: Search, type: "link", path: "/jobs" },
                                         { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -199,7 +199,7 @@ const Navbar = () => {
                                             }}
                                             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 font-bold hover:bg-white/5 transition-colors"
                                         >
-                                            <tab.icon size={18} className={tab.id === "all-jobs" ? "text-[#FDB913]" : "text-gray-400"} />
+                                            <tab.icon size={18} className={tab.id === "all-jobs" ? "text-white" : "text-gray-400"} />
                                             <span className="text-sm">{tab.label}</span>
                                         </button>
                                     ))}
@@ -227,7 +227,7 @@ const Navbar = () => {
                                 </Link>
                                 <Link
                                     to="/signup"
-                                    className="block text-center bg-[#FDB913] hover:bg-[#e5a811] text-black text-sm font-bold py-3 rounded-lg shadow-lg"
+                                    className="block text-center bg-[#29FE29] hover:brightness-90 text-black text-sm font-bold py-3 rounded-lg shadow-lg"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     Get Access

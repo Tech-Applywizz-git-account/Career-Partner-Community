@@ -220,7 +220,7 @@ const BillingTab = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-blue-700 font-medium mb-1">Total Transactions</p>
-                                <p className="text-2xl font-bold text-blue-900">
+                                <p className="text-2xl font-bold text-[#1E1E1E]">
                                     {stats.totalTransactions}
                                 </p>
                             </div>
@@ -232,12 +232,12 @@ const BillingTab = () => {
                     <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl border border-purple-200">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-purple-700 font-medium mb-1">Successful</p>
+                                <p className="text-sm text-[#29FE29] font-medium mb-1">Successful</p>
                                 <p className="text-2xl font-bold text-purple-900">
                                     {stats.successfulPayments}
                                 </p>
                             </div>
-                            <CheckCircle className="w-10 h-10 text-purple-600 opacity-50" />
+                            <CheckCircle className="w-10 h-10 text-[#29FE29] opacity-50" />
                         </div>
                     </div>
 
@@ -283,7 +283,7 @@ const BillingTab = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-blue-700 font-medium mb-1">End Date</p>
-                                <p className="text-2xl font-bold text-blue-900">
+                                <p className="text-2xl font-bold text-[#1E1E1E]">
                                     {stats.lastPaymentDate
                                         ? (() => {
                                             const paidDate = new Date(stats.lastPaymentDate);
@@ -423,7 +423,7 @@ const BillingTab = () => {
                 <div className="flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <div>
-                        <h4 className="text-blue-900 font-semibold mb-1">Need Help?</h4>
+                        <h4 className="text-[#1E1E1E] font-semibold mb-1">Need Help?</h4>
                         <p className="text-blue-700 text-sm">
                             If you have any questions about your billing or need a refund, please contact our support team at{' '}
                             <a href="mailto:manasa@wagetrail.com" className="underline font-medium">

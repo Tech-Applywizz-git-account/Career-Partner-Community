@@ -82,7 +82,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
       <div className="animate-in fade-in slide-in-from-left-4 duration-500">
         <button
           onClick={() => setSelectedCompany(null)}
-          className="flex items-center gap-2 mb-6 px-4 py-2 bg-white border border-gray-200 rounded-xl text-[#24385E] font-bold hover:bg-gray-50 transition-all shadow-sm group"
+          className="flex items-center gap-2 mb-6 px-4 py-2 bg-white border border-gray-200 rounded-xl text-[#2C76FF] font-bold hover:bg-gray-50 transition-all shadow-sm group"
         >
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
           Back to all companies
@@ -92,7 +92,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
           <div className="flex items-center gap-4 p-4">
             <LogoBox name={selectedCompany} size={64} className="rounded-xl border border-gray-100 shadow-sm" />
             <div>
-              <h2 className="text-2xl font-[900] text-[#24385E]">{selectedCompany}</h2>
+              <h2 className="text-2xl font-[900] text-[#1E1E1E]">{selectedCompany}</h2>
               <p className="text-gray-500 font-bold">Showing all active job openings</p>
             </div>
           </div>
@@ -107,7 +107,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="w-10 h-10 text-[#24385E] animate-spin mb-4" />
+        <Loader2 className="w-10 h-10 text-[#2C76FF] animate-spin mb-4" />
         <p className="text-gray-500 font-bold">Loading Companies...</p>
       </div>
     );
@@ -118,7 +118,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-3xl font-[900] text-[#24385E] mb-1">All Companies</h2>
+        <h2 className="text-3xl font-[900] text-[#2C76FF] mb-1">All Companies</h2>
         <p className="text-sm font-bold text-gray-400">
           {filteredCompanies.length.toLocaleString()} {filteredCompanies.length === 1 ? 'company' : 'companies'} in {countryLabel}
           {filteredCompanies.length !== companies.length && ` (filtered from ${companies.length.toLocaleString()} total)`}
@@ -133,7 +133,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
           placeholder="Search companies..."
           value={localSearchTerm}
           onChange={(e) => setLocalSearchTerm(e.target.value)}
-          className="w-full bg-white border border-gray-200 rounded-2xl pl-12 pr-4 py-4 text-base font-bold text-[#24385E] outline-none focus:ring-2 focus:ring-[#FDB913]/50 focus:border-[#FDB913] transition-all shadow-sm"
+          className="w-full bg-white border border-gray-200 rounded-2xl pl-12 pr-4 py-4 text-base font-bold text-[#1E1E1E] outline-none focus:ring-2 focus:ring-[#2C76FF]/50 focus:border-[#2C76FF] transition-all shadow-sm"
         />
       </div>
 
@@ -149,16 +149,16 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
             <div
               key={idx}
               onClick={() => setSelectedCompany(company.name)}
-              className="group relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md hover:border-[#FDB913]/30 transition-all duration-200 cursor-pointer flex items-center gap-5"
+              className="group relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md hover:border-[#2C76FF]/30 transition-all duration-200 cursor-pointer flex items-center gap-5"
             >
               <LogoBox name={company.name} size={56} className="rounded-lg overflow-hidden border border-gray-100 shrink-0" />
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#24385E] transition-colors truncate">
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#2C76FF] transition-colors truncate">
                     {company.name}
                   </h3>
-                  {company.isFamous && <TrendingUp size={14} className="text-[#FDB913] shrink-0" />}
+                  {company.isFamous && <TrendingUp size={14} className="text-[#2C76FF] shrink-0" />}
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <Briefcase size={14} className="text-gray-400" />
@@ -168,7 +168,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
                 </div>
               </div>
 
-              <ChevronRight size={20} className="text-gray-300 group-hover:text-[#24385E] transition-colors shrink-0" />
+              <ChevronRight size={20} className="text-gray-300 group-hover:text-[#2C76FF] transition-colors shrink-0" />
             </div>
           ))}
         </div>
@@ -180,7 +180,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
           <button
             onClick={() => { setPage(p => Math.max(0, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             disabled={page === 0}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-[#24385E] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-[#2C76FF] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all"
           >
             <ChevronLeft size={16} /> Previous
           </button>
@@ -192,7 +192,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
           <button
             onClick={() => { setPage(p => Math.min(totalPages - 1, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             disabled={page >= totalPages - 1}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-[#24385E] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-[#2C76FF] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-all"
           >
             Next <ChevronRight size={16} />
           </button>

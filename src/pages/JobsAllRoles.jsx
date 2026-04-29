@@ -111,7 +111,7 @@ const JobsAllRoles = () => {
 
   const logoColors = [
     'bg-blue-100 text-blue-700',
-    'bg-purple-100 text-purple-700',
+    'bg-purple-100 text-[#29FE29]',
     'bg-green-100 text-green-700',
     'bg-orange-100 text-orange-700',
     'bg-pink-100 text-pink-700',
@@ -134,14 +134,14 @@ const JobsAllRoles = () => {
       <Navbar />
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-[#1a2a47] via-[#24385E] to-[#1e3a6e] pt-28 pb-32 px-6 text-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #FDB913 0%, transparent 50%), radial-gradient(circle at 80% 20%, #60a5fa 0%, transparent 40%)' }} />
+      <div className="bg-gradient-to-br from-[#1a2a47] via-[#2C76FF] to-[#1e3a6e] pt-28 pb-32 px-6 text-center relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #2C76FF 0%, transparent 50%), radial-gradient(circle at 80% 20%, #60a5fa 0%, transparent 40%)' }} />
         <div className="relative z-10">
-          <span className="inline-block bg-[#FDB913]/20 text-[#FDB913] text-xs font-bold px-4 py-1.5 rounded-full border border-[#FDB913]/30 mb-5 uppercase tracking-widest">
-            Live Job Board
+          <span className="inline-block bg-[#2C76FF]/20 text-white text-xs font-bold px-4 py-1.5 rounded-full border border-[#2C76FF]/30 mb-5 uppercase tracking-widest">
+            H-1B Visa Sponsorship Database
           </span>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
-            Explore <span className="text-[#FDB913]">All Roles</span> Across the Globe
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 leading-tight">
+            Explore <span className="text-[#1E1E1E] bg-[#2C76FF] px-2 rounded-lg">All Roles</span> Across the Globe
           </h1>
           <p className="text-blue-200 text-lg max-w-2xl mx-auto mb-10 opacity-90">
             Browse {total.toLocaleString()}+ jobs scraped from Indeed across multiple countries — updated regularly.
@@ -210,7 +210,7 @@ const JobsAllRoles = () => {
                             alt={c.name}
                             className="w-4 h-3 object-cover rounded-sm"
                           />
-                          <span className="text-[11px] font-bold text-[#24385E]">{c.name}</span>
+                          <span className="text-[11px] font-bold text-[#2C76FF]">{c.name}</span>
                         </>
                       ) : null;
                     })()}
@@ -224,7 +224,7 @@ const JobsAllRoles = () => {
                 <label className="flex items-center gap-3 cursor-pointer group">
                   <div
                     onClick={() => { setRemoteOnly(p => !p); setPage(0); }}
-                    className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${remoteOnly ? 'bg-[#24385E] border-[#24385E]' : 'border-gray-300 group-hover:border-blue-400'}`}
+                    className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${remoteOnly ? 'bg-[#2C76FF] border-[#2C76FF]' : 'border-gray-300 group-hover:border-blue-400'}`}
                   >
                     {remoteOnly && <X size={12} className="text-white" />}
                   </div>
@@ -235,7 +235,7 @@ const JobsAllRoles = () => {
               {/* Stats */}
               <div className="bg-blue-50 rounded-xl p-4 mt-2">
                 <p className="text-xs font-bold text-blue-700 mb-1">Total Results</p>
-                <p className="text-2xl font-extrabold text-[#24385E]">{total.toLocaleString()}</p>
+                <p className="text-2xl font-extrabold text-[#2C76FF]">{total.toLocaleString()}</p>
                 <p className="text-xs text-blue-600 mt-0.5">matching jobs</p>
               </div>
 
@@ -279,7 +279,7 @@ const JobsAllRoles = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-gray-900 text-sm leading-snug truncate mb-1">{job.title || '—'}</h3>
-                        <p className="text-[#24385E] text-xs font-semibold flex items-center gap-1 mb-2">
+                        <p className="text-[#2C76FF] text-xs font-semibold flex items-center gap-1 mb-2">
                           <Briefcase size={12} /> {job.company_name || 'Unknown'}
                         </p>
                         <div className="flex flex-wrap items-center gap-2">
@@ -350,7 +350,7 @@ const JobsAllRoles = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h2 className="text-xl font-extrabold text-gray-900 mb-1 leading-tight">{selectedJob.title}</h2>
-                      <p className="text-[#24385E] font-bold text-sm flex items-center gap-1.5 mb-3">
+                      <p className="text-[#2C76FF] font-bold text-sm flex items-center gap-1.5 mb-3">
                         <Briefcase size={14} /> {selectedJob.company_name || 'Unknown Company'}
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -386,7 +386,7 @@ const JobsAllRoles = () => {
                       </span>
                     )}
                     {selectedJob.indeed_search_country && (
-                      <span className="px-3 py-1.5 bg-yellow-50 text-yellow-700 text-xs font-bold rounded-lg border border-yellow-100">
+                      <span className="px-3 py-1.5 bg-[#2C76FF]/10 text-[#2C76FF] text-xs font-bold rounded-lg border border-[#2C76FF]/20">
                         Indeed: {selectedJob.indeed_search_country}
                       </span>
                     )}
@@ -399,7 +399,7 @@ const JobsAllRoles = () => {
                         href={selectedJob.job_url_direct}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 bg-[#24385E] text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-[#1a2a47] transition-colors shadow-lg shadow-blue-900/20"
+                        className="flex items-center gap-2 bg-[#29FE29] text-[#1E1E1E] px-6 py-3 rounded-xl font-bold text-sm hover:bg-[#25e525] transition-colors shadow-lg shadow-[#29FE29]/20"
                       >
                         Apply Directly <ExternalLink size={14} />
                       </a>
@@ -409,7 +409,7 @@ const JobsAllRoles = () => {
                         href={selectedJob.job_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 border border-[#24385E] text-[#24385E] px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors"
+                        className="flex items-center gap-2 border border-[#2C76FF] text-[#2C76FF] px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors"
                       >
                         View on Indeed <ExternalLink size={14} />
                       </a>

@@ -42,7 +42,7 @@ const Dashboard = () => {
     if (loading || checkingSub) {
         return (
             <div className="h-screen w-screen flex items-center justify-center bg-[#fafafa]">
-                <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+                <Loader2 className="w-10 h-10 text-[#29FE29] animate-spin" />
             </div>
         );
     }

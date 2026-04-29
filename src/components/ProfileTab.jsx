@@ -117,7 +117,7 @@
 //     if (loading) {
 //         return (
 //             <div className="flex items-center justify-center py-20">
-//                 <Loader2 className="w-8 h-8 text-yellow-500 animate-spin" />
+//                 <Loader2 className="w-8 h-8 text-[#29FE29] animate-spin" />
 //             </div>
 //         );
 //     }
@@ -127,7 +127,7 @@
 //             {/* Header */}
 //             <div>
 //                 <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-//                     <User className="w-8 h-8 text-yellow-500" />
+//                     <User className="w-8 h-8 text-[#29FE29]" />
 //                     Profile Settings
 //                 </h2>
 //                 <p className="text-gray-600 mt-1">

@@ -5,7 +5,7 @@ const Footer = () => {
     const navigate = useNavigate();
 
     return (
-        <footer className="bg-[#24385E] border-t border-white/5">
+        <footer className="bg-[#29FE29] border-t border-white/5">
             {/* CTA Banner */}
             <div className="bg-gray-900 py-16">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -17,7 +17,7 @@ const Footer = () => {
                     <p className="text-gray-500 mb-8 text-sm">Find US jobs with visa sponsorship. Your path to working in America starts here.</p>
                     <button
                         onClick={() => navigate('/signup')}
-                        className="w-full sm:w-auto inline-flex items-center justify-center bg-[#FDB913] text-black font-black px-8 py-4 rounded-xl hover:bg-[#e5a811] transition-all text-base shadow-lg"
+                        className="w-full sm:w-auto inline-flex items-center justify-center bg-[#29FE29] text-black font-black px-8 py-4 rounded-xl hover:bg-[#e5a811] transition-all text-base shadow-lg"
                     >
                         Get Access →
                     </button>

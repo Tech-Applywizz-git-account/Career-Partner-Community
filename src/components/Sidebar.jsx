@@ -70,16 +70,17 @@ const Sidebar = ({ className = "", showHeader = true }) => {
         <aside className={`flex h-full flex-col bg-white w-56 border-r border-[#f0f0f0] transition-all duration-300 ${className}`}>
             {/* Logo Section */}
             <div className="p-6 mb-2">
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-                    <div className="relative">
-                        <div className="w-10 h-10 bg-[#24385E] rounded-xl flex items-center justify-center transform rotate-12 transition-transform hover:rotate-0">
-                            <span className="text-white font-black text-xs tracking-tighter">H1-B</span>
-                        </div>
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
+                <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+                    <div className="relative shrink-0">
+                        <img 
+                            src="https://res.cloudinary.com/dpuziwnvl/image/upload/v1751357541/apply_wizz_logo_hrvtmm.jpg" 
+                            alt="Apply Wizz" 
+                            className="w-10 h-10 rounded-xl object-contain shadow-sm"
+                        />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-xl font-bold text-[#24385E] tracking-tight leading-none">Wage</span>
-                        <span className="text-xl font-bold text-yellow-500 tracking-tight leading-none">Trail</span>
+                        <span className="text-xl font-bold text-[#1E1E1E] tracking-tight leading-none">Career</span>
+                        <span className="text-xl font-bold text-[#2C76FF] tracking-tight leading-none">Partner</span>
                     </div>
                 </div>
             </div>
@@ -91,14 +92,14 @@ const Sidebar = ({ className = "", showHeader = true }) => {
                     onClick={() => navigate('/jobs')}
                     className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 
                         ${location.pathname === '/jobs' || location.pathname === '/app' || location.pathname === '/search'
-                            ? "bg-[#fafafa] text-[#24385E] font-bold"
-                            : "text-[#666666] hover:bg-[#fafafa] hover:text-[#24385E]"
+                            ? "bg-[#fafafa] text-[#2C76FF] font-bold"
+                            : "text-[#666666] hover:bg-[#fafafa] hover:text-[#2C76FF]"
                         }`}
                 >
                     <div className={`p-1.5 rounded-lg transition-colors duration-200 ${location.pathname === '/jobs' || location.pathname === '/app' || location.pathname === '/search' ? "bg-white shadow-sm" : ""}`}>
                         <Briefcase
                             size={18}
-                            className={`${location.pathname === '/jobs' || location.pathname === '/app' || location.pathname === '/search' ? "text-yellow-500" : "text-[#999999] group-hover:text-[#24385E]"} transition-colors`}
+                            className={`${location.pathname === '/jobs' || location.pathname === '/app' || location.pathname === '/search' ? "text-[#2C76FF]" : "text-[#999999] group-hover:text-[#2C76FF]"} transition-colors`}
                         />
                     </div>
                     <span className="text-[14px]">Find Jobs</span>
@@ -115,14 +116,14 @@ const Sidebar = ({ className = "", showHeader = true }) => {
                             onClick={() => handleTabClick(tab.id)}
                             className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 
                                 ${isActive
-                                    ? "bg-[#fafafa] text-[#24385E] font-bold"
-                                    : "text-[#666666] hover:bg-[#fafafa] hover:text-[#24385E]"
+                                    ? "bg-[#fafafa] text-[#2C76FF] font-bold"
+                                    : "text-[#666666] hover:bg-[#fafafa] hover:text-[#2C76FF]"
                                 }`}
                         >
                             <div className={`p-1.5 rounded-lg transition-colors duration-200 ${isActive ? "bg-white shadow-sm" : ""}`}>
                                 <Icon
                                     size={18}
-                                    className={`${isActive ? "text-yellow-500" : "text-[#999999] group-hover:text-[#24385E]"} transition-colors`}
+                                    className={`${isActive ? "text-[#2C76FF]" : "text-[#999999] group-hover:text-[#2C76FF]"} transition-colors`}
                                 />
                             </div>
                             <span className="text-[14px]">{tab.label}</span>

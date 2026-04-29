@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --mm-primary: #24385E;
+    --mm-primary: #29FE29;
     /* Dashboard Navy */
     --mm-primary-dark: #1a2a47;
     --mm-accent-yellow: #EAB308;
@@ -12,7 +12,7 @@
     --mm-bg-light: #fafafa;
     /* Dashboard bg */
     --mm-white: #FFFFFF;
-    --mm-text-dark: #24385E;
+    --mm-text-dark: #29FE29;
     --mm-text-muted: #666666;
   }
 
@@ -28,7 +28,7 @@
   }
 
   .btn-purple {
-    @apply px-10 py-5 bg-[#24385E] hover:bg-[#1a2a47] text-white font-black text-lg rounded-full shadow-lg transition-all transform hover:scale-[1.03] active:scale-[0.97];
+    @apply px-10 py-5 bg-[#29FE29] hover:bg-[#1a2a47] text-white font-black text-lg rounded-full shadow-lg transition-all transform hover:scale-[1.03] active:scale-[0.97];
   }
 
   /* Card used by Login/Signup pages */

@@ -24,7 +24,7 @@ const testimonials = [
         content: "This service is changing my life. It's sooo easy to find top jobs in the US & for a very decent price. Can't recommend enough!",
         rating: 5,
         initials: 'D',
-        color: 'from-[#24385E] to-blue-800',
+        color: 'from-[#29FE29] to-blue-800',
     },
     {
         content: "The platform was incredibly affordable and made finding a high quality job in the US incredibly seamless. Affordable and stress free.",
@@ -52,7 +52,7 @@ const Testimonials = () => {
                         </h2>
                         <div className="flex items-center justify-center gap-1 mb-2">
                             {[...Array(5)].map((_, i) => (
-                                <Star key={i} className="w-5 h-5 text-[#FDB913] fill-current" />
+                                <Star key={i} className="w-5 h-5 text-[#29FE29] fill-current" />
                             ))}
                         </div>
                     </div>
@@ -64,7 +64,7 @@ const Testimonials = () => {
                                 {/* Stars */}
                                 <div className="flex mb-4">
                                     {[...Array(testimonial.rating)].map((_, i) => (
-                                        <Star key={i} className="w-4 h-4 text-[#FDB913] fill-current" />
+                                        <Star key={i} className="w-4 h-4 text-[#29FE29] fill-current" />
                                     ))}
                                 </div>
 

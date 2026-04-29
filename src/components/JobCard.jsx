@@ -308,7 +308,8 @@ const JobCard = ({ job, isSaved = false, isApplied = false, onSaveToggle, onAppl
                                 href={job.url || job.apply_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="h-12 px-8 bg-[#FDB913] text-[#1a1a1a] rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] hover:bg-[#f0af0e] transition-all shadow-[0_6px_20px_rgba(253,185,19,0.3)] active:scale-95"
+                                className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
+                                style={{ backgroundColor: '#29FE29', color: '#1E1E1E', boxShadow: '0 6px 20px rgba(41,254,41,0.3)' }}
                             >
                                 Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
                             </a>
@@ -317,7 +318,7 @@ const JobCard = ({ job, isSaved = false, isApplied = false, onSaveToggle, onAppl
                 </div>
 
                 {/* Right Panel - Wage Level & Score */}
-                <div className="hidden lg:flex w-[160px] bg-[#24385E] rounded-[20px] p-5 flex-col items-center justify-center text-center text-white shrink-0 relative lg:h-[260px]">
+                <div className="hidden lg:flex w-[160px] bg-[#29FE29] rounded-[20px] p-5 flex-col items-center justify-center text-center text-[#1E1E1E] shrink-0 relative lg:h-[260px]">
                     {/* Visual Accent */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl opacity-20"></div>
 
@@ -337,7 +338,7 @@ const JobCard = ({ job, isSaved = false, isApplied = false, onSaveToggle, onAppl
                                     cx="40"
                                     cy="40"
                                     r="34"
-                                    stroke="#EAB308"
+                                    stroke="#2C76FF"
                                     strokeWidth="6"
                                     fill="transparent"
                                     strokeDasharray={2 * Math.PI * 34}

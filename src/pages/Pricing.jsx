@@ -39,15 +39,15 @@
 
 //             <div className="min-h-screen bg-gradient-to-b from-[#f8f9fc] to-white">
 //                 {/* Hero Section */}
-//                 <div className="bg-[#24385E] text-white py-16 md:py-24 relative overflow-hidden">
+//                 <div className="bg-[#2C76FF] text-white py-16 md:py-24 relative overflow-hidden">
 //                     {/* Decorative elements */}
-//                     <div className="absolute top-0 right-0 w-96 h-96 bg-[#FDB913]/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+//                     <div className="absolute top-0 right-0 w-96 h-96 bg-[#29FE29]/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
 //                     <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
 
 //                     <div className="max-w-4xl mx-auto px-6 md:px-8 text-center relative z-10">
 //                         <div className="flex justify-center mb-5">
-//                             <div className="w-14 h-14 bg-[#FDB913] rounded-2xl flex items-center justify-center shadow-lg">
-//                                 <Sparkles className="text-[#24385E] w-7 h-7" />
+//                             <div className="w-14 h-14 bg-[#29FE29] rounded-2xl flex items-center justify-center shadow-lg">
+//                                 <Sparkles className="text-[#2C76FF] w-7 h-7" />
 //                             </div>
 //                         </div>
 //                         <h1 className="text-3xl md:text-5xl font-black mb-5 tracking-tight leading-tight">
@@ -65,18 +65,18 @@
 //                         {/* Card 1: Main Platform Access */}
 //                         <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col">
 //                             {/* Ribbon */}
-//                             <div className="bg-[#24385E] text-white text-center py-3.5 font-black text-[10px] uppercase tracking-[0.2em]">
+//                             <div className="bg-[#2C76FF] text-white text-center py-3.5 font-black text-[10px] uppercase tracking-[0.2em]">
 //                                 Verified Database Access
 //                             </div>
 
 //                             <div className="p-8 flex-1 flex flex-col">
 //                                 <div className="text-center mb-8">
-//                                     <h3 className="text-xl font-black text-[#24385E] mb-2 uppercase tracking-tight">Standard Search</h3>
+//                                     <h3 className="text-xl font-black text-[#2C76FF] mb-2 uppercase tracking-tight">Standard Search</h3>
 //                                     <div className="flex justify-center items-end gap-1 mb-2">
-//                                         <span className="text-4xl md:text-5xl font-black text-[#24385E]">$39.99</span>
+//                                         <span className="text-4xl md:text-5xl font-black text-[#2C76FF]">$39.99</span>
 //                                         <span className="text-gray-400 font-bold text-sm mb-2">/ 6 months</span>
 //                                     </div>
-//                                     <div className="inline-block px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-wider">
+//                                     <div className="inline-block px-3 py-1 bg-[#29FE29]/10 text-[#29FE29] rounded-full text-[10px] font-black uppercase tracking-wider">
 //                                         Save 50% Today
 //                                     </div>
 //                                 </div>
@@ -91,28 +91,28 @@
 //                                         'Advanced Technical Filters'
 //                                     ].map((f, i) => (
 //                                         <li key={i} className="flex items-center gap-3">
-//                                             <Check className="w-4 h-4 text-emerald-500" strokeWidth={4} />
-//                                             <span className="text-[#24385E] font-semibold text-sm">{f}</span>
+//                                             <Check className="w-4 h-4 text-[#29FE29]" strokeWidth={4} />
+//                                             <span className="text-[#2C76FF] font-semibold text-sm">{f}</span>
 //                                         </li>
 //                                     ))}
 //                                 </ul>
 
 //                                 {user ? (
 //                                     paymentStatus === 'paid' ? (
-//                                         <Link to="/app" className="block w-full text-center text-sm font-black py-4 bg-emerald-500 text-white rounded-xl shadow-lg transition-all hover:bg-emerald-600 underline">Go to Dashboard →</Link>
+//                                         <Link to="/app" className="block w-full text-center text-sm font-black py-4 bg-[#29FE29]/100 text-white rounded-xl shadow-lg transition-all hover:bg-[#00d400] underline">Go to Dashboard →</Link>
 //                                     ) : (
 //                                         <RazorpayButton amount={import.meta.env.VITE_PAYMENT_AMOUNT || '39.99'} />
 //                                     )
 //                                 ) : (
-//                                     <Link to="/signup" className="block w-full text-center text-sm font-black py-4 bg-[#24385E] text-white rounded-xl shadow-lg transition-all hover:bg-[#1a2a47]">Get Access Now →</Link>
+//                                     <Link to="/signup" className="block w-full text-center text-sm font-black py-4 bg-[#2C76FF] text-white rounded-xl shadow-lg transition-all hover:bg-[#1a2a47]">Get Access Now →</Link>
 //                                 )}
 //                             </div>
 //                         </div>
 
 //                         {/* Card 2: Expert Guidance (Highlighted) */}
-//                         <div className="bg-[#24385E] rounded-3xl shadow-2xl border-4 border-[#FDB913] overflow-hidden flex flex-col transform md:scale-105 relative z-30">
+//                         <div className="bg-[#2C76FF] rounded-3xl shadow-2xl border-4 border-[#29FE29] overflow-hidden flex flex-col transform md:scale-105 relative z-30">
 //                             {/* Ribbon */}
-//                             <div className="bg-[#FDB913] text-[#24385E] text-center py-3.5 font-black text-[10px] uppercase tracking-[0.2em] animate-pulse">
+//                             <div className="bg-[#29FE29] text-[#2C76FF] text-center py-3.5 font-black text-[10px] uppercase tracking-[0.2em] animate-pulse">
 //                                 ★ Recommended for Job Seekers ★
 //                             </div>
 
@@ -120,10 +120,10 @@
 //                                 <div className="text-center mb-8">
 //                                     <h3 className="text-xl font-black text-white mb-2 uppercase tracking-tight">Expert Guidance</h3>
 //                                     <div className="flex justify-center items-end gap-1 mb-2">
-//                                         <span className="text-4xl md:text-5xl font-black text-[#FDB913]">$34.99</span>
+//                                         <span className="text-4xl md:text-5xl font-black text-[#29FE29]">$34.99</span>
 //                                         <span className="text-white/60 font-bold text-sm mb-2">/ session</span>
 //                                     </div>
-//                                     <div className="inline-block px-3 py-1 bg-[#FDB913]/20 text-[#FDB913] rounded-full text-[10px] font-black uppercase tracking-wider">
+//                                     <div className="inline-block px-3 py-1 bg-[#29FE29]/20 text-[#29FE29] rounded-full text-[10px] font-black uppercase tracking-wider">
 //                                         Personal Mentorship
 //                                     </div>
 //                                 </div>
@@ -138,7 +138,7 @@
 //                                         'Priority Response Support'
 //                                     ].map((f, i) => (
 //                                         <li key={i} className="flex items-center gap-3">
-//                                             <Sparkles className="w-4 h-4 text-[#FDB913]" strokeWidth={3} />
+//                                             <Sparkles className="w-4 h-4 text-[#29FE29]" strokeWidth={3} />
 //                                             <span className="text-white/90 font-semibold text-sm">{f}</span>
 //                                         </li>
 //                                     ))}
@@ -148,7 +148,7 @@
 //                                     href="https://consulting.wagetrail.com/"
 //                                     target="_blank"
 //                                     rel="noopener noreferrer"
-//                                     className="block w-full text-center text-sm font-black py-4 bg-[#FDB913] text-[#24385E] rounded-xl shadow-[0_0_20px_rgba(253,185,19,0.3)] transition-all hover:bg-yellow-400 transform hover:scale-[1.02] active:scale-[0.98]"
+//                                     className="block w-full text-center text-sm font-black py-4 bg-[#29FE29] text-[#2C76FF] rounded-xl shadow-[0_0_20px_rgba(253,185,19,0.3)] transition-all hover:bg-[#29FE29] transform hover:scale-[1.02] active:scale-[0.98]"
 //                                 >
 //                                     Book Your Session →
 //                                 </a>
@@ -165,10 +165,10 @@
 //                             { icon: Zap, value: '8', label: 'Visa Types' }
 //                         ].map((badge, i) => (
 //                             <div key={i} className="text-center p-7 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-//                                 <div className="w-10 h-10 bg-[#FDB913]/15 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-[#FDB913]/25 transition-colors">
-//                                     <badge.icon size={20} className="text-[#24385E]" />
+//                                 <div className="w-10 h-10 bg-[#29FE29]/15 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-[#29FE29]/25 transition-colors">
+//                                     <badge.icon size={20} className="text-[#2C76FF]" />
 //                                 </div>
-//                                 <div className="text-3xl md:text-4xl font-black text-[#24385E] mb-1">{badge.value}</div>
+//                                 <div className="text-3xl md:text-4xl font-black text-[#2C76FF] mb-1">{badge.value}</div>
 //                                 <div className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{badge.label}</div>
 //                             </div>
 //                         ))}
@@ -176,7 +176,7 @@
 
 //                     {/* FAQ Section */}
 //                     <div className="mb-20">
-//                         <h2 className="text-3xl font-black text-[#24385E] text-center mb-10 tracking-tight">
+//                         <h2 className="text-3xl font-black text-[#2C76FF] text-center mb-10 tracking-tight">
 //                             Frequently Asked Questions
 //                         </h2>
 //                         <div className="space-y-4 max-w-3xl mx-auto">
@@ -186,10 +186,10 @@
 //                                         onClick={() => setOpenFaq(openFaq === index ? null : index)}
 //                                         className="w-full flex justify-between items-center text-left p-6"
 //                                     >
-//                                         <h3 className="text-lg font-bold text-[#24385E] pr-8">
+//                                         <h3 className="text-lg font-bold text-[#2C76FF] pr-8">
 //                                             {faq.question}
 //                                         </h3>
-//                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${openFaq === index ? 'bg-[#FDB913] text-[#24385E]' : 'bg-gray-100 text-gray-400'}`}>
+//                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${openFaq === index ? 'bg-[#29FE29] text-[#2C76FF]' : 'bg-gray-100 text-gray-400'}`}>
 //                                             {openFaq === index ? (
 //                                                 <ChevronUp size={18} strokeWidth={3} />
 //                                             ) : (
@@ -216,14 +216,14 @@
 //                         <div className="lg:col-span-5">
 //                             <Link to="/" className="flex items-center gap-2 mb-6 group">
 //                                 <div className="relative">
-//                                     <div className="w-10 h-10 bg-[#24385E] rounded-xl flex items-center justify-center transform rotate-12 transition-transform group-hover:rotate-0 shadow-lg">
+//                                     <div className="w-10 h-10 bg-[#2C76FF] rounded-xl flex items-center justify-center transform rotate-12 transition-transform group-hover:rotate-0 shadow-lg">
 //                                         <span className="text-white font-black text-xs tracking-tighter">H1-B</span>
 //                                     </div>
-//                                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
+//                                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#29FE29] rounded-full border-2 border-white"></div>
 //                                 </div>
 //                                 <div className="flex flex-col">
-//                                     <span className="text-xl font-bold text-[#24385E] tracking-tight leading-none">Wage</span>
-//                                     <span className="text-xl font-bold text-yellow-500 tracking-tight leading-none">Trail</span>
+//                                     <span className="text-xl font-bold text-[#2C76FF] tracking-tight leading-none">Wage</span>
+//                                     <span className="text-xl font-bold text-[#2C76FF] tracking-tight leading-none">Trail</span>
 //                                 </div>
 //                             </Link>
 //                             <p className="text-gray-400 font-bold text-lg mb-8 max-w-sm leading-relaxed">
@@ -231,7 +231,7 @@
 //                             </p>
 //                             <div className="flex gap-4">
 //                                 {[Instagram, Twitter, Linkedin, Facebook].map((Icon, i) => (
-//                                     <a key={i} href="#" className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-[#24385E] hover:bg-[#FDB913] hover:text-[#24385E] transition-all shadow-sm">
+//                                     <a key={i} href="#" className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-[#2C76FF] hover:bg-[#29FE29] hover:text-[#2C76FF] transition-all shadow-sm">
 //                                         <Icon size={20} />
 //                                     </a>
 //                                 ))}
@@ -240,26 +240,26 @@
 
 //                         <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-10">
 //                             <div className="space-y-6">
-//                                 <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#24385E]">Platform</h4>
+//                                 <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#2C76FF]">Platform</h4>
 //                                 <ul className="space-y-4">
 //                                     {['Job Search', 'How it works', 'Pricing', 'Visa Guides'].map(link => (
-//                                         <li key={link}><Link to="#" className="text-base font-bold text-gray-500 hover:text-[#FDB913] transition-colors">{link}</Link></li>
+//                                         <li key={link}><Link to="#" className="text-base font-bold text-gray-500 hover:text-[#29FE29] transition-colors">{link}</Link></li>
 //                                     ))}
 //                                 </ul>
 //                             </div>
 //                             <div className="space-y-6">
-//                                 <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#24385E]">Company</h4>
+//                                 <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#2C76FF]">Company</h4>
 //                                 <ul className="space-y-4">
 //                                     {['About Us', 'Contact', 'Blog', 'Twitter'].map(link => (
-//                                         <li key={link}><Link to="#" className="text-base font-bold text-gray-500 hover:text-[#FDB913] transition-colors">{link}</Link></li>
+//                                         <li key={link}><Link to="#" className="text-base font-bold text-gray-500 hover:text-[#29FE29] transition-colors">{link}</Link></li>
 //                                     ))}
 //                                 </ul>
 //                             </div>
 //                             <div className="space-y-6">
-//                                 <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#24385E]">Support</h4>
+//                                 <h4 className="text-xs font-black uppercase tracking-[0.2em] text-[#2C76FF]">Support</h4>
 //                                 <ul className="space-y-4">
 //                                     {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map(link => (
-//                                         <li key={link}><Link to="#" className="text-base font-bold text-gray-500 hover:text-[#FDB913] transition-colors">{link}</Link></li>
+//                                         <li key={link}><Link to="#" className="text-base font-bold text-gray-500 hover:text-[#29FE29] transition-colors">{link}</Link></li>
 //                                     ))}
 //                                 </ul>
 //                             </div>
@@ -333,7 +333,7 @@ const Pricing = () => {
                     overflow: hidden;
                 }
                 .price-pill {
-                    background: linear-gradient(#1e3060, #1e3060) padding-box, linear-gradient(135deg, #FDB913 0%, #f5c842 35%, #f7dfa0 60%, #ffffff 85%) border-box;
+                    background: linear-gradient(#1E1E1E, #1E1E1E) padding-box, linear-gradient(135deg, #29FE29 0%, #f5c842 35%, #f7dfa0 60%, #ffffff 85%) border-box;
                     border-radius: 60px;
                     padding: 16px 40px;
                     border: 6px solid transparent;
@@ -369,15 +369,15 @@ const Pricing = () => {
 
             <div className="min-h-screen bg-gradient-to-b from-[#f8f9fc] to-white overflow-x-hidden">
                 {/* Hero Section */}
-                <div className="bg-[#24385E] text-white py-16 md:py-24 relative overflow-hidden">
+                <div className="bg-[#2C76FF] text-white py-16 md:py-24 relative overflow-hidden">
                     {/* Decorative elements */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-[#FDB913]/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-[#29FE29]/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                     <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
 
                     <div className="max-w-4xl mx-auto px-6 md:px-8 text-center relative z-10">
                         <div className="flex justify-center mb-5">
-                            <div className="w-14 h-14 bg-[#FDB913] rounded-2xl flex items-center justify-center shadow-lg">
-                                <Sparkles className="text-[#24385E] w-7 h-7" />
+                            <div className="w-14 h-14 bg-[#29FE29] rounded-2xl flex items-center justify-center shadow-lg">
+                                <Sparkles className="text-[#2C76FF] w-7 h-7" />
                             </div>
                         </div>
                         <h1 className="text-3xl md:text-5xl font-black mb-5 tracking-tight leading-tight">
@@ -404,8 +404,8 @@ const Pricing = () => {
                     <div className="pricing-card">
                         {/* Top Header Banner */}
                         <div style={{
-                            background: '#FDB913',
-                            color: '#1e3060',
+                            background: '#29FE29',
+                            color: '#1E1E1E',
                             textAlign: 'center',
                             padding: '14px 24px',
                             fontWeight: 900,
@@ -422,9 +422,9 @@ const Pricing = () => {
                                 <span style={{
                                     fontSize: '24px',
                                     fontWeight: 800,
-                                    color: '#1e3060',
+                                    color: '#1E1E1E',
                                     textDecoration: 'line-through',
-                                    textDecorationColor: '#1e3060',
+                                    textDecorationColor: '#1E1E1E',
                                     textDecorationThickness: '2px',
                                     opacity: 0.7,
                                     letterSpacing: '-0.5px'
@@ -452,7 +452,7 @@ const Pricing = () => {
                                     padding: '8px 24px',
                                     fontSize: '14px',
                                     fontWeight: 700,
-                                    color: '#1e3060',
+                                    color: '#1E1E1E',
                                     letterSpacing: '-0.2px'
                                 }}>
                                     50% Launch Discount – Limited to First 1,000 Users
@@ -464,8 +464,8 @@ const Pricing = () => {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                                     {['Verified open roles', 'Daily job updates', 'Advanced search & filters', 'Email job alerts'].map((f, i) => (
                                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <Check style={{ width: '18px', height: '18px', color: '#1e3060', flexShrink: 0 }} strokeWidth={3} />
-                                            <span style={{ fontSize: '15px', fontWeight: 600, color: '#1e3060' }}>{f}</span>
+                                            <Check style={{ width: '18px', height: '18px', color: '#1E1E1E', flexShrink: 0 }} strokeWidth={3} />
+                                            <span style={{ fontSize: '15px', fontWeight: 600, color: '#1E1E1E' }}>{f}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -474,8 +474,8 @@ const Pricing = () => {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                                     {['All visa types (H-1B, TN, etc.)', 'Full salary information', 'Save unlimited jobs'].map((f, i) => (
                                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <Check style={{ width: '18px', height: '18px', color: '#1e3060', flexShrink: 0 }} strokeWidth={3} />
-                                            <span style={{ fontSize: '15px', fontWeight: 600, color: '#1e3060' }}>{f}</span>
+                                            <Check style={{ width: '18px', height: '18px', color: '#1E1E1E', flexShrink: 0 }} strokeWidth={3} />
+                                            <span style={{ fontSize: '15px', fontWeight: 600, color: '#1E1E1E' }}>{f}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -501,10 +501,10 @@ const Pricing = () => {
                                     <Link to="/signup" style={{
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         width: '100%', height: '64px',
-                                        background: '#FDB913',
+                                        background: '#29FE29',
                                         borderBottom: '5px solid #c8920e',
                                         borderRadius: '50px',
-                                        color: '#1e3060',
+                                        color: '#1E1E1E',
                                         fontWeight: 900,
                                         fontSize: '22px',
                                         textDecoration: 'none',
@@ -532,10 +532,10 @@ const Pricing = () => {
                             { icon: Zap, value: '8', label: 'Visa Types' }
                         ].map((badge, i) => (
                             <div key={i} className="text-center p-7 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
-                                <div className="w-10 h-10 bg-[#FDB913]/15 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-[#FDB913]/25 transition-colors">
-                                    <badge.icon size={20} className="text-[#24385E]" />
+                                <div className="w-10 h-10 bg-[#29FE29]/15 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-[#29FE29]/25 transition-colors">
+                                    <badge.icon size={20} className="text-[#2C76FF]" />
                                 </div>
-                                <div className="text-3xl md:text-4xl font-black text-[#24385E] mb-1">{badge.value}</div>
+                                <div className="text-3xl md:text-4xl font-black text-[#2C76FF] mb-1">{badge.value}</div>
                                 <div className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{badge.label}</div>
                             </div>
                         ))}
@@ -543,7 +543,7 @@ const Pricing = () => {
 
                     {/* FAQ Section */}
                     <div className="mb-20">
-                        <h2 className="text-3xl font-black text-[#24385E] text-center mb-10 tracking-tight">
+                        <h2 className="text-3xl font-black text-[#2C76FF] text-center mb-10 tracking-tight">
                             Frequently Asked Questions
                         </h2>
                         <div className="space-y-4 max-w-3xl mx-auto">
@@ -553,10 +553,10 @@ const Pricing = () => {
                                         onClick={() => setOpenFaq(openFaq === index ? null : index)}
                                         className="w-full flex justify-between items-center text-left p-6"
                                     >
-                                        <h3 className="text-lg font-bold text-[#24385E] pr-8">
+                                        <h3 className="text-lg font-bold text-[#2C76FF] pr-8">
                                             {faq.question}
                                         </h3>
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${openFaq === index ? 'bg-[#FDB913] text-[#24385E]' : 'bg-gray-100 text-gray-400'}`}>
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${openFaq === index ? 'bg-[#29FE29] text-[#2C76FF]' : 'bg-gray-100 text-gray-400'}`}>
                                             {openFaq === index ? (
                                                 <ChevronUp size={18} strokeWidth={3} />
                                             ) : (
@@ -583,14 +583,14 @@ const Pricing = () => {
                         <div className="flex-1">
                             <Link to="/" className="flex items-center gap-2 mb-8 group">
                                 <div className="relative">
-                                    <div className="w-10 h-10 bg-[#24385E] rounded-xl flex items-center justify-center transform rotate-12 transition-transform group-hover:rotate-0 shadow-lg">
+                                    <div className="w-10 h-10 bg-[#2C76FF] rounded-xl flex items-center justify-center transform rotate-12 transition-transform group-hover:rotate-0 shadow-lg">
                                         <span className="text-white font-black text-xs tracking-tighter">H1-B</span>
                                     </div>
-                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
+                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#29FE29] rounded-full border-2 border-white"></div>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-xl font-bold text-[#24385E] tracking-tight leading-none">Wage</span>
-                                    <span className="text-xl font-bold text-yellow-500 tracking-tight leading-none">Trail</span>
+                                    <span className="text-xl font-bold text-[#2C76FF] tracking-tight leading-none">Wage</span>
+                                    <span className="text-xl font-bold text-[#2C76FF] tracking-tight leading-none">Trail</span>
                                 </div>
                             </Link>
 
@@ -600,7 +600,7 @@ const Pricing = () => {
 
                             <div className="flex gap-4">
                                 {[Instagram, Twitter, Linkedin, Facebook].map((Icon, i) => (
-                                    <a key={i} href="#" className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-[#24385E] hover:bg-white hover:border-gray-100 transition-all border border-transparent shadow-sm">
+                                    <a key={i} href="#" className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-[#2C76FF] hover:bg-white hover:border-gray-100 transition-all border border-transparent shadow-sm">
                                         <Icon size={20} strokeWidth={2.5} />
                                     </a>
                                 ))}
@@ -612,13 +612,13 @@ const Pricing = () => {
                             <div className="bg-gray-50/30 border border-gray-100 rounded-[32px] p-2 shadow-sm max-w-[260px]">
                                 <a
                                     href="mailto:manasa@wagetrail.com"
-                                    style={{ background: '#24385E', color: '#ffffff' }}
+                                    style={{ background: '#2C76FF', color: '#ffffff' }}
                                     className="flex items-center gap-3 px-6 py-4 rounded-full font-black text-sm hover:opacity-90 transition-all shadow-lg active:scale-95"
                                 >
                                     <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center shrink-0">
                                         <span className="text-lg font-black text-white">?</span>
                                     </div>
-                                    <span className="whitespace-nowrap" style={{ color: '#FDB913' }}>Contact Support</span>
+                                    <span className="whitespace-nowrap" style={{ color: '#29FE29' }}>Contact Support</span>
                                 </a>
                                 <div className="py-4 text-center">
                                     <p className="text-[11px] font-black text-gray-500 mb-0.5">Need help?</p>

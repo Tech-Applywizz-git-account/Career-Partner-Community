@@ -85,7 +85,7 @@
 //     if (loading) {
 //         return (
 //             <div className="flex justify-center py-20">
-//                 <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+//                 <Loader2 className="w-10 h-10 text-[#29FE29] animate-spin" />
 //             </div>
 //         );
 //     }
