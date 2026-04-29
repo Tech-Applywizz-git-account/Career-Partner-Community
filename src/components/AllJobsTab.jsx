@@ -331,7 +331,7 @@ const JobRow = ({ job, isSaved, onSave }) => {
                             <Link
                                 to="/pricing"
                                 className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
-                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF', boxShadow: '0 6px 20px rgba(41,254,41,0.3)' }}
+                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF' }}
                             >
                                 Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
                             </Link>
@@ -341,7 +341,7 @@ const JobRow = ({ job, isSaved, onSave }) => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
-                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF', boxShadow: '0 6px 20px rgba(41,254,41,0.3)' }}
+                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF' }}
                             >
                                 Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
                             </a>

@@ -122,9 +122,9 @@ const JobDetailsPanel = ({ job, onClose }) => {
         {/* Apply Button */}
         <button
           onClick={handleApply}
-          className={`flex-1 py-3 rounded-xl text-white text-xs font-black uppercase tracking-widest shadow-lg transition-all ${isApplied
+          className={`flex-1 py-3 rounded-xl text-white text-xs font-black uppercase tracking-widest transition-all ${isApplied
             ? "bg-emerald-500 cursor-default"
-            : "bg-[#29FE29] hover:bg-blue-800 active:scale-95"
+            : "bg-[#78EB54] hover:bg-[#5fc741] active:scale-95"
             }`}
         >
           {isApplied ? "Applied ✓" : "Apply Now"}

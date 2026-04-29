@@ -88,8 +88,8 @@ const CompanyJobCard = ({ job, onSave, isSaved = false, isLandingPage = false, i
     }, [job.company, job.title, job.lca_filings]);
 
     const baseButtonStyle = isLandingPage
-        ? "h-9 px-5 bg-[#29FE29] text-[#1E1E1E] rounded-full flex items-center justify-center gap-2 font-extrabold text-[12px] hover:bg-[#25e525] transition-all shadow-[0_4px_12px_rgba(41,254,41,0.2)] active:scale-95 shrink-0"
-        : "h-12 px-8 bg-[#29FE29] text-[#1E1E1E] rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] hover:bg-[#25e525] transition-all shadow-[0_6px_20px_rgba(41,254,41,0.3)] active:scale-95 shrink-0";
+        ? "h-9 px-5 bg-[#78EB54] text-white rounded-full flex items-center justify-center gap-2 font-extrabold text-[12px] hover:bg-[#5fc741] transition-all active:scale-95 shrink-0"
+        : "h-12 px-8 bg-[#78EB54] text-white rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] hover:bg-[#5fc741] transition-all active:scale-95 shrink-0";
 
     return (
         <div className={`bg-white rounded-2xl border border-[#ebebeb] ${isLandingPage ? 'p-3 mb-2' : 'p-5 mb-3'} shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row gap-3 relative overflow-hidden group`}>

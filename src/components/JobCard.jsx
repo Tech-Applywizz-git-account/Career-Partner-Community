@@ -309,7 +309,7 @@ const JobCard = ({ job, isSaved = false, isApplied = false, onSaveToggle, onAppl
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
-                                style={{ backgroundColor: '#29FE29', color: '#1E1E1E', boxShadow: '0 6px 20px rgba(41,254,41,0.3)' }}
+                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF' }}
                             >
                                 Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
                             </a>
