@@ -19,6 +19,8 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [page, setPage]                       = useState(0);
 
+  const [searchLoading, setSearchLoading] = useState(false);
+
   // Reset detail + refetch when country or date changes
   useEffect(() => {
     setSelectedCompany(null);
@@ -34,29 +36,45 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
     return () => clearTimeout(timer);
   }, [localSearchTerm]);
 
+  const processResults = (rows) => {
+    const famous = [];
+    const regular = [];
+    
+    // O(n) pass to map and split (DB already sorted by count)
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const name = row.company_name;
+      const isF = isFamous(name);
+      const item = {
+        name,
+        count: Number(row.job_count),
+        isFamous: isF,
+        rank: isF ? getCompanyRank(name) : 999,
+      };
+      
+      if (isF) famous.push(item);
+      else regular.push(item);
+    }
+    
+    // Only sort the tiny famous array, keep the rest as they came from DB (ordered by count)
+    famous.sort((a, b) => {
+      if (a.rank !== b.rank) return a.rank - b.rank;
+      return b.count - a.count;
+    });
+    
+    return famous.concat(regular);
+  };
+
   const fetchCompanies = async () => {
     setLoading(true);
     try {
-      // Fetches ALL companies using paginated RPC calls, bypassing max_rows=1000 cap
       const rows = await fetchAllCompanies(
         selectedCountry || null,
         dateFilter?.from || null,
         dateFilter?.to || null
       );
 
-      const companyList = rows.map(row => ({
-        name:     row.company_name,
-        count:    Number(row.job_count),
-        isFamous: isFamous(row.company_name),
-        rank:     getCompanyRank(row.company_name),
-      })).sort((a, b) => {
-        if (a.isFamous && !b.isFamous) return -1;
-        if (!a.isFamous && b.isFamous) return 1;
-        if (a.isFamous && b.isFamous && a.rank !== b.rank) return a.rank - b.rank;
-        return b.count - a.count;
-      });
-
-      setCompanies(companyList);
+      setCompanies(processResults(rows));
       setPage(0);
     } catch (err) {
       console.error('[AllCompaniesListTab] Error:', err);

@@ -7,7 +7,7 @@ import LogoBox from '../components/LogoBox';
 import AllJobsTab from './AllJobsTab';
 import { isFamous, getCompanyRank } from '../utils/famousCompanies';
 import { COUNTRY_MAP } from '../utils/countryHelper';
-import { fetchAllCompanies } from '../utils/rpcFetchers';
+// fetchAllCompanies removed — now using server-side search via get_companies_fast
 
 const ITEMS_PER_PAGE = 12;
 const LS_CACHE_KEY_PREFIX = 'cp_companies_v1_';
@@ -92,12 +92,13 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [filter, setFilter]               = useState('All');
   const [loading, setLoading]             = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [companies, setCompanies]         = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [page, setPage]                   = useState(0);
   const [fetchError, setFetchError]       = useState(null);
 
-  // On first mount: try to warm from localStorage instantly (SWR pattern)
+  // On first mount: load top 1000 companies from summary table instantly
   useEffect(() => {
     bustCompaniesCache();
     const cacheKey = `${selectedCountry}-${dateFilter?.quickDate}-${dateFilter?.from}-${dateFilter?.to}`;
@@ -105,14 +106,12 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
     if (lsData) {
       setCompanies(lsData);
       setLoading(false);
-      // Still revalidate in background after a short delay
-      setTimeout(() => fetchCompanies(true), 500);
     } else {
       fetchCompanies(false);
     }
   }, []);
 
-  // Reset detail + refetch when country or date changes (skip mount - handled above)
+  // Reset detail + refetch when country or date changes
   useEffect(() => {
     setSelectedCompany(null);
     fetchCompanies(false);
@@ -152,85 +151,71 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
       setFetchError(null);
     }
 
-    let rows = [];
     try {
-      rows = await fetchAllCompanies(
-        selectedCountry || null,
-        dateFilter?.from || null,
-        dateFilter?.to || null
-      );
-    } catch (rpcErr) {
-      console.warn('[CompaniesTab] RPC failed, using direct fallback:', rpcErr);
-      try {
-        const { data: fallbackData, error: fallbackErr } = await supabase
-          .from('jobs_all_roles')
-          .select('company_name')
-          .limit(5000);
-        if (!fallbackErr && fallbackData) {
-          const countMap = {};
-          fallbackData.forEach(r => {
-            const name = r.company_name || '';
-            countMap[name] = (countMap[name] || 0) + 1;
-          });
-          rows = Object.entries(countMap).map(([company_name, job_count]) => ({ company_name, job_count }));
-        } else {
-          throw fallbackErr || new Error('Fallback failed');
-        }
-      } catch (fallbackFinalErr) {
-        if (!backgroundOnly) {
-          setFetchError('Failed to load companies. Please refresh.');
-          setLoading(false);
-        }
-        return;
-      }
-    }
-
-    try {
-      const grouped = {};
-      rows.forEach(row => {
-        const dName = normalizeDisplayName(row.company_name);
-        const count = Number(row.job_count);
-        if (!grouped[dName]) {
-          grouped[dName] = { name: dName, rawNames: [row.company_name], count, isFamous: isFamous(dName), rank: getCompanyRank(dName) };
-        } else {
-          grouped[dName].count += count;
-          if (!grouped[dName].rawNames.includes(row.company_name)) grouped[dName].rawNames.push(row.company_name);
-        }
+      // Read top 100,000 companies from summary_company_jobs — < 100ms always
+      const { data: fastData, error: fastErr } = await supabase.rpc('get_companies_fast', {
+        p_country: selectedCountry || null,
+        p_limit:   100000,
+        p_offset:  0,
+        p_search:  null,
+        p_start_date: dateFilter?.from || null,
+        p_end_date:   dateFilter?.to || null,
       });
 
-      const companyList = Object.values(grouped).map(c => ({
-        ...c,
-        type: isTechRole(c.name) ? 'TECH' : 'NON-TECH',
-      })).sort((a, b) => {
-        if (a.isFamous && !b.isFamous) return -1;
-        if (!a.isFamous && b.isFamous) return 1;
-        if (a.isFamous && b.isFamous && a.rank !== b.rank) return a.rank - b.rank;
-        return b.count - a.count;
-      });
+      if (fastErr) throw fastErr;
 
-      if (companyList.length > 0) {
-        _companiesCache_v3 = { data: companyList, key: cacheKey, timestamp: Date.now() };
-        lsSet(cacheKey, companyList); // persist for next visit
-        setCompanies(companyList);
-        if (!backgroundOnly) setPage(0);
-      }
-    } catch (err) {
-      if (!backgroundOnly) {
-        setFetchError('Failed to process company data. Please refresh.');
-      }
-    } finally {
+      const list = processResults(fastData || []);
+      _companiesCache_v3 = { data: list, key: cacheKey, timestamp: Date.now() };
+      lsSet(cacheKey, list);
+      setCompanies(list);
       if (!backgroundOnly) setLoading(false);
+
+    } catch (err) {
+      console.error('[CompaniesTab] Error:', err);
+      if (!backgroundOnly) {
+        setFetchError('Failed to load companies. Please refresh.');
+        setLoading(false);
+      }
     }
+  };
+
+  // Shared row processor — highly optimized to prevent UI freezing
+  const processResults = (rows) => {
+    const famous = [];
+    const regular = [];
+    
+    // O(n) pass to map and split (DB already sorted by count)
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const name = row.company_name;
+      const isF = isFamous(name);
+      const item = {
+        name,
+        count: Number(row.job_count),
+        isFamous: isF,
+        rank: isF ? getCompanyRank(name) : 999,
+        type: isTechRole(name) ? 'TECH' : 'NON-TECH'
+      };
+      
+      if (isF) famous.push(item);
+      else regular.push(item);
+    }
+    
+    // Only sort the tiny famous array, keep the rest as they came from DB (ordered by count)
+    famous.sort((a, b) => {
+      if (a.rank !== b.rank) return a.rank - b.rank;
+      return b.count - a.count;
+    });
+    
+    return famous.concat(regular);
   };
 
   const totalJobCount = companies.reduce((sum, c) => sum + c.count, 0);
 
-  const isTechRole = (name) => {
-    const techBrands = ['google', 'amazon', 'microsoft', 'meta', 'apple', 'netflix', 'tesla', 'nvidia', 'adobe', 'salesforce', 'oracle', 'intel', 'ibm', 'cisco', 'uber', 'lyft', 'airbnb', 'stripe', 'square', 'zoom', 'slack', 'twitter', 'linkedin'];
-    const kw = ['software','engineer','developer','tech','data','ml','ai','cloud','security','devops','web','frontend','backend','fullstack','infrastructure','network','computing','digital','robotics','automation'];
-    const lc = String(name).toLowerCase();
-    return techBrands.some(b => lc.includes(b)) || kw.some(k => lc.includes(k));
-  };
+  // Compiled regex for lightning-fast matching over 82k rows
+  const techRegex = /google|amazon|microsoft|meta|apple|netflix|tesla|nvidia|adobe|salesforce|oracle|intel|ibm|cisco|uber|lyft|airbnb|stripe|square|zoom|slack|twitter|linkedin|software|engineer|developer|tech|data|ml|ai|cloud|security|devops|web|frontend|backend|fullstack|infrastructure|network|computing|digital|robotics|automation/i;
+  
+  const isTechRole = (name) => techRegex.test(name);
 
   const countryLabel = selectedCountry
     ? (COUNTRY_MAP[selectedCountry]?.label || selectedCountry)

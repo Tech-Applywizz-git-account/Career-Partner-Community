@@ -829,53 +829,77 @@ const AllJobsTab = ({
                 }
             }
 
-            // ── Phase 1: Single query — strictly jobs_all_roles only ─────────────
+            // ── Phase 1: High-Performance Server-Side Search ─────────────────────
             const QUICK_LIMIT = fixedCompany || fixedDomain ? 1000 : 500;
-            let quickQ = supabase.from('jobs_all_roles')
-                .select('*', { count: 'exact' })
-                .order('date_posted', { ascending: false, nullsFirst: false })
-                .limit(QUICK_LIMIT);
+            
+            // If we have a fixed company/domain, we use standard query (simple)
+            // If we have a search term, we use the optimized search_jobs RPC
+            let qList = [];
+            let qTotal = 0;
 
-            // Apply filters — jobs_all_roles only
-            if (fixedCompany) {
-                if (Array.isArray(fixedCompany)) {
-                    quickQ = quickQ.in('company_name', fixedCompany);
-                } else {
-                    quickQ = quickQ.eq('company_name', fixedCompany);
+            if (!fixedCompany && !fixedDomain && search && search.trim()) {
+                const { data: rpcData, error: rpcErr } = await supabase.rpc('search_jobs', {
+                    p_search_term: search.trim(),
+                    p_country: country || null,
+                    p_start_date: dateFilter?.from || null,
+                    p_end_date: dateFilter?.to || null,
+                    p_limit: QUICK_LIMIT,
+                    p_offset: 0
+                });
+
+                if (rpcErr) {
+                    console.error('search_jobs RPC failed:', rpcErr);
+                    throw rpcErr;
                 }
-            } else if (fixedDomain) {
-                quickQ = quickQ.eq('role_name', fixedDomain);
-            } else if (search && search.trim()) {
-                const words = search.trim().toLowerCase()
-                    .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ' ')
-                    .split(/\s+/).filter(w => w.length >= 1);
-                const roleKeywords = ['analyst', 'developer', 'engineer', 'scientist', 'designer', 'manager', 'lead', 'senior', 'junior', 'architect', 'data', 'software', 'ai', 'ml', 'researcher'];
-                const isRoleS = words.some(w => roleKeywords.includes(w));
-                const tC = `and(${words.map(w => `title.ilike.%${w}%`).join(',')})`;
-                const cC = `and(${words.map(w => `company_name.ilike.%${w}%`).join(',')})`;
-                const rC = `and(${words.map(w => `role_name.ilike.%${w}%`).join(',')})`;
-                quickQ = quickQ.or(isRoleS && words.length >= 2 ? `${tC},${rC}` : `${tC},${cC},${rC}`);
-            }
-            if (country) quickQ = quickQ.eq('indeed_search_country', country);
-            quickQ = applyDateFilter(quickQ, dateFilter);
+                
+                qList = (rpcData || []).map(j => ({
+                    ...j,
+                    company: j.company_name || 'Unknown',
+                    role: j.role_name || j.title || '',
+                    job_role_name: j.role_name || j.title || '',
+                    url: j.job_url_direct || j.job_url || '',
+                    apply_url: j.job_url || j.job_url_direct || '',
+                    job_id: j.id,
+                    isVerified: false,
+                    isTeaser: paymentStatus === 'pending'
+                }));
+                qTotal = parseInt(rpcData?.[0]?.total_count || 0);
+            } else {
+                // Standard fallback for non-search or fixed-filter views
+                let quickQ = supabase.from('jobs_all_roles')
+                    .select('*', { count: 'exact' })
+                    .order('date_posted', { ascending: false, nullsFirst: false })
+                    .limit(QUICK_LIMIT);
 
-            // Single DB call
-            const qStdRes = await quickQ;
-            if (qStdRes?.error) throw qStdRes.error;
-            let qList = (qStdRes.data || []).map(j => ({
-                ...j,
-                company: j.company_name || 'Unknown',
-                role: j.role_name || j.title || '',
-                job_role_name: j.role_name || j.title || '',
-                url: j.job_url_direct || j.job_url || '',
-                apply_url: j.job_url || j.job_url_direct || '',
-                job_id: j.id,
-                isVerified: false,
-                isTeaser: paymentStatus === 'pending'
-            }));
+                if (fixedCompany) {
+                    if (Array.isArray(fixedCompany)) quickQ = quickQ.in('company_name', fixedCompany);
+                    else quickQ = quickQ.eq('company_name', fixedCompany);
+                } else if (fixedDomain) {
+                    quickQ = quickQ.eq('role_name', fixedDomain);
+                }
+                
+                if (country) quickQ = quickQ.eq('indeed_search_country', country);
+                quickQ = applyDateFilter(quickQ, dateFilter);
+
+                const qStdRes = await quickQ;
+                if (qStdRes?.error) throw qStdRes.error;
+                
+                qList = (qStdRes.data || []).map(j => ({
+                    ...j,
+                    company: j.company_name || 'Unknown',
+                    role: j.role_name || j.title || '',
+                    job_role_name: j.role_name || j.title || '',
+                    url: j.job_url_direct || j.job_url || '',
+                    apply_url: j.job_url || j.job_url_direct || '',
+                    job_id: j.id,
+                    isVerified: false,
+                    isTeaser: paymentStatus === 'pending'
+                }));
+                qTotal = qStdRes.count || qList.length;
+            }
 
             // Client-side search filter (DB already filtered, this is belt-and-suspenders)
-            if (search && search.trim()) {
+            if (!fixedCompany && !fixedDomain && search && search.trim() && qList.length > 0) {
                 const sWords = search.trim().toLowerCase()
                     .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ' ')
                     .split(/\s+/).filter(w => w.length >= 1);
@@ -888,8 +912,7 @@ const AllJobsTab = ({
             // No LCA enrichment — strictly jobs_all_roles only per requirements
 
             qList = interleaveJobs(qList);
-
-            const qTotal = (search && search.trim()) ? qList.length : (qStdRes.count || qList.length);
+            // qTotal is already calculated correctly in the Phase 1 blocks above.
 
             // Store quick result → Map + localStorage
             processedListCache.current.set(listCacheKey, { list: qList, total: qTotal });

@@ -2866,80 +2866,11 @@ const Homepage = () => {
 
   // Moved normalizeName to top level
 
-  // Fetch filing counts for the current page of companies
+  // Global filing count fetcher disabled per user request
+  // (H1B requests should only happen when in the H1B Finder tab)
   useEffect(() => {
-    const rawNames = companies.map(c => c.company).filter(Boolean);
-    if (rawNames.length === 0) return;
-
-    const fetchFilings = async () => {
-      try {
-        // Generate search terms: core name + first two words + first word
-        const searchTerms = new Set();
-        rawNames.forEach(n => {
-          const norm = normalizeName(n);
-          if (norm.length > 2) searchTerms.add(norm);
-          const words = norm.split(' ').filter(Boolean);
-          if (words.length >= 2) searchTerms.add(words.slice(0, 2).join(' '));
-          if (words.length >= 1) searchTerms.add(words[0]);
-        });
-
-        const searchNames = Array.from(searchTerms).filter(n => n.length > 2);
-        if (searchNames.length === 0) return;
-
-        // PostgREST .or() filter string uses '*' as the wildcard for ilike
-        const orFilter = searchNames.map(n => `Company.ilike.*${n.replace(/,/g, '\\,')}*`).join(',');
-
-        const { data, error } = await supabase
-          .from('h1b_sponsor_finder')
-          .select('Company, "LCA Filings"')
-          .or(orFilter);
-
-        if (error) {
-          console.warn("Filing count fetch error:", error);
-          return;
-        }
-
-        if (data) {
-          const map = {};
-          // Sort descending so highest match wins for generic terms
-          const sorted = [...data].sort((a, b) => {
-            const valA = typeof a["LCA Filings"] === 'number' ? a["LCA Filings"] : parseInt(String(a["LCA Filings"]).replace(/,/g, '')) || 0;
-            const valB = typeof b["LCA Filings"] === 'number' ? b["LCA Filings"] : parseInt(String(b["LCA Filings"]).replace(/,/g, '')) || 0;
-            return valB - valA;
-          });
-
-          sorted.forEach(f => {
-            const norm = normalizeName(f.Company);
-            const count = typeof f["LCA Filings"] === 'number' ? f["LCA Filings"] : parseInt(String(f["LCA Filings"]).replace(/,/g, '')) || 0;
-
-            map[f.Company.toLowerCase()] = count;
-            if (norm) {
-              // If the filing record normalized name starts with our normalized company name (e.g. "merck sharp dohme" starts with "merck")
-              // we should store it under the core name if it's the best count found so far.
-              if (!map[norm] || map[norm] < count) map[norm] = count;
-
-              const words = norm.split(' ').filter(Boolean);
-              // Also map to the very first word if it's long enough, for extremely aggressive matching (e.g. Merck)
-              if (words.length >= 1) {
-                const firstWord = words[0];
-                if (firstWord.length > 3 && (!map[firstWord] || map[firstWord] < count)) {
-                  map[firstWord] = count;
-                }
-              }
-              if (words.length >= 2) {
-                const firstTwo = words[0] + ' ' + words[1];
-                if (firstTwo.length > 5 && (!map[firstTwo] || map[firstTwo] < count)) {
-                  map[firstTwo] = count;
-                }
-              }
-            }
-          });
-          setFilingCounts(prev => ({ ...prev, ...map }));
-        }
-      } catch (err) { console.error("Error in fetchFilings effect:", err); }
-    };
-    fetchFilings();
-  }, [companies]);
+    setFilingCounts({});
+  }, [activeView]);
 
 
   // Fetch job roles from Supabase on mount (globally cached)
@@ -3705,22 +3636,12 @@ const Homepage = () => {
         return dateB - dateA;
       });
 
-      // Fetch filing count for this company to show on cards
       let lcaCount = 0;
-      const { data: sData } = await supabase
-        .from('h1b_sponsor_finder')
-        .select('"LCA Filings"')
-        .ilike('Company', `%${selectedCompany}%`)
-        .limit(1);
-
-      if (sData && sData[0]) {
-        const val = sData[0]["LCA Filings"];
-        lcaCount = typeof val === 'number' ? val : parseInt(String(val || 0).replace(/,/g, '')) || 0;
-      }
-
+      // H1B filing fetch removed per user request (only allow in H1B Finder tab)
+      
       const jobsWithFilings = unique.map(j => ({
         ...j,
-        lca_filings: lcaCount,
+        lca_filings: 0,
         isTeaser: paymentStatus === 'pending'
       }));
 
