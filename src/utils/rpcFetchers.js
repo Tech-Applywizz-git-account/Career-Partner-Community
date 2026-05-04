@@ -1,7 +1,7 @@
 import { supabase } from '../supabaseClient';
 
 const RPC_PAGE_SIZE = 1000; // Match Supabase max_rows setting
-const BATCH = 5;            // Parallel requests per round
+const BATCH = 10;            // Parallel requests per round (Increased for performance)
 
 /**
  * Fetches ALL rows from get_companies_by_country RPC, bypassing

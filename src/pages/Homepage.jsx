@@ -2378,6 +2378,7 @@ import GlobalSearchHeader from '../components/GlobalSearchHeader';
 import DomainsTab from '../components/DomainsTab';
 import CompaniesTab from '../components/CompaniesTab';
 import AllCompaniesListTab from '../components/AllCompaniesListTab';
+import H1BSponsorFinderTab from '../components/H1BSponsorFinderTab';
 import { fetchJobRoles, filterRoles } from '../utils/rolesSuggestions';
 import { isFamous } from '../utils/famousCompanies';
 import { getWageLevel } from '../dataSyncService';
@@ -2813,7 +2814,17 @@ const Homepage = () => {
     navigate('/', { replace: true });
   };
 
-  const [activeView, setActiveView] = useState('all_jobs');
+  const location = window.location.pathname;
+  const [activeView, setActiveView] = useState(() => {
+    if (location.includes('/h1b-finder')) return 'h1b_finder';
+    return 'all_jobs';
+  });
+
+  useEffect(() => {
+    if (window.location.pathname.includes('/h1b-finder')) {
+      setActiveView('h1b_finder');
+    }
+  }, [window.location.pathname]);
   const [companies, setCompanies] = useState([]);
   const [companiesLoading, setCompaniesLoading] = useState(false);
   const [companySearch, setCompanySearch] = useState('');
@@ -2835,7 +2846,7 @@ const Homepage = () => {
   const [allProcessedCompanies, setAllProcessedCompanies] = useState(window._allProcessedCompanies || []);
   const [isInitialLoadDone, setIsInitialLoadDone] = useState(!!window._allProcessedCompanies);
   const [levelFilter, setLevelFilter] = useState([]); // Array like ['Lv 1', 'Lv 2']
-  const [countryFilter, setCountryFilter] = useState('USA');
+  const [countryFilter, setCountryFilter] = useState(null);
   const [dateFilter, setDateFilter] = useState({ quickDate: 'all', from: null, to: null });
   const [activeJobFilter, setActiveJobFilter] = useState('all');
   const [showCompanyFilters, setShowCompanyFilters] = useState(false);
@@ -3854,6 +3865,7 @@ const Homepage = () => {
     { id: 'all_jobs', label: 'All Jobs', icon: Briefcase },
     { id: 'all_companies_list', label: 'All Companies', icon: Building2 },
     { id: 'domains', label: 'Domains', icon: Globe },
+    { id: 'h1b_finder', label: 'H-1B Finder', icon: Shield },
     { id: 'all_companies', label: 'All companies that sponsor', icon: Building2 },
   ];
 
@@ -3985,7 +3997,12 @@ const Homepage = () => {
                 if (item.external) {
                   window.open(item.url, '_blank', 'noopener,noreferrer');
                 } else {
-                  setActiveView(item.id);
+                  if (item.id === 'h1b_finder') {
+                    navigate('/h1b-finder');
+                  } else {
+                    navigate('/app');
+                    setActiveView(item.id);
+                  }
                 }
                 if (isMobile) setMobileMenuOpen(false);
               }}
@@ -4145,6 +4162,13 @@ const Homepage = () => {
                 setActiveView('all_jobs');
               }}
             />
+          )}
+
+          {/* ━━━━━━ H1B FINDER VIEW ━━━━━━ */}
+          {activeView === 'h1b_finder' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <H1BSponsorFinderTab />
+            </div>
           )}
 
           {/* ━━━━━━ BILLING VIEW ━━━━━━ */}

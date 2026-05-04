@@ -61,13 +61,13 @@ function VerifiedSeal({ size = 16 }) {
 
 function getCanonicalCompany(name) {
     if (!name) return 'Unknown';
-    const n = String(name).toLowerCase().replace(/[^a-z0-9]/g, ' ').trim();
-    // Use exact matches for parent groupings to avoid hijacking sub-brands like "Google DeepMind"
-    if (n === 'amazon' || n === 'aws' || n === 'amazon com') return 'Amazon';
-    if (n === 'google' || n === 'alphabet' || n === 'google inc') return 'Google';
-    if (n === 'meta' || n === 'facebook' || n === 'meta platforms') return 'Meta';
-    if (n === 'microsoft' || n === 'microsoft corporation') return 'Microsoft';
-    if (n === 'apple' || n === 'apple inc') return 'Apple';
+    const n = String(name).toLowerCase().trim();
+    // Aggressive brand matching to consolidate variants like "Amazon.com" or "AWS"
+    if (n.includes('amazon') || n.includes('aws')) return 'Amazon';
+    if (n.includes('google') || n.includes('alphabet')) return 'Google';
+    if (n.includes('meta') || n.includes('facebook')) return 'Meta';
+    if (n.includes('microsoft')) return 'Microsoft';
+    if (n.includes('apple')) return 'Apple';
     return name;
 }
 
@@ -526,7 +526,7 @@ const AllJobsTab = ({
             const hasLvl = parseWageLevel(j.wage_level) || parseWageLevel(j.wage_num) || parseWageLevel(j.salary);
             const isEligible = !!(hasSal || hasLvl);
 
-            const dateStr = j.upload_date || j.ingestedAt || j.date_posted || '1970-01-01';
+            const dateStr = j.date_posted || j.created_at || j.upload_date || j.ingestedAt || '1970-01-01';
             const timestamp = new Date(dateStr).getTime() || 0;
             const wageLvl = parseWageLevel(j.wage_level) || parseWageLevel(j.wage_num) || parseWageLevel(j.salary) || 0;
             const filings = parseInt(j.lca_filings) || 0;
@@ -754,7 +754,11 @@ const AllJobsTab = ({
                         .select('*', { count: 'exact' });
 
                     if (fixedCompany) {
-                        directQ = directQ.eq('company_name', fixedCompany);
+                        if (Array.isArray(fixedCompany)) {
+                            directQ = directQ.in('company_name', fixedCompany);
+                        } else {
+                            directQ = directQ.eq('company_name', fixedCompany);
+                        }
                     } else if (fixedDomain) {
                         directQ = directQ.eq('role_name', fixedDomain);
                     } else if (search && search.trim()) {
@@ -776,17 +780,9 @@ const AllJobsTab = ({
                         // wage_level doesn't exist in new schema, but we can try to find it in title or description if needed
                         // for now skipping since user said use the provided table schema
                     }
-                    if (filter === 'verified') {
-                        const vSet = verifiedSet || await getVerifiedSet();
-                        const vCos = Array.from(vSet);
-                        if (vCos.length > 0) directQ = directQ.in('company_name', vCos.slice(0, 1000));
-                    }
-
                     const { data: dData, count: dCount, error: dError } = await directQ
                         .order('date_posted', { ascending: false, nullsFirst: false })
                         .range(from, from + JOBS_PER_PAGE - 1);
-
-                    console.log(`[DEBUG] Deep Fetch: from=${from}, dCount=${dCount}, dataLength=${dData?.length}`);
 
                     if (dError) throw dError;
 
@@ -804,16 +800,15 @@ const AllJobsTab = ({
                         }
                     }
 
-                    const vSetLocal = verifiedSet || await getVerifiedSet();
                     const directJobs = finalData.map(j => ({
                         ...j,
-                        company: j.company_name,
-                        url: j.job_url_direct,
-                        apply_url: j.job_url,
+                        company: j.company_name || 'Unknown',
+                        url: j.job_url_direct || j.job_url || '',
+                        apply_url: j.job_url || j.job_url_direct || '',
                         job_id: j.id,
-                        role: j.role_name,
-                        job_role_name: j.role_name,
-                        isVerified: vSetLocal.has(j.company_name) || false,
+                        role: j.role_name || j.title || '',
+                        job_role_name: j.role_name || j.title || '',
+                        isVerified: false,
                         isTeaser: paymentStatus === 'pending'
                     }));
 
@@ -834,238 +829,90 @@ const AllJobsTab = ({
                 }
             }
 
-            // ── Phase 1: Quick DB fetch — LIMIT 300 per table ──────────────────
-            const qTopTier = RANKED_COMPANIES.slice(0, 250); // Increased pool
-            let quickRankedQ = supabase.from('jobs_all_roles').select('*').in('company_name', qTopTier).limit(1000);
-
+            // ── Phase 1: Single query — strictly jobs_all_roles only ─────────────
+            const QUICK_LIMIT = fixedCompany || fixedDomain ? 1000 : 500;
             let quickQ = supabase.from('jobs_all_roles')
                 .select('*', { count: 'exact' })
-                .order('date_posted', { ascending: false })
-                .limit(250);
+                .order('date_posted', { ascending: false, nullsFirst: false })
+                .limit(QUICK_LIMIT);
 
-            let qvBackup = supabase.from('audit_reviews_backup').select('*', { count: 'exact' }).eq('tl_confirmation', 'yes').order('audit_date', { ascending: false }).limit(300);
-
+            // Apply filters — jobs_all_roles only
             if (fixedCompany) {
-                quickQ = quickQ.eq('company_name', fixedCompany);
-                quickRankedQ = quickRankedQ.eq('company_name', fixedCompany);
-                qvBackup = qvBackup.eq('company_name', fixedCompany);
+                if (Array.isArray(fixedCompany)) {
+                    quickQ = quickQ.in('company_name', fixedCompany);
+                } else {
+                    quickQ = quickQ.eq('company_name', fixedCompany);
+                }
             } else if (fixedDomain) {
                 quickQ = quickQ.eq('role_name', fixedDomain);
-                quickRankedQ = quickRankedQ.eq('role_name', fixedDomain);
-                qvBackup = qvBackup.eq('domain', fixedDomain);
             } else if (search && search.trim()) {
-                const sLow = search.trim().toLowerCase();
-                const words = sLow.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, " ")
-                    .split(/\s+/)
-                    .filter(w => w.length >= 1);
-
-                // Identify if it's a role search (contains role keywords)
+                const words = search.trim().toLowerCase()
+                    .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ' ')
+                    .split(/\s+/).filter(w => w.length >= 1);
                 const roleKeywords = ['analyst', 'developer', 'engineer', 'scientist', 'designer', 'manager', 'lead', 'senior', 'junior', 'architect', 'data', 'software', 'ai', 'ml', 'researcher'];
                 const isRoleS = words.some(w => roleKeywords.includes(w));
-
                 const tC = `and(${words.map(w => `title.ilike.%${w}%`).join(',')})`;
                 const cC = `and(${words.map(w => `company_name.ilike.%${w}%`).join(',')})`;
                 const rC = `and(${words.map(w => `role_name.ilike.%${w}%`).join(',')})`;
-
-                // If it's a role search, don't match on company name alone in DB query
-                if (isRoleS && words.length >= 2) {
-                    quickQ = quickQ.or(`${tC},${rC}`);
-                    quickRankedQ = quickRankedQ.or(`${tC},${rC}`);
-                } else {
-                    quickQ = quickQ.or(`${tC},${cC},${rC}`);
-                    quickRankedQ = quickRankedQ.or(`${tC},${cC},${rC}`);
-                }
-
-                const cvC = `and(${words.map(w => `company_name.ilike.%${w}%`).join(',')})`;
-
-                if (isRoleS && words.length >= 2) {
-                    // Strictly NO role/domain search even in backup if we want 'ONLY title'
-                    qvBackup = qvBackup.filter('domain', 'ilike', '%NON_EXISTENT_NONE%');
-                } else {
-                    qvBackup = qvBackup.or(`${cvC}`);
-                }
+                quickQ = quickQ.or(isRoleS && words.length >= 2 ? `${tC},${rC}` : `${tC},${cC},${rC}`);
             }
-            if (level && level.length > 0) {
-                const exp = level.flatMap(l => { const n = l.match(/\d/)?.[0]; if (!n) return [l]; const rom = { '1': 'I', '2': 'II', '3': 'III', '4': 'IV' }[n]; return [l, `Level ${n}`, `Level ${rom}`, n, `Lv ${n}`, `Lv${n}`]; });
-                quickQ = quickQ.in('wage_level', exp);
-                quickRankedQ = quickRankedQ.in('wage_level', exp);
-            }
-            if (country) {
-                // DB stores exact uppercase COUNTRY_MAP keys (INDIA, USA, UNITEDARABEMIRATES, etc.)
-                // Use .eq() for jobs_all_roles; keep ilike for audit_reviews_backup
-                quickQ = quickQ.eq('indeed_search_country', country);
-                quickRankedQ = quickRankedQ.eq('indeed_search_country', country);
-                // Backup table country column may store differently — use ilike as fallback
-                const bParts = [`country.ilike.%${country}%`];
-                if (fullName && fullName !== country) bParts.push(`country.ilike.%${fullName}%`);
-                qvBackup = qvBackup.or(bParts.join(','));
-            }
+            if (country) quickQ = quickQ.eq('indeed_search_country', country);
             quickQ = applyDateFilter(quickQ, dateFilter);
-            quickRankedQ = applyDateFilter(quickRankedQ, dateFilter);
 
-            const [qStdRes, qRankedRes, qBackupRes] = await Promise.all([
-                quickQ,
-                quickRankedQ,
-                qvBackup
-            ]);
+            // Single DB call
+            const qStdRes = await quickQ;
             if (qStdRes?.error) throw qStdRes.error;
+            let qList = (qStdRes.data || []).map(j => ({
+                ...j,
+                company: j.company_name || 'Unknown',
+                role: j.role_name || j.title || '',
+                job_role_name: j.role_name || j.title || '',
+                url: j.job_url_direct || j.job_url || '',
+                apply_url: j.job_url || j.job_url_direct || '',
+                job_id: j.id,
+                isVerified: false,
+                isTeaser: paymentStatus === 'pending'
+            }));
 
-            const quickVSet = verifiedSet || await getVerifiedSet();
-            const vVerified = [
-                ...(qBackupRes.data || [])
-            ].map(r => {
-                const lvlNum = parseWageLevel(r.salary);
-                return {
-                    ...r,
-                    title: null, // Strictly from sponsored table only
-                    role: r.role,
-                    url: r.job_link,
-                    date_posted: r.audit_date,
-                    job_role_name: r.domain,
-                    isVerified: true,
-                    isTeaser: paymentStatus === 'pending',
-                    job_id: r.job_id,
-                    wage_level: lvlNum ? `Lv ${lvlNum}` : null
-                };
-            });
-
-            const vIdsQ = [...new Set(vVerified.map(v => v.job_id))].filter(Boolean);
-            const vUrlsQ = [...new Set(vVerified.map(v => v.url))].filter(Boolean);
-            const vCosQ = [...new Set(vVerified.map(v => v.company))].filter(Boolean);
-
-            let qDeepSpon = [];
-            try {
-                if (vIdsQ.length > 0 || vUrlsQ.length > 0 || vCosQ.length > 0) {
-                    const idNumList = vIdsQ.map(id => parseInt(id)).filter(n => !isNaN(n));
-                    const queries = [
-                        idNumList.length > 0 ? supabase.from('jobs_all_roles').select('*').in('id', idNumList) : null,
-                        vUrlsQ.length > 0 ? supabase.from('jobs_all_roles').select('*').in('job_url_direct', vUrlsQ) : null,
-                        vCosQ.length > 0 ? supabase.from('jobs_all_roles').select('*').in('company_name', vCosQ).limit(500) : null
-                    ].filter(Boolean);
-                    const results = await Promise.all(queries);
-                    results.forEach(r => { if (r.data) qDeepSpon.push(...r.data); });
-                }
-            } catch (_deepErr) { /* non-fatal */ }
-
-            const qSponsored = [...(qRankedRes.data || []), ...(qStdRes.data || []), ...qDeepSpon]
-                .map(j => ({
-                    ...j,
-                    company: j.company_name,
-                    role: j.role_name,
-                    job_role_name: j.role_name,
-                    url: j.job_url_direct,
-                    apply_url: j.job_url,
-                    job_id: j.id,
-                    isVerified: j.isVerified || quickVSet.has(j.company_name) || false,
-                    isTeaser: paymentStatus === 'pending'
-                }));
-
-            const qMetaStore = new Map();
-            qSponsored.forEach(s => {
-                const uk = _urlKey(s.url);
-                if (uk) qMetaStore.set('u:' + uk, s);
-                if (s.id) qMetaStore.set('i:' + s.id, s);
-                if (s.jobId) qMetaStore.set('j:' + s.jobId, s);
-            });
-
-            vVerified.forEach(v => {
-                const vk = _urlKey(v.url);
-                const meta = qMetaStore.get('u:' + vk) || qMetaStore.get('i:' + v.job_id) || qMetaStore.get('j:' + v.job_id);
-                if (meta) {
-                    v.title = meta.title; v.job_id = meta.id; v.wage_level = meta.wage_level || v.wage_level;
-                    v.location = meta.location || v.location; v.salary = meta.salary || v.salary;
-                } else {
-                    // Fallback matching by company + normalized role/domain if direct ID/URL match fails
-                    const companyJobs = qDeepSpon.filter(j => j.company === v.company);
-                    const vRole = _normR(v.role || v.domain || '');
-                    const bestMatch = companyJobs.find(j => _normR(j.title).includes(vRole) || _normR(j.job_role_name).includes(vRole));
-                    if (bestMatch) {
-                        v.title = bestMatch.title;
-                        v.job_id = bestMatch.id;
-                    }
-                }
-                if (!v.location) v.location = 'united states';
-            });
-
-            const qMap = new Map();
-            qSponsored.forEach(j => { if (!j.location) j.location = 'united states'; qMap.set(_jobKey(j), j); });
-            vVerified.forEach(v => {
-                const jk = _jobKey(v);
-                const ex = qMap.get(jk);
-                qMap.set(jk, ex ? { ...ex, ...v, isVerified: true, title: ex.title || v.title, wage_level: ex.wage_level || v.wage_level, salary: ex.salary || v.salary, location: ex.location || v.location, job_id: ex.job_id || v.job_id } : v);
-            });
-
-            let qList = Array.from(qMap.values());
-
-            // ── Search Filter (Client-side) ──────────────────────────
+            // Client-side search filter (DB already filtered, this is belt-and-suspenders)
             if (search && search.trim()) {
-                const sLower = search.trim().toLowerCase();
-                const sWords = sLower.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, " ").split(/\s+/).filter(w => w.length >= 1);
-
-                if (sWords.length > 0) {
-                    qList = qList.filter(j => {
-                        const n = (s) => String(s || '').toLowerCase();
-                        const target = `${n(j.title)} ${n(j.company_name)} ${n(j.role_name)}`;
-                        return sWords.every(word => target.includes(word));
-                    });
-                }
-            }
-
-            if (filter === 'verified') qList = qList.filter(j => j.isVerified);
-            if (level && level.length > 0) {
-                const aD = new Set(level.map(l => { const m = String(l).match(/\d/); return m ? m[0] : null; }).filter(Boolean));
+                const sWords = search.trim().toLowerCase()
+                    .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ' ')
+                    .split(/\s+/).filter(w => w.length >= 1);
                 qList = qList.filter(j => {
-                    const m = parseWageLevel(j.wage_level);
-                    return m && aD.has(String(m));
+                    const target = `${j.title || ''} ${j.company_name || ''} ${j.role_name || ''}`.toLowerCase();
+                    return sWords.every(w => target.includes(w));
                 });
             }
 
-            // ── BATCH LCA FILING ENRICHMENT (Rule 4) ──
-            const poolCos = [...new Set(qList.map(j => j.company))].filter(Boolean);
-            if (poolCos.length > 0) {
-                const { data: fData } = await supabase.from('h1b_sponsor_finder')
-                    .select('Company, "LCA Filings"').in('Company', poolCos.slice(0, 100)); // Batch 100
-                if (fData) {
-                    const fMap = new Map();
-                    fData.forEach(d => fMap.set(d.Company.toLowerCase(), parseInt(String(d["LCA Filings"]).replace(/,/g, '')) || 0));
-                    qList.forEach(j => {
-                        const co = String(j.company || '').toLowerCase();
-                        if (fMap.has(co)) j.lca_filings = fMap.get(co);
-                    });
-                }
-            }
+            // No LCA enrichment — strictly jobs_all_roles only per requirements
 
             qList = interleaveJobs(qList);
 
-            const qTotal = (search && search.trim())
-                ? qList.length
-                : (filter === 'verified'
-                    ? (level && level.length > 0 ? qList.length : Math.max(qList.length, (qBackupRes.count || 0)))
-                    : (qStdRes.count || qList.length));
+            const qTotal = (search && search.trim()) ? qList.length : (qStdRes.count || qList.length);
 
             // Store quick result → Map + localStorage
             processedListCache.current.set(listCacheKey, { list: qList, total: qTotal });
             try { localStorage.setItem(QUICK_LS_KEY, JSON.stringify({ ts: Date.now(), total: qTotal, list: qList.slice(0, 150) })); } catch (_) { }
 
-            // ⚡ Show pages 1-10 immediately
+            // ⚡ Show immediately
             const pagedSlice = qList.slice(from, from + JOBS_PER_PAGE);
             if (pagedSlice.length > 0) {
                 setJobs(pagedSlice);
                 setTotalJobs(qTotal);
                 setCurrentPage(page);
-                console.log(`[DEBUG] Phase 1 Quick: pagedSlice.length=${pagedSlice.length}, qTotal=${qTotal}`);
                 setLoading(false);
             } else if (from >= qList.length && qTotal > qList.length) {
                 // Page is beyond locally-fetched data: fetch directly from DB with server-side range
                 try {
-                    let directQ = supabase.from('job_jobrole_sponsored_sync')
+                    let directQ = supabase.from('jobs_all_roles')
                         .select('*', { count: 'exact' })
                         .order('date_posted', { ascending: false })
                         .range(from, from + JOBS_PER_PAGE - 1);
                     if (search && search.trim()) {
                         const words = search.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 1);
                         const tC = `and(${words.map(w => `title.ilike.%${w}%`).join(',')})`;
-                        const cC = `and(${words.map(w => `company.ilike.%${w}%`).join(',')})`;
+                        const cC = `and(${words.map(w => `company_name.ilike.%${w}%`).join(',')})`;
                         directQ = directQ.or(`${tC},${cC}`);
                     }
                     if (level && level.length > 0) {
@@ -1088,10 +935,14 @@ const AllJobsTab = ({
                     }
 
                     if (finalDirectData.length > 0) {
-                        const vSet = verifiedSet || await getVerifiedSet();
                         const directJobs = finalDirectData.map(j => ({
-                            ...j, job_id: j.id, role: j.job_role_name,
-                            isVerified: vSet.has(j.company) || false,
+                            ...j,
+                            job_id: j.id,
+                            role: j.role_name || j.title || '',
+                            company: j.company_name || 'Unknown',
+                            url: j.job_url_direct || j.job_url || '',
+                            apply_url: j.job_url || j.job_url_direct || '',
+                            isVerified: false,
                             isTeaser: paymentStatus === 'pending'
                         }));
                         setJobs(directJobs);
@@ -1115,218 +966,70 @@ const AllJobsTab = ({
                 setLoading(false);
             }
 
-            // ── Phase 2: Full background fetch (pages 11+, enriched) ──────────
-            // Fires after quick data is on screen. No await — purely background.
+            // ── Phase 2: Full background fetch — strictly jobs_all_roles only ──
             (async () => {
                 try {
-                    const topTier = RANKED_COMPANIES.slice(0, 100);
-                    let rankedQuery = supabase.from('jobs_all_roles').select('*').in('company_name', topTier).limit(1000);
-                    let standardQuery = supabase.from('jobs_all_roles').select('*', { count: 'exact' }).order('date_posted', { ascending: false }).range(0, 499);
-                    let vBackup = supabase.from('audit_reviews_backup').select('*', { count: 'exact' }).eq('tl_confirmation', 'yes');
+                    const FULL_LIMIT = (fixedCompany || fixedDomain) ? 10000 : 2500;
+                    let standardQuery = supabase.from('jobs_all_roles')
+                        .select('*', { count: 'exact' })
+                        .order('date_posted', { ascending: false, nullsFirst: false })
+                        .limit(FULL_LIMIT);
 
                     if (fixedCompany) {
-                        rankedQuery = rankedQuery.eq('company_name', fixedCompany);
-                        standardQuery = standardQuery.eq('company_name', fixedCompany);
-                        vBackup = vBackup.eq('company_name', fixedCompany);
+                        if (Array.isArray(fixedCompany)) {
+                            standardQuery = standardQuery.in('company_name', fixedCompany);
+                        } else {
+                            standardQuery = standardQuery.eq('company_name', fixedCompany);
+                        }
                     } else if (fixedDomain) {
-                        rankedQuery = rankedQuery.eq('role_name', fixedDomain);
                         standardQuery = standardQuery.eq('role_name', fixedDomain);
-                        vBackup = vBackup.eq('domain', fixedDomain);
                     } else if (search && search.trim()) {
-                        const sLow = search.trim().toLowerCase();
-                        const words = sLow.split(/\s+/).filter(x => x.length >= 1);
+                        const words = search.trim().toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ' ').split(/\s+/).filter(x => x.length >= 1);
                         const roleKeywords = ['analyst', 'developer', 'engineer', 'scientist', 'designer', 'manager', 'lead', 'senior', 'junior', 'architect', 'data', 'software', 'ai', 'ml', 'researcher'];
                         const isRoleS = words.some(x => roleKeywords.includes(x));
-
                         const tC = `and(${words.map(x => `title.ilike.%${x}%`).join(',')})`;
                         const cC = `and(${words.map(x => `company_name.ilike.%${x}%`).join(',')})`;
                         const rC = `and(${words.map(x => `role_name.ilike.%${x}%`).join(',')})`;
-
-                        // Phase 2 background: use the same search logic as Phase 1
-                        if (isRoleS && words.length >= 2) {
-                            rankedQuery = rankedQuery.or(`${tC},${rC}`);
-                            standardQuery = standardQuery.or(`${tC},${rC}`);
-                        } else {
-                            rankedQuery = rankedQuery.or(`${tC},${cC},${rC}`);
-                            standardQuery = standardQuery.or(`${tC},${cC},${rC}`);
-                        }
-
-                        // For verified backup, only match by company if title-strict (backup table has no title column)
-                        vBackup = vBackup.filter('domain', 'ilike', '%NON_EXISTENT_NONE%');
+                        standardQuery = standardQuery.or(isRoleS && words.length >= 2 ? `${tC},${rC}` : `${tC},${cC},${rC}`);
                     }
-                    if (level && level.length > 0) {
-                        const exp = level.flatMap(l => { const n = l.match(/\d/)?.[0]; if (!n) return [l]; const rom = { '1': 'I', '2': 'II', '3': 'III', '4': 'IV' }[n]; return [l, `Level ${n}`, `Level ${rom}`, n, `Lv ${n}`, `Lv${n}`]; });
-                        rankedQuery = rankedQuery.in('wage_level', exp);
-                        standardQuery = standardQuery.in('wage_level', exp);
-                    }
-                    if (country) {
-                        // DB stores exact uppercase COUNTRY_MAP keys — simple .eq() is correct
-                        rankedQuery = rankedQuery.eq('indeed_search_country', country);
-                        standardQuery = standardQuery.eq('indeed_search_country', country);
-                    }
-                    rankedQuery = applyDateFilter(rankedQuery, dateFilter);
+                    if (country) standardQuery = standardQuery.eq('indeed_search_country', country);
                     standardQuery = applyDateFilter(standardQuery, dateFilter);
 
-                    let syncRes, backupRes, rankedRes, standardRes;
-                    let actualVerifiedCount = 0;
-
-                    if (filter === 'verified') {
-                        [backupRes, rankedRes, standardRes] = await Promise.all([
-                            vBackup.order('audit_date', { ascending: false }).limit(2500),
-                            rankedQuery, standardQuery.limit(1000)
-                        ]);
-                        actualVerifiedCount = (backupRes.count || 0);
-                    } else {
-                        [backupRes, rankedRes, standardRes] = await Promise.all([
-                            vBackup.limit(2500),
-                            rankedQuery, standardQuery.limit(2500)
-                        ]);
-                    }
+                    const standardRes = await standardQuery;
                     if (standardRes?.error) return;
 
-                    const qvVerified = [...(backupRes.data || [])].map(r => {
-                        const lvlNum = parseWageLevel(r.salary);
-                        return {
-                            ...r, title: null, role: r.role, url: r.job_link, date_posted: r.audit_date,
-                            job_role_name: r.domain, isVerified: true, job_id: r.job_id,
-                            wage_level: lvlNum ? `Lv ${lvlNum}` : null
-                        };
-                    });
+                    // Normalize — strictly jobs_all_roles only
+                    let fullList = (standardRes.data || []).map(j => ({
+                        ...j,
+                        company: j.company_name || 'Unknown',
+                        role: j.role_name || j.title || '',
+                        job_role_name: j.role_name || j.title || '',
+                        url: j.job_url_direct || j.job_url || '',
+                        apply_url: j.job_url || j.job_url_direct || '',
+                        job_id: j.id,
+                        isVerified: false,
+                        isTeaser: paymentStatus === 'pending'
+                    }));
 
-                    const vSet = verifiedSet || await getVerifiedSet();
-                    const vIdsB = [...new Set(qvVerified.map(v => v.job_id))].filter(Boolean);
-                    const vUrlsB = [...new Set(qvVerified.map(v => v.url))].filter(Boolean);
-                    const vCosB = [...new Set(qvVerified.map(v => v.company))].filter(Boolean);
-                    let deepSponsored = [];
-                    try {
-                        if (vIdsB.length > 0 || vUrlsB.length > 0 || vCosB.length > 0) {
-                            const chunks = [];
-                            const idNumList = vIdsB.map(id => parseInt(id)).filter(n => !isNaN(n));
-
-                            if (idNumList.length > 0) {
-                                for (let i = 0; i < idNumList.length; i += 200)
-                                    chunks.push(supabase.from('jobs_all_roles').select('*').in('id', idNumList.slice(i, i + 200)));
-                            }
-                            if (vUrlsB.length > 0) {
-                                for (let i = 0; i < vUrlsB.length; i += 100)
-                                    chunks.push(supabase.from('jobs_all_roles').select('*').in('job_url_direct', vUrlsB.slice(i, i + 100)));
-                            }
-                            if (vCosB.length > 0) {
-                                for (let i = 0; i < vCosB.length; i += 100)
-                                    chunks.push(supabase.from('jobs_all_roles').select('*').in('company_name', vCosB.slice(i, i + 100)));
-                            }
-                            const results = await Promise.all(chunks);
-                            results.forEach(r => { if (r.data) deepSponsored.push(...r.data); });
-                        }
-                    } catch (_deepErr) { /* non-fatal */ }
-
-                    const sponsoredJobs = [...(rankedRes.data || []), ...(standardRes.data || [])]
-                        .map(j => ({
-                            ...j,
-                            company: j.company_name,
-                            role: j.role_name,
-                            job_role_name: j.role_name,
-                            url: j.job_url_direct,
-                            apply_url: j.job_url,
-                            job_id: j.id,
-                            isVerified: j.isVerified || vSet.has(j.company_name) || false,
-                            isTeaser: paymentStatus === 'pending'
-                        }));
-
-                    const fullMetaMap = new Map();
-                    [...sponsoredJobs, ...deepSponsored].forEach(s => {
-                        const uk = _urlKey(s.url);
-                        if (uk) fullMetaMap.set('u:' + uk, s);
-                        if (s.id) fullMetaMap.set('i:' + s.id, s);
-                        if (s.jobId) fullMetaMap.set('j:' + s.jobId, s);
-                    });
-
-                    qvVerified.forEach(v => {
-                        const vk = _urlKey(v.url);
-                        let meta = fullMetaMap.get('u:' + vk) || fullMetaMap.get('i:' + v.job_id) || fullMetaMap.get('j:' + v.job_id);
-
-                        // STRICT SAFETY: Prevent cross-company data leakage!
-                        if (meta && meta.company && v.company && _normR(meta.company) !== _normR(v.company)) {
-                            const mWords = _normR(meta.company).split(' ').filter(Boolean);
-                            const vWords = _normR(v.company).split(' ').filter(Boolean);
-                            const looseMatch = mWords.length > 0 && vWords.length > 0 && (mWords[0] === vWords[0]);
-                            if (!looseMatch) meta = null;
-                        }
-
-                        if (meta) {
-                            v.title = meta.title; v.job_id = meta.id; v.wage_level = meta.wage_level || v.wage_level;
-                            v.location = meta.location || v.location; v.salary = meta.salary || v.salary;
-                        } else {
-                            // Fallback matching by company + normalized role/domain if direct ID/URL match fails
-                            const companyJobs = deepSponsored.filter(j => j.company_name === v.company);
-                            const vRole = _normR(v.role || v.domain || '');
-                            const bestMatch = companyJobs.find(j => _normR(j.title).includes(vRole) || _normR(j.role_name).includes(vRole));
-                            if (bestMatch) {
-                                v.title = bestMatch.title;
-                                v.job_id = bestMatch.id;
-                                v.wage_level = bestMatch.wage_level || v.wage_level;
-                            }
-                        }
-                        if (!v.location) v.location = 'united states';
-                    });
-
-                    const uMap = new Map();
-                    sponsoredJobs.forEach(j => { if (!j.location) j.location = 'united states'; uMap.set(_jobKey(j), j); });
-                    qvVerified.forEach(v => {
-                        const jk = _jobKey(v);
-                        const ex = uMap.get(jk);
-                        uMap.set(jk, ex ? { ...ex, ...v, isVerified: true, title: ex.title || v.title, wage_level: ex.wage_level || v.wage_level, salary: ex.salary || v.salary, location: ex.location || v.location, job_id: ex.job_id || v.job_id } : v);
-                    });
-
-                    let fullList = Array.from(uMap.values());
-
-                    // ── Search Filter (Phase 2 Background) ─────────────────
+                    // Client-side search filter
                     if (search && search.trim()) {
-                        const sLower = search.trim().toLowerCase();
-                        const sWords = sLower.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, " ").split(/\s+/).filter(w => w.length >= 1);
-                        if (sWords.length > 0) {
-                            fullList = fullList.filter(j => {
-                                const n = (s) => String(s || '').toLowerCase();
-                                const target = `${n(j.title)} ${n(j.company_name)} ${n(j.role_name)}`;
-                                return sWords.every(word => target.includes(word));
-                            });
-                        }
-                    }
-
-                    if (filter === 'verified') fullList = fullList.filter(j => j.isVerified);
-                    if (level && level.length > 0) {
-                        const aD = new Set(level.map(l => { const m = String(l).match(/\d/); return m ? m[0] : null; }).filter(Boolean));
+                        const sWords = search.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 1);
                         fullList = fullList.filter(j => {
-                            const m = parseWageLevel(j.wage_level);
-                            return m && aD.has(String(m));
+                            const target = `${j.title || ''} ${j.company_name || ''} ${j.role_name || ''}`.toLowerCase();
+                            return sWords.every(w => target.includes(w));
                         });
                     }
 
-                    let interleaved = interleaveJobs(fullList);
+                    const interleaved = interleaveJobs(fullList);
+                    const fullTotal = (search && search.trim()) ? interleaved.length : (standardRes.count || interleaved.length);
 
-                    // Re-sort the final interleaved list by Wage Level so Lv 1 mathematically MUST appear before Lv 2
-                    if (level && level.length > 1) {
-                        interleaved.sort((a, b) => {
-                            const wA = parseWageLevel(a.wage_level) || 99;
-                            const wB = parseWageLevel(b.wage_level) || 99;
-                            if (wA !== wB) return wA - wB;
-                            return 0;
-                        });
-                    }
-
-                    const fullTotal = (search && search.trim())
-                        ? interleaved.length
-                        : (filter === 'verified'
-                            ? (level && level.length > 0 ? interleaved.length : Math.max(interleaved.length, (backupRes.count || 0)))
-                            : (standardRes?.count || interleaved.length));
-
-                    // Upgrade both caches with full data (pages 11+ now available)
+                    // Upgrade both caches — pages 11+ now available
                     processedListCache.current.set(listCacheKey, { list: interleaved, total: fullTotal });
                     try {
-                        localStorage.setItem(`ajt_v19_${listCacheKey}`, JSON.stringify({ ts: Date.now(), total: fullTotal, list: interleaved.slice(0, 500) })); // v19
-                        localStorage.removeItem(QUICK_LS_KEY); // quick cache superseded by full
+                        localStorage.setItem(`ajt_v19_${listCacheKey}`, JSON.stringify({ ts: Date.now(), total: fullTotal, list: interleaved.slice(0, 500) }));
+                        localStorage.removeItem(QUICK_LS_KEY);
                     } catch (_) { }
-                } catch (_) { /* silent — Phase 1 data already shown */ }
+                } catch (_) { /* silent — Phase 1 data already on screen */ }
             })();
         } catch (err) {
             console.error('AllJobsTab fetchJobs error:', err);
@@ -1371,159 +1074,36 @@ const AllJobsTab = ({
                 try {
                     const levelStr = 'all';
                     const silentKey = `${otherFilter}|none|${levelStr}|${countryFilter || 'all'}`;
-                    if (processedListCache.current.has(silentKey)) return; // double-check
+                    if (processedListCache.current.has(silentKey)) return;
 
-                    const topTier = RANKED_COMPANIES.slice(0, 100);
-                    let rQ = supabase.from('jobs_all_roles').select('*').in('company_name', topTier).limit(200);
-                    let sQ = supabase.from('jobs_all_roles').select('*', { count: 'exact' }).order('date_posted', { ascending: false }).range(0, 500);
-                    // countryFilter is a COUNTRY_MAP key like "USA", "INDIA" — look up directly
-                    const silentCountryEntry = countryFilter ? COUNTRY_MAP[countryFilter] : null;
-                    const silentFullName = silentCountryEntry?.label || null;
+                    // Strictly jobs_all_roles only
+                    let sQ = supabase.from('jobs_all_roles')
+                        .select('*', { count: 'exact' })
+                        .order('date_posted', { ascending: false, nullsFirst: false })
+                        .limit(500);
 
-                    if (countryFilter) {
-                        // DB stores exact uppercase COUNTRY_MAP keys — simple .eq() is correct
-                        rQ = rQ.eq('indeed_search_country', countryFilter);
-                        sQ = sQ.eq('indeed_search_country', countryFilter);
-                    }
-                    rQ = applyDateFilter(rQ, dateFilter);
+                    if (countryFilter) sQ = sQ.eq('indeed_search_country', countryFilter);
                     sQ = applyDateFilter(sQ, dateFilter);
 
-                    const isVerifiedTab = otherFilter === 'verified';
-                    let backupRes, rankedRes, standardRes;
-                    let actualVerifiedCount = 0;
+                    const sRes = await sQ;
+                    if (sRes?.error) return;
 
-                    if (isVerifiedTab) {
-                        [backupRes, rankedRes, standardRes] = await Promise.all([
-                            vB.order('audit_date', { ascending: false }).limit(2500),
-                            rQ.limit(1000),
-                            sQ.limit(1000)
-                        ]);
-                        actualVerifiedCount = (backupRes.count || 0);
-                    } else {
-                        [backupRes, rankedRes, standardRes] = await Promise.all([
-                            vB.limit(2500), rQ.limit(1000), sQ.limit(2500)
-                        ]);
-                    }
+                    const silentJobs = (sRes.data || []).map(j => ({
+                        ...j,
+                        company: j.company_name || 'Unknown',
+                        role: j.role_name || j.title || '',
+                        job_role_name: j.role_name || j.title || '',
+                        url: j.job_url_direct || j.job_url || '',
+                        apply_url: j.job_url || j.job_url_direct || '',
+                        job_id: j.id,
+                        isVerified: false,
+                        isTeaser: paymentStatus === 'pending'
+                    }));
 
-                    if (standardRes?.error) return;
-
-                    const svVerified = [...(backupRes.data || [])].map(r => {
-                        const lvlNum = parseWageLevel(r.salary);
-                        return {
-                            ...r, title: null, role: r.role, url: r.job_link, date_posted: r.audit_date,
-                            job_role_name: r.domain, isVerified: true, job_id: r.job_id,
-                            wage_level: lvlNum ? `Lv ${lvlNum}` : null
-                        };
-                    });
-
-                    const vSet = verifiedSet || (await getVerifiedSet());
-                    const vIdsS = [...new Set(svVerified.map(v => v.job_id))].filter(Boolean);
-                    const vUrlsS = [...new Set(svVerified.map(v => v.url))].filter(Boolean);
-                    const vCosS = [...new Set(svVerified.map(v => v.company))].filter(Boolean);
-                    let deepSponsored = [];
-
-                    if (vIdsS.length > 0 || vUrlsS.length > 0 || vCosS.length > 0) {
-                        const chunks = [];
-                        const idNumList = vIdsS.map(id => parseInt(id)).filter(n => !isNaN(n));
-
-                        if (idNumList.length > 0) {
-                            for (let i = 0; i < idNumList.length; i += 200)
-                                chunks.push(supabase.from('jobs_all_roles').select('*').in('id', idNumList.slice(i, i + 200)));
-                        }
-                        if (vUrlsS.length > 0) {
-                            for (let i = 0; i < vUrlsS.length; i += 100)
-                                chunks.push(supabase.from('jobs_all_roles').select('*').in('job_url_direct', vUrlsS.slice(i, i + 100)));
-                        }
-                        if (vCosS.length > 0) {
-                            for (let i = 0; i < vCosS.length; i += 100)
-                                chunks.push(supabase.from('jobs_all_roles').select('*').in('company_name', vCosS.slice(i, i + 100)));
-                        }
-                        const results = await Promise.all(chunks);
-                        results.forEach(r => { if (r.data) deepSponsored.push(...r.data); });
-                    }
-
-                    const sponsoredJobs = [...(rankedRes.data || []), ...(standardRes.data || [])]
-                        .map(j => ({
-                            ...j,
-                            company: j.company_name,
-                            role: j.role_name,
-                            job_role_name: j.role_name,
-                            url: j.job_url_direct,
-                            apply_url: j.job_url,
-                            job_id: j.id,
-                            isVerified: j.isVerified || vSet.has(j.company_name) || false,
-                            isTeaser: paymentStatus === 'pending'
-                        }));
-
-                    const fullMetaMap = new Map();
-                    [...sponsoredJobs, ...deepSponsored].forEach(s => {
-                        const uk = _urlKey(s.url);
-                        if (uk) fullMetaMap.set('u:' + uk, s);
-                        if (s.id) fullMetaMap.set('i:' + s.id, s);
-                        if (s.jobId) fullMetaMap.set('j:' + s.jobId, s);
-                    });
-
-                    svVerified.forEach(v => {
-                        const vk = _urlKey(v.url);
-                        let meta = fullMetaMap.get('u:' + vk) || fullMetaMap.get('i:' + v.job_id) || fullMetaMap.get('j:' + v.job_id);
-
-                        // STRICT SAFETY: Prevent cross-company data leakage!
-                        if (meta && meta.company && v.company && _normR(meta.company) !== _normR(v.company)) {
-                            const mWords = _normR(meta.company).split(' ').filter(Boolean);
-                            const vWords = _normR(v.company).split(' ').filter(Boolean);
-                            const looseMatch = mWords.length > 0 && vWords.length > 0 && (mWords[0] === vWords[0]);
-                            if (!looseMatch) meta = null;
-                        }
-
-                        if (meta) {
-                            v.title = meta.title; v.job_id = meta.id; v.wage_level = meta.wage_level || v.wage_level;
-                            v.location = meta.location || v.location; v.salary = meta.salary || v.salary;
-                        } else {
-                            // Fallback matching
-                            const companyJobs = deepSponsored.filter(j => j.company_name === v.company);
-                            const vRole = _normR(v.role || v.domain || '');
-                            const bestMatch = companyJobs.find(j => _normR(j.title).includes(vRole) || _normR(j.role_name).includes(vRole));
-                            if (bestMatch) {
-                                v.title = bestMatch.title;
-                                v.job_id = bestMatch.id;
-                            }
-                        }
-                        if (!v.location) v.location = 'united states';
-                    });
-
-                    const uniqueMap = new Map();
-                    sponsoredJobs.forEach(j => { if (!j.location) j.location = 'united states'; uniqueMap.set(_jobKey(j), j); });
-                    svVerified.forEach(v => {
-                        const jk = _jobKey(v);
-                        const ex = uniqueMap.get(jk);
-                        uniqueMap.set(jk, ex ? { ...ex, ...v, isVerified: true, title: ex.title || v.title, wage_level: ex.wage_level || v.wage_level, salary: ex.salary || v.salary, location: ex.location || v.location, job_id: ex.job_id || v.job_id } : v);
-                    });
-
-                    let unique = Array.from(uniqueMap.values());
-                    if (isVerifiedTab) unique = unique.filter(j => j.isVerified);
-                    // vSet is already declared above
-                    // ── BATCH LCA FILING ENRICHMENT (Rule 4) ──
-                    const uniqueCos = [...new Set(unique.map(j => j.company))].filter(Boolean);
-                    if (uniqueCos.length > 0) {
-                        const { data: fData } = await supabase.from('h1b_sponsor_finder')
-                            .select('Company, "LCA Filings"').in('Company', uniqueCos.slice(0, 150));
-                        if (fData) {
-                            const fMap = new Map();
-                            fData.forEach(d => fMap.set(d.Company.toLowerCase(), parseInt(String(d["LCA Filings"]).replace(/,/g, '')) || 0));
-                            unique.forEach(j => {
-                                const co = String(j.company || '').toLowerCase();
-                                if (fMap.has(co)) j.lca_filings = fMap.get(co);
-                            });
-                        }
-                    }
-
-                    let interleaved = interleaveJobs(unique);
-
-                    const actualTotal = isVerifiedTab ? (actualVerifiedCount || interleaved.length) : (standardRes?.count || interleaved.length);
-
-                    // Populate the Map cache — no UI updates
+                    const interleaved = interleaveJobs(silentJobs);
+                    const actualTotal = sRes.count || interleaved.length;
                     processedListCache.current.set(silentKey, { list: interleaved, total: actualTotal });
-                } catch (_) { /* silent fail — preload is best-effort */ }
+                } catch (_) { /* silent fail */ }
             };
 
             silentFetch();

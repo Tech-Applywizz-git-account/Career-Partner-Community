@@ -24,8 +24,13 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
   // Compute { from, to } ISO date strings for a quick filter id
   const computeRange = (id) => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const fmt = (d) => d.toISOString().split('T')[0];
+    const fmt = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+    
     if (id === 'today')     return { quickDate: 'today',     from: fmt(today),                           to: fmt(today) };
     if (id === 'yesterday') { const y = new Date(today); y.setDate(y.getDate() - 1); return { quickDate: 'yesterday', from: fmt(y), to: fmt(y) }; }
     if (id === '7days')     { const s = new Date(today); s.setDate(s.getDate() - 6); return { quickDate: '7days',     from: fmt(s), to: fmt(today) }; }

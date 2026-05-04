@@ -42,6 +42,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/search" element={<Homepage />} />
             <Route path="/jobs" element={<Homepage />} />
+            <Route path="/h1b-finder" element={<Homepage />} />
 
             {/* OAuth callback */}
             <Route path="/auth/callback" element={<AuthCallback />} />
