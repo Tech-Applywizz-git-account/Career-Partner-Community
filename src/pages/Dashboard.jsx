@@ -20,7 +20,7 @@ const Dashboard = () => {
     const { user, loading, isAdmin, checkingSub } = useAuth();
 
     const [activeTab, setActiveTab] = useState(location.state?.initialTab || "overview");
-    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1280);
 
     useEffect(() => {
         if (location.state?.initialTab && location.state.initialTab !== activeTab) {
@@ -34,9 +34,11 @@ const Dashboard = () => {
         }
     }, [loading, user, navigate]);
 
-    // Close sidebar on tab change (mobile)
+    // Close sidebar on tab change (mobile only)
     useEffect(() => {
-        setMobileSidebarOpen(false);
+        if (window.innerWidth < 1280) {
+            setSidebarOpen(false);
+        }
     }, [activeTab]);
 
     if (loading || checkingSub) {
@@ -87,28 +89,31 @@ const Dashboard = () => {
 
     return (
         <div className="flex h-screen bg-[#fafafa] overflow-hidden relative">
-            {/* Sidebar with mobile support */}
+            {/* Sidebar with mobile & desktop support */}
             <div className={`
                 fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out bg-white 
-                md:relative md:translate-x-0
-                ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>
-                <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+                <Sidebar 
+                    activeTab={activeTab} 
+                    setActiveTab={setActiveTab} 
+                    onClose={() => setSidebarOpen(false)}
+                />
             </div>
 
-            {/* Mobile Sidebar Overlay */}
-            {mobileSidebarOpen && (
+            {/* Sidebar Overlay (Mobile only) */}
+            {sidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-black/20 z-40 md:hidden backdrop-blur-sm"
-                    onClick={() => setMobileSidebarOpen(false)}
+                    className="fixed inset-0 bg-black/20 z-40 lg:hidden backdrop-blur-sm"
+                    onClick={() => setSidebarOpen(false)}
                 />
             )}
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+            <div className={`flex-1 flex flex-col min-w-0 h-full overflow-hidden transition-all duration-300 ${sidebarOpen ? 'lg:pl-56' : 'pl-0'}`}>
                 <AppHeader
                     title={getTitle()}
-                    onMenuClick={() => setMobileSidebarOpen(true)}
+                    onMenuClick={() => setSidebarOpen(!sidebarOpen)}
                 />
 
                 {/* Scrollable Container */}

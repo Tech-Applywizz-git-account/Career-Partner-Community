@@ -1,7 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Search, Briefcase, ChevronRight, ChevronLeft, Loader2, ArrowLeft
+  Search, Briefcase, ChevronRight, ChevronLeft, Loader2, ArrowLeft,
+  Code, Database, Shield, Cloud, Settings, BarChart, Cpu, 
+  Smartphone, Terminal, Activity, PenTool, Megaphone, Users,
+  Zap, Stethoscope, Landmark, Truck, ShoppingCart, Microscope, Headphones,
+  Layers, Layout, Code2, ShieldCheck, Target, ClipboardList, Crown, PencilRuler,
+  BarChart3, Users2, Banknote, Scale, Box, GraduationCap, Lightbulb, HeartPulse
 } from 'lucide-react';
+
+const getDomainData = (roleName) => {
+  const defaultData = { icon: Briefcase, color: '#64748b', bg: '#f1f5f9' };
+  if (!roleName) return defaultData;
+  const lower = roleName.toLowerCase();
+
+  // Tech / Engineering
+  if (lower.match(/full stack|systems engineer|infrastructure/))
+    return { icon: Layers, color: '#3b82f6', bg: '#eff6ff' };
+  if (lower.match(/frontend|react|angular|vue|javascript|typescript|web developer|ui developer/))
+    return { icon: Layout, color: '#0ea5e9', bg: '#f0f9ff' };
+  if (lower.match(/backend|node|java|python|c\+\+|\.net|golang|ruby/))
+    return { icon: Code2, color: '#2563eb', bg: '#eff6ff' };
+  if (lower.match(/software|developer|programmer/)) 
+    return { icon: Code, color: '#3b82f6', bg: '#eff6ff' };
+  if (lower.match(/data|sql|database|oracle|etl|bi|tableau|power bi|snowflake/)) 
+    return { icon: Database, color: '#8b5cf6', bg: '#f5f3ff' };
+  if (lower.match(/cyber|security|sailpoint|iam|soc|firewall/)) 
+    return { icon: ShieldCheck, color: '#ef4444', bg: '#fef2f2' };
+  if (lower.match(/cloud|aws|azure|gcp|salesforce|servicenow|sap|cloud architect/)) 
+    return { icon: Cloud, color: '#0ea5e9', bg: '#f0f9ff' };
+  if (lower.match(/devops|sre|platform engineer/))
+    return { icon: Zap, color: '#f59e0b', bg: '#fffbeb' };
+  if (lower.match(/network|system|active directory/)) 
+    return { icon: Terminal, color: '#14b8a6', bg: '#f0fdfa' };
+  if (lower.match(/qa|test|quality|automation|manual testing/)) 
+    return { icon: Activity, color: '#f59e0b', bg: '#fffbeb' };
+  if (lower.match(/ai|machine learning|mlops|scientist|deep learning|llm|nlp/)) 
+    return { icon: Cpu, color: '#d946ef', bg: '#fdf4ff' };
+  if (lower.match(/mobile|ios|android|react native|flutter/)) 
+    return { icon: Smartphone, color: '#2563eb', bg: '#eff6ff' };
+  
+  // Business / Management
+  if (lower.match(/product manager|product owner/))
+    return { icon: Target, color: '#6366f1', bg: '#eef2ff' };
+  if (lower.match(/project manager|scrum master|agile coach/))
+    return { icon: ClipboardList, color: '#6366f1', bg: '#eef2ff' };
+  if (lower.match(/manager|director|vp|head|lead/))
+    return { icon: Crown, color: '#f59e0b', bg: '#fffbeb' };
+  
+  // Design / UX
+  if (lower.match(/design|ui|ux|graphic|creative|art|illustration/)) 
+    return { icon: PencilRuler, color: '#ec4899', bg: '#fdf2f8' };
+
+  // Marketing / Sales
+  if (lower.match(/market|seo|content|social media|brand|copywriter/)) 
+    return { icon: Megaphone, color: '#f97316', bg: '#fff7ed' };
+  if (lower.match(/sales|account manager|business dev|sales representative/)) 
+    return { icon: BarChart3, color: '#10b981', bg: '#ecfdf5' };
+  if (lower.match(/buyer|purchasing|procurement/))
+    return { icon: ShoppingCart, color: '#10b981', bg: '#ecfdf5' };
+
+  // HR / People
+  if (lower.match(/hr|recruit|talent|people|human resource|onboarding/)) 
+    return { icon: Users2, color: '#f43f5e', bg: '#fff1f2' };
+
+  // Finance / Legal
+  if (lower.match(/finance|account|audit|tax|payroll|bank|treasury/)) 
+    return { icon: Banknote, color: '#16a34a', bg: '#f0fdf4' };
+  if (lower.match(/legal|law|attorney|paralegal|compliance/)) 
+    return { icon: Scale, color: '#475569', bg: '#f8fafc' };
+
+  // Operations / Specialized
+  if (lower.match(/supply|logistic|chain|inventory|warehouse/)) 
+    return { icon: Box, color: '#84cc16', bg: '#f7fee7' };
+  if (lower.match(/truck|driver|transport/))
+    return { icon: Truck, color: '#84cc16', bg: '#f7fee7' };
+  if (lower.match(/health|medical|clinical|pharmac|nurse|doctor|patient/)) 
+    return { icon: HeartPulse, color: '#e11d48', bg: '#fff1f2' };
+  if (lower.match(/science|research|biology|chemist|laboratory/)) 
+    return { icon: Microscope, color: '#06b6d4', bg: '#ecfeff' };
+  if (lower.match(/education|teacher|instructor|professor|tutor|academic/))
+    return { icon: GraduationCap, color: '#3b82f6', bg: '#eff6ff' };
+  if (lower.match(/consultant|consulting|advisor/))
+    return { icon: Lightbulb, color: '#f59e0b', bg: '#fffbeb' };
+  if (lower.match(/customer|service|support|client success/))
+    return { icon: Headphones, color: '#a855f7', bg: '#faf5ff' };
+
+  return defaultData;
+};
 import { supabase } from '../supabaseClient';
 import AllJobsTab from './AllJobsTab';
 import { COUNTRY_MAP } from '../utils/countryHelper';
@@ -74,8 +159,8 @@ const DomainsTab = ({ onSelectDomain, selectedCountry, dateFilter }) => {
     return kw.some(k => lower.includes(k));
   };
 
-  const countryLabel = selectedCountry
-    ? (COUNTRY_MAP[selectedCountry]?.label || selectedCountry)
+  const countryLabel = (Array.isArray(selectedCountry) && selectedCountry.length > 0)
+    ? (selectedCountry.length === 1 ? (COUNTRY_MAP[selectedCountry[0]]?.label || selectedCountry[0]) : `${selectedCountry.length} Countries`)
     : 'All Countries';
 
   const filteredDomains = domains.filter(d => {
@@ -101,9 +186,17 @@ const DomainsTab = ({ onSelectDomain, selectedCountry, dateFilter }) => {
 
         <div className="bg-white rounded-2xl p-2 border border-gray-100 shadow-sm mb-8">
           <div className="flex items-center gap-4 p-4">
-            <div className="w-16 h-16 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-100 shadow-sm">
-              <img src="/suitcase-icon.png" alt="Domain" className="w-10 h-10 object-contain" />
-            </div>
+            {(() => {
+              const { icon: Icon, color, bg } = getDomainData(selectedDomain);
+              return (
+                <div 
+                  className="w-16 h-16 flex items-center justify-center rounded-xl border shadow-sm"
+                  style={{ backgroundColor: bg, color: color, borderColor: color + '33' }}
+                >
+                  <Icon size={36} strokeWidth={1.5} />
+                </div>
+              );
+            })()}
             <div>
               <h2 className="text-2xl font-[900] text-[#1E1E1E]">{selectedDomain}</h2>
               <p className="text-gray-500 font-bold">Showing all active jobs in this domain for {countryLabel}</p>
@@ -157,7 +250,7 @@ const DomainsTab = ({ onSelectDomain, selectedCountry, dateFilter }) => {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${
-                  filter === f ? 'bg-[#2C76FF] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  filter === f ? '!bg-[#2C76FF] !text-white shadow-lg' : 'text-gray-500 hover:bg-gray-100 hover:text-[#1E1E1E]'
                 }`}
               >
                 {f}
@@ -182,9 +275,17 @@ const DomainsTab = ({ onSelectDomain, selectedCountry, dateFilter }) => {
               className="group relative bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:border-[#2C76FF]/20 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col"
             >
               <div className="flex justify-between items-start mb-4">
-                <div className="w-12 h-12 flex items-center justify-center">
-                  <img src="/suitcase-icon.png" alt="Domain" className="w-full h-full object-contain" />
-                </div>
+                {(() => {
+                  const { icon: Icon, color, bg } = getDomainData(domain.name);
+                  return (
+                    <div 
+                      className="w-12 h-12 flex items-center justify-center rounded-xl"
+                      style={{ backgroundColor: bg, color: color }}
+                    >
+                      <Icon size={28} strokeWidth={1.5} />
+                    </div>
+                  );
+                })()}
                 <div className="flex flex-col items-end gap-1.5">
                   <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
                     domain.type === 'TECH' ? 'bg-blue-50 text-[#2C76FF]' : 'bg-gray-50 text-gray-500'

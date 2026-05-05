@@ -12,11 +12,12 @@ import {
     PlayCircle,
     HelpCircle,
     LogOut,
-    ListFilter
+    ListFilter,
+    X
 } from "lucide-react";
 import useAuth from '../hooks/useAuth';
 
-const Sidebar = ({ className = "", showHeader = true }) => {
+const Sidebar = ({ className = "", showHeader = true, onClose }) => {
     const { role, signOut } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -67,7 +68,18 @@ const Sidebar = ({ className = "", showHeader = true }) => {
     if (!mounted) return null;
 
     return (
-        <aside className={`flex h-full flex-col bg-white w-56 border-r border-[#f0f0f0] transition-all duration-300 ${className}`}>
+        <aside className={`flex h-full flex-col bg-white w-56 border-r border-[#f0f0f0] transition-all duration-300 relative ${className}`}>
+            {/* Close Button (Mobile Only) */}
+            {onClose && (
+                <button 
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-[#2C76FF] hover:bg-gray-100 rounded-lg transition-all z-10"
+                    aria-label="Close Sidebar"
+                >
+                    <X size={20} />
+                </button>
+            )}
+
             {/* Logo Section */}
             <div className="p-6 mb-2">
                 <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>

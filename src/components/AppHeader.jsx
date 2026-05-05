@@ -30,7 +30,7 @@ const AppHeader = ({ title = "Job Board", onMenuClick }) => {
             <div className="flex items-center gap-4 md:gap-6">
                 <button
                     onClick={onMenuClick}
-                    className="p-2 -ml-2 hover:bg-gray-100 rounded-lg md:hidden text-[#1E1E1E]"
+                    className="p-2 -ml-2 hover:bg-gray-100 rounded-lg text-[#1E1E1E]"
                 >
                     <Menu size={24} />
                 </button>

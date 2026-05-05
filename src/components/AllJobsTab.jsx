@@ -62,13 +62,8 @@ function VerifiedSeal({ size = 16 }) {
 function getCanonicalCompany(name) {
     if (!name) return 'Unknown';
     const n = String(name).toLowerCase().trim();
-    // Aggressive brand matching to consolidate variants like "Amazon.com" or "AWS"
-    if (n.includes('amazon') || n.includes('aws')) return 'Amazon';
-    if (n.includes('google') || n.includes('alphabet')) return 'Google';
-    if (n.includes('meta') || n.includes('facebook')) return 'Meta';
-    if (n.includes('microsoft')) return 'Microsoft';
-    if (n.includes('apple')) return 'Apple';
-    return name;
+    if (n.includes('amazon') && !n.includes('aws') && !n.includes('web services')) return 'Amazon';
+    return name.trim();
 }
 
 function _jobKeyRaw(company, title, location) {
@@ -101,7 +96,7 @@ const parseLoc = (str) => {
 };
 
 // Apply date_posted filter to a Supabase query based on dateFilter prop
-// { quickDate: 'today'|'yesterday'|'7days'|'custom'|'all', from: 'YYYY-MM-DD'|null, to: 'YYYY-MM-DD'|null }
+// { quickDate: 'today'|'lastmonth'|'7days'|'custom'|'all', from: 'YYYY-MM-DD'|null, to: 'YYYY-MM-DD'|null }
 const applyDateFilter = (query, df) => {
     if (!df || df.quickDate === 'all' || (!df.from && !df.to)) return query;
     if (df.from) query = query.gte('date_posted', df.from);
@@ -112,11 +107,6 @@ const applyDateFilter = (query, df) => {
 const JobRow = ({ job, isSaved, onSave }) => {
     const [hovered, setHovered] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
-    const [filingCount, setFilingCount] = useState(job.lca_filings || null);
-    const [wageInfo, setWageInfo] = useState({
-        level: job.wage_level || 'Level 2',
-        loading: !job.wage_level
-    });
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 1024);
@@ -124,59 +114,7 @@ const JobRow = ({ job, isSaved, onSave }) => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Self-enrichment for filings and wage level if missing (cached to avoid redundant DB hits)
-    useEffect(() => {
-        if (!job.company && !job.title) return;
-        const fetchData = async () => {
-            // --- Filing Count ---
-            if (job.lca_filings !== undefined) {
-                setFilingCount(job.lca_filings || null);
-            } else {
-                const fKey = `filing:${String(job.company || '').toLowerCase()}`;
-                const hit = _cGet(fKey);
-                if (hit !== null) {
-                    setFilingCount(hit || null);
-                } else {
-                    try {
-                        const normalize = (name) => {
-                            if (!name) return '';
-                            return name.toLowerCase()
-                                .replace(/\([^)]*\)/g, ' ')
-                                .replace(/[.,\-\/#!$%\^&\*;:{}=\-_`~()]/g, ' ')
-                                .replace(/\b(inc|llc|corp|ltd|co|services|com|systems|technologies|group|holdings|usa|us|intl|international|solutions|aws|related|web|tech|software|management|financial|insurance|banking|health|healthcare|travel|company)\b/g, ' ')
-                                .replace(/\s+/g, ' ').trim();
-                        };
-                        const coreTerm = normalize(job.company).split(' ')[0] || normalize(job.company);
-                        const { data } = await supabase.from('h1b_sponsor_finder').select('"LCA Filings"').ilike('Company', `%${coreTerm}%`).limit(1);
-                        const count = (data && data[0]) ? (parseInt(data[0]["LCA Filings"]) || 0) : 0;
-                        _cSet(fKey, count);
-                        setFilingCount(count || null);
-                    } catch (e) { setFilingCount(null); }
-                }
-            }
 
-            // --- Wage Level ---
-            if (job.wage_level) {
-                setWageInfo({ level: job.wage_level, loading: false });
-            } else if (job.title) {
-                const wKey = `wage:${String(job.title || '').toLowerCase().slice(0, 50)}:${String(job.location || '').toLowerCase().slice(0, 20)}`;
-                const hitW = _cGet(wKey);
-                if (hitW !== null) {
-                    setWageInfo({ level: hitW, loading: false });
-                } else {
-                    try {
-                        const res = await getWageLevel(job.title, job.location, job.salary);
-                        const level = (res && res[0]) ? (res[0]['Wage Level'] || 'Level 2') : 'Level 2';
-                        _cSet(wKey, level);
-                        setWageInfo({ level, loading: false });
-                    } catch (e) {
-                        setWageInfo({ level: 'Level 2', loading: false });
-                    }
-                }
-            }
-        };
-        fetchData();
-    }, [job.company, job.title, job.lca_filings]);
 
     const formatTimeAgo = (d) => {
         if (!d) return 'Recently';
@@ -191,11 +129,7 @@ const JobRow = ({ job, isSaved, onSave }) => {
         } catch { return 'Recently'; }
     };
 
-    const getLevelValue = () => {
-        const match = (wageInfo.level || '').match(/\d/);
-        return match ? parseInt(match[0]) : 2;
-    };
-    const levelPercent = (getLevelValue() / 4) * 100;
+
 
     return (
         <div
@@ -210,16 +144,6 @@ const JobRow = ({ job, isSaved, onSave }) => {
                     {getCompanyRank(job.company) !== Infinity && (
                         <div className="bg-[#eaffea] text-[#1E1E1E] px-3 py-1 rounded-full text-[11px] font-bold border border-[#29FE29]/30 flex items-center gap-1.5 shadow-sm">
                             <TrendingUp size={12} className="stroke-[3] text-[#29FE29]" /> Top Tier
-                        </div>
-                    )}
-                    {filingCount !== null && (
-                        <div className="bg-[#f0f7ff] text-[#2C76FF] px-3 py-1 rounded-full text-[11px] font-bold border border-[#2C76FF]/10">
-                            📊 {filingCount.toLocaleString()} LCA Filings
-                        </div>
-                    )}
-                    {filingCount > 100 && (
-                        <div className="bg-[#eaffea] text-[#1E1E1E] px-3 py-1 rounded-full text-[11px] font-bold border border-[#29FE29]/20">
-                            🔥 High Volume
                         </div>
                     )}
                     <div className="bg-[#f8fafc] text-[#64748b] px-3 py-1 rounded-full text-[11px] font-bold border border-[#f1f5f9]">
@@ -301,12 +225,7 @@ const JobRow = ({ job, isSaved, onSave }) => {
                         <Clock size={18} className="text-[#94a3b8]" />
                         <span className="text-[14px]">{job.employment_type || job.type || 'Full-time'}</span>
                     </div>
-                    {filingCount !== null && (
-                        <div className="flex items-center gap-2.5 text-[#334155] font-semibold">
-                            <TrendingUp size={18} className="text-[#94a3b8]" />
-                            <span className="text-[14px]">{filingCount.toLocaleString()} LCA Filings</span>
-                        </div>
-                    )}
+
                     {job.isVerified && (
                         <div className="flex items-center bg-[#eaffea] border border-[#29FE29]/30 px-3 py-1 rounded-lg">
                             <span className="text-[10px] font-black text-[#1E1E1E] uppercase tracking-wider mr-2">HUMAN VERIFIED</span>
@@ -359,10 +278,11 @@ const JobRow = ({ job, isSaved, onSave }) => {
 const AllJobsTab = ({
     searchTerm: propSearchTerm = '',
     activeFilter: propActiveFilter = 'all',
-    countryFilter = null,
+    countryFilter = [],
     dateFilter = null,
     fixedCompany = null,
-    fixedDomain = null
+    fixedDomain = null,
+    isCompact = false
 }) => {
     const { user, paymentStatus } = useAuth();
     const [jobs, setJobs] = useState([]);
@@ -644,13 +564,40 @@ const AllJobsTab = ({
             }
         });
 
-        return result;
+        // 7. ── NEW: Country Interleaving ──
+        // The user wants "mixed results" (one US, one UK, etc.)
+        // We take our prioritized result and group it by country to interleave them.
+        const countryGroups = new Map();
+        result.forEach(j => {
+            const c = (j.indeed_search_country || j.country || 'OTHER').toUpperCase();
+            if (!countryGroups.has(c)) countryGroups.set(c, []);
+            countryGroups.get(c).push(j);
+        });
+
+        const countryKeys = Array.from(countryGroups.keys());
+        if (countryKeys.length <= 1) return result;
+
+        const mixedResult = [];
+        let maxLen = 0;
+        countryGroups.forEach(g => { if (g.length > maxLen) maxLen = g.length; });
+
+        for (let i = 0; i < maxLen; i++) {
+            for (const ck of countryKeys) {
+                const group = countryGroups.get(ck);
+                if (group[i]) {
+                    mixedResult.push(group[i]);
+                }
+            }
+        }
+
+        return mixedResult;
     };
 
     // Main fetch function
-    const fetchJobs = async (page, filter, search, level = 'all', country = null) => {
+    const fetchJobs = async (page, filter, search, level = 'all', countries = []) => {
         // Use fixed props if available to bypass fuzzy search
         const activeSearch = (fixedCompany || fixedDomain) ? '' : search;
+        const activeCountries = Array.isArray(countries) ? countries : (countries ? [countries] : []);
 
         setLoading(true);
         setError(null);
@@ -666,13 +613,11 @@ const AllJobsTab = ({
                 ? 'all'
                 : `${dateFilter.from || ''}_${dateFilter.to || ''}`;
 
+            const countriesStr = activeCountries.length > 0 ? activeCountries.slice().sort().join(',') : 'all';
             const fixedStr = (fixedCompany || 'none') + '_' + (fixedDomain || 'none');
-            const listCacheKey = `${filter}|${(activeSearch || '').trim().toLowerCase() || 'none'}|${levelStr}|${country || 'all'}|${dateStr}|${fixedStr}`;
+            const listCacheKey = `${filter}|${(activeSearch || '').trim().toLowerCase() || 'none'}|${levelStr}|${countriesStr}|${dateStr}|${fixedStr}`;
 
-            // country is a COUNTRY_MAP key like "USA", "INDIA", "UK" — look it up directly
-            const countryEntry = country ? COUNTRY_MAP[country] : null;
-            const fullName = countryEntry?.label || null; // e.g. "United States", "India"
-            const LS_KEY = `ajt_v19_${listCacheKey}`; // bumped: fixes country filter bug
+            const LS_KEY = `ajt_v20_${listCacheKey}`; // bumped: multi-country support
             const LS_TTL_MS = 10 * 60 * 1000; // 10 minutes
             try {
                 const raw = localStorage.getItem(LS_KEY);
@@ -712,19 +657,9 @@ const AllJobsTab = ({
 
             // ══════════════════════════════════════════════════════════════════════
             // PROGRESSIVE LOADING  —  STALE WHILE REVALIDATE (SWR)
-            //
-            // Phase 1 (QUICK — shows in 1-3s first time, 50ms on repeat):
-            //   3 focused parallel queries, each LIMIT 150 (= 10 pages × 15 records).
-            //   Results displayed immediately. Written to localStorage for instant
-            //   future loads (quick-cache TTL: 30 min).
-            //
-            // Phase 2 (BACKGROUND — runs after Phase 1 is on screen):
-            //   Full fetch (ranked + 2500 verified + deep-fetch by URL) fires in a
-            //   background async IIFE. When done: upgrades Map cache + localStorage
-            //   so pages 11+ are available this session AND next open is 50ms.
             // ══════════════════════════════════════════════════════════════════════
 
-            const QUICK_LS_KEY = `ajt_quick_v19_${listCacheKey}`; // bumped: fixes country filter bug
+            const QUICK_LS_KEY = `ajt_quick_v20_${listCacheKey}`; // bumped: multi-country support
             const QUICK_TTL_MS = 30 * 60 * 1000; // 30 min
 
             // ── Quick-cache hit? ────────────────────────────────────────────────
@@ -745,9 +680,6 @@ const AllJobsTab = ({
             } catch (_) { }
 
             // ── DEEP PAGE DIRECT FETCH (Page > 10) ──────────────────────────
-            // If the user is on a deep page, skip the complex merging phase and
-            // fetch the raw DB range directly to avoid hitting Supabase limits
-            // with ilike/deep-fetch logic which is only optimized for recent rows.
             if (from >= 150) {
                 try {
                     let directQ = supabase.from('jobs_all_roles')
@@ -771,15 +703,10 @@ const AllJobsTab = ({
                         const rC = `and(${words.map(w => `role_name.ilike.%${w}%`).join(',')})`;
                         directQ = directQ.or(`${tC},${cC},${rC}`);
                     }
-                    if (country) {
-                        // DB stores exact uppercase COUNTRY_MAP keys — simple .eq() is correct
-                        directQ = directQ.eq('indeed_search_country', country);
+                    if (activeCountries.length > 0) {
+                        directQ = directQ.in('indeed_search_country', activeCountries);
                     }
                     directQ = applyDateFilter(directQ, dateFilter);
-                    if (level && level.length > 0) {
-                        // wage_level doesn't exist in new schema, but we can try to find it in title or description if needed
-                        // for now skipping since user said use the provided table schema
-                    }
                     const { data: dData, count: dCount, error: dError } = await directQ
                         .order('date_posted', { ascending: false, nullsFirst: false })
                         .range(from, from + JOBS_PER_PAGE - 1);
@@ -789,7 +716,6 @@ const AllJobsTab = ({
                     let finalData = dData || [];
                     let finalCount = dCount !== null ? dCount : 0;
 
-                    // FALLBACK: If requested page is empty but total matches exist, show the absolute last page
                     if (finalData.length === 0 && finalCount > 0) {
                         const lastPageFrom = Math.max(0, Math.floor((finalCount - 1) / JOBS_PER_PAGE) * JOBS_PER_PAGE);
                         const { data: fData } = await directQ
@@ -823,7 +749,6 @@ const AllJobsTab = ({
                         }
                         return;
                     }
-                    // If truly no jobs, continue to Phase 1 to let it handle empty state
                 } catch (err) {
                     console.error('ajt deep-direct-fetch failure:', err);
                 }
@@ -832,15 +757,13 @@ const AllJobsTab = ({
             // ── Phase 1: High-Performance Server-Side Search ─────────────────────
             const QUICK_LIMIT = fixedCompany || fixedDomain ? 1000 : 500;
             
-            // If we have a fixed company/domain, we use standard query (simple)
-            // If we have a search term, we use the optimized search_jobs RPC
             let qList = [];
             let qTotal = 0;
 
-            if (!fixedCompany && !fixedDomain && search && search.trim()) {
+            if (!fixedCompany && !fixedDomain) {
                 const { data: rpcData, error: rpcErr } = await supabase.rpc('search_jobs', {
-                    p_search_term: search.trim(),
-                    p_country: country || null,
+                    p_search_term: (search || '').trim(),
+                    p_countries: activeCountries.length > 0 ? activeCountries : null,
                     p_start_date: dateFilter?.from || null,
                     p_end_date: dateFilter?.to || null,
                     p_limit: QUICK_LIMIT,
@@ -865,9 +788,8 @@ const AllJobsTab = ({
                 }));
                 qTotal = parseInt(rpcData?.[0]?.total_count || 0);
             } else {
-                // Standard fallback for non-search or fixed-filter views
                 let quickQ = supabase.from('jobs_all_roles')
-                    .select('*', { count: 'exact' })
+                    .select('*', { count: 'exact' }) 
                     .order('date_posted', { ascending: false, nullsFirst: false })
                     .limit(QUICK_LIMIT);
 
@@ -878,7 +800,7 @@ const AllJobsTab = ({
                     quickQ = quickQ.eq('role_name', fixedDomain);
                 }
                 
-                if (country) quickQ = quickQ.eq('indeed_search_country', country);
+                if (activeCountries.length > 0) quickQ = quickQ.in('indeed_search_country', activeCountries);
                 quickQ = applyDateFilter(quickQ, dateFilter);
 
                 const qStdRes = await quickQ;
@@ -898,27 +820,11 @@ const AllJobsTab = ({
                 qTotal = qStdRes.count || qList.length;
             }
 
-            // Client-side search filter (DB already filtered, this is belt-and-suspenders)
-            if (!fixedCompany && !fixedDomain && search && search.trim() && qList.length > 0) {
-                const sWords = search.trim().toLowerCase()
-                    .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ' ')
-                    .split(/\s+/).filter(w => w.length >= 1);
-                qList = qList.filter(j => {
-                    const target = `${j.title || ''} ${j.company_name || ''} ${j.role_name || ''}`.toLowerCase();
-                    return sWords.every(w => target.includes(w));
-                });
-            }
-
-            // No LCA enrichment — strictly jobs_all_roles only per requirements
-
             qList = interleaveJobs(qList);
-            // qTotal is already calculated correctly in the Phase 1 blocks above.
 
-            // Store quick result → Map + localStorage
             processedListCache.current.set(listCacheKey, { list: qList, total: qTotal });
             try { localStorage.setItem(QUICK_LS_KEY, JSON.stringify({ ts: Date.now(), total: qTotal, list: qList.slice(0, 150) })); } catch (_) { }
 
-            // ⚡ Show immediately
             const pagedSlice = qList.slice(from, from + JOBS_PER_PAGE);
             if (pagedSlice.length > 0) {
                 setJobs(pagedSlice);
@@ -926,7 +832,6 @@ const AllJobsTab = ({
                 setCurrentPage(page);
                 setLoading(false);
             } else if (from >= qList.length && qTotal > qList.length) {
-                // Page is beyond locally-fetched data: fetch directly from DB with server-side range
                 try {
                     let directQ = supabase.from('jobs_all_roles')
                         .select('*', { count: 'exact' })
@@ -938,6 +843,9 @@ const AllJobsTab = ({
                         const cC = `and(${words.map(w => `company_name.ilike.%${w}%`).join(',')})`;
                         directQ = directQ.or(`${tC},${cC}`);
                     }
+                    if (activeCountries.length > 0) {
+                        directQ = directQ.in('indeed_search_country', activeCountries);
+                    }
                     if (level && level.length > 0) {
                         const exp = level.flatMap(l => { const n = l.match(/\d/)?.[0]; if (!n) return [l]; const rom = { '1': 'I', '2': 'II', '3': 'III', '4': 'IV' }[n]; return [l, `Level ${n}`, `Level ${rom}`, n, `Lv ${n}`, `Lv${n}`]; });
                         directQ = directQ.in('wage_level', exp);
@@ -946,7 +854,6 @@ const AllJobsTab = ({
                     let finalDirectData = directData || [];
                     let finalDirectCount = directCount !== null ? directCount : qTotal;
 
-                    // FALLBACK: If requested page is empty but total matches exist, show the absolute last page
                     if (finalDirectData.length === 0 && finalDirectCount > 0) {
                         const lastPageFrom = Math.max(0, Math.floor((finalDirectCount - 1) / JOBS_PER_PAGE) * JOBS_PER_PAGE);
                         const { data: fData } = await directQ
@@ -989,12 +896,12 @@ const AllJobsTab = ({
                 setLoading(false);
             }
 
-            // ── Phase 2: Full background fetch — strictly jobs_all_roles only ──
+            // ── Phase 2: Full background fetch ──────────────────────────
             (async () => {
                 try {
                     const FULL_LIMIT = (fixedCompany || fixedDomain) ? 10000 : 2500;
                     let standardQuery = supabase.from('jobs_all_roles')
-                        .select('*', { count: 'exact' })
+                        .select('*') // Removed { count: 'exact' } to avoid timeout on 1M+ rows
                         .order('date_posted', { ascending: false, nullsFirst: false })
                         .limit(FULL_LIMIT);
 
@@ -1015,13 +922,12 @@ const AllJobsTab = ({
                         const rC = `and(${words.map(x => `role_name.ilike.%${x}%`).join(',')})`;
                         standardQuery = standardQuery.or(isRoleS && words.length >= 2 ? `${tC},${rC}` : `${tC},${cC},${rC}`);
                     }
-                    if (country) standardQuery = standardQuery.eq('indeed_search_country', country);
+                    if (activeCountries.length > 0) standardQuery = standardQuery.in('indeed_search_country', activeCountries);
                     standardQuery = applyDateFilter(standardQuery, dateFilter);
 
                     const standardRes = await standardQuery;
                     if (standardRes?.error) return;
 
-                    // Normalize — strictly jobs_all_roles only
                     let fullList = (standardRes.data || []).map(j => ({
                         ...j,
                         company: j.company_name || 'Unknown',
@@ -1034,7 +940,6 @@ const AllJobsTab = ({
                         isTeaser: paymentStatus === 'pending'
                     }));
 
-                    // Client-side search filter
                     if (search && search.trim()) {
                         const sWords = search.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 1);
                         fullList = fullList.filter(j => {
@@ -1046,13 +951,12 @@ const AllJobsTab = ({
                     const interleaved = interleaveJobs(fullList);
                     const fullTotal = (search && search.trim()) ? interleaved.length : (standardRes.count || interleaved.length);
 
-                    // Upgrade both caches — pages 11+ now available
                     processedListCache.current.set(listCacheKey, { list: interleaved, total: fullTotal });
                     try {
-                        localStorage.setItem(`ajt_v19_${listCacheKey}`, JSON.stringify({ ts: Date.now(), total: fullTotal, list: interleaved.slice(0, 500) }));
+                        localStorage.setItem(`ajt_v20_${listCacheKey}`, JSON.stringify({ ts: Date.now(), total: fullTotal, list: interleaved.slice(0, 500) }));
                         localStorage.removeItem(QUICK_LS_KEY);
                     } catch (_) { }
-                } catch (_) { /* silent — Phase 1 data already on screen */ }
+                } catch (_) { }
             })();
         } catch (err) {
             console.error('AllJobsTab fetchJobs error:', err);
@@ -1066,7 +970,6 @@ const AllJobsTab = ({
     // Trigger fetch when search, filter, country, date, or fixed props change
     useEffect(() => {
         if (isInitialLoadDone) {
-            // Clear in-memory + localStorage cache when criteria changes
             processedListCache.current.clear();
             fetchJobs(1, activeFilter, debouncedSearch, levelFilter, countryFilter);
         }
@@ -1075,28 +978,21 @@ const AllJobsTab = ({
         fixedCompany, fixedDomain]);
 
     // ── Silent background preloader ──────────────────────────────────────────
-    // After the current tab finishes loading, silently preload the OTHER tab
-    // so switching between 'All Jobs' ↔ 'Human Verified' is instant from cache.
-    // Only runs when: no search/level filters, no active loading, and the other
-    // tab's cache slot is empty for this session.
     useEffect(() => {
         if (!isInitialLoadDone || loading || debouncedSearch || levelFilter.length > 0) return;
 
         const otherFilter = activeFilter === 'all' ? 'verified' : 'all';
-        const otherKey = `${otherFilter}|none|all|${countryFilter || 'all'}`;
+        const activeCountries = Array.isArray(countryFilter) ? countryFilter : (countryFilter ? [countryFilter] : []);
+        const countriesStr = activeCountries.length > 0 ? activeCountries.slice().sort().join(',') : 'all';
+        const otherKey = `${otherFilter}|none|all|${countriesStr}`;
 
-        // Only preload if the other tab hasn't been cached yet this session
         if (processedListCache.current.has(otherKey)) return;
 
-        // Delay slightly so the current tab's enrichment (LCA, wages) finishes first
         const timer = setTimeout(() => {
-            // Silent fetch: run the full fetchJobs logic for the other tab
-            // but suppress all UI state updates (setJobs, setLoading, etc.)
-            // The Map cache will be populated — hitting the tab will be instant.
             const silentFetch = async () => {
                 try {
                     const levelStr = 'all';
-                    const silentKey = `${otherFilter}|none|${levelStr}|${countryFilter || 'all'}`;
+                    const silentKey = `${otherFilter}|none|${levelStr}|${countriesStr}`;
                     if (processedListCache.current.has(silentKey)) return;
 
                     // Strictly jobs_all_roles only
@@ -1196,7 +1092,7 @@ const AllJobsTab = ({
             {/* Internal headers/filters removed in favor of global dashboard filters */}
 
             {/* ── Verified filter banner ── */}
-            {activeFilter === 'verified' && !loading && (
+            {activeFilter === 'verified' && !loading && !isCompact && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', fontSize: '13px', color: '#16a34a', fontWeight: 600, marginBottom: '14px' }}>
                     <VerifiedSeal size={14} />
                     Showing Jobs From <strong style={{ marginLeft: '4px' }}>Human-Verified H-1B Sponsoring Companies</strong>

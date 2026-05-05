@@ -78,7 +78,7 @@ const MigrateHero = () => {
 
                 const orFilter = searchNames.map(n => `Company.ilike.*${n.replace(/,/g, '\\,')}*`).join(',');
                 const { data } = await supabase
-                    .from('h1b_sponsor_finder')
+                    .from('h1b_sponsors')
                     .select('Company, "LCA Filings"')
                     .or(orFilter);
 

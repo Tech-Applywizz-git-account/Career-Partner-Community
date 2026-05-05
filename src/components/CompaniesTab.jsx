@@ -10,7 +10,7 @@ import { COUNTRY_MAP } from '../utils/countryHelper';
 // fetchAllCompanies removed — now using server-side search via get_companies_fast
 
 const ITEMS_PER_PAGE = 12;
-const LS_CACHE_KEY_PREFIX = 'cp_companies_v1_';
+const LS_CACHE_KEY_PREFIX = 'cp_companies_v8_';
 const LS_TTL_MS = 15 * 60 * 1000; // 15 min localStorage TTL
 
 // In-memory cache to avoid refetching on tab switch
@@ -42,49 +42,15 @@ const lsSet = (key, data) => {
   try { localStorage.setItem(LS_CACHE_KEY_PREFIX + key, JSON.stringify({ ts: Date.now(), data })); } catch (_) {}
 };
 
-// Helper to clean up DB names for display
 const normalizeDisplayName = (name) => {
   if (!name) return '';
   let n = String(name).toLowerCase().trim();
 
-  // Step 1: Aggressive Brand Mapping
-  if (n.includes('amazon') || n.includes('aws')) return 'Amazon';
-  if (n.includes('google') || n.includes('alphabet')) return 'Google';
-  if (n.includes('meta') || n.includes('facebook')) return 'Meta';
-  if (n.includes('microsoft')) return 'Microsoft';
-  if (n.includes('apple')) return 'Apple';
-  if (n.includes('netflix')) return 'Netflix';
-  if (n.includes('tesla')) return 'Tesla';
-  if (n.includes('nvidia')) return 'NVIDIA';
-  if (n.includes('salesforce')) return 'Salesforce';
-  if (n.includes('adobe')) return 'Adobe';
-  if (n.includes('oracle')) return 'Oracle';
-  if (n.includes('intel')) return 'Intel';
-  if (n.includes('cisco')) return 'Cisco';
-  if (n.includes('ibm')) return 'IBM';
-  if (n.includes('pricewaterhousecoopers') || n === 'pwc') return 'PwC';
-  if (n.includes('deloitte')) return 'Deloitte';
-  if (n.includes('accenture')) return 'Accenture';
-  if (n.includes('ernst young') || n === 'ey') return 'EY';
-  if (n.includes('kpmg')) return 'KPMG';
-  if (n.includes('infosys')) return 'Infosys';
-  if (n.includes('tata consultancy') || n === 'tcs') return 'TCS';
-  if (n.includes('wipro')) return 'Wipro';
-  if (n.includes('jpmorgan') || n.includes('jp morgan')) return 'JPMorgan Chase';
-  if (n.includes('goldman sachs')) return 'Goldman Sachs';
-  if (n.includes('morgan stanley')) return 'Morgan Stanley';
-  if (n.includes('capgemini')) return 'Capgemini';
+  // Step 1: Explicit Brand Mapping — ONLY for Amazon variants as requested
+  if (n.includes('amazon') && !n.includes('aws') && !n.includes('web services')) return 'Amazon';
   
-  // Step 2: Generic Cleaning
-  let clean = n
-    .replace(/\([^)]*\)/g, ' ')
-    .replace(/[.,\-\/#!$%\^&\*;:{}=\-_`~()]/g, ' ')
-    .replace(/\b(inc|llc|corp|ltd|co|services|com|systems|technologies|group|holdings|usa|us|intl|international|asia|europe|solutions|related)\b/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  if (clean.length < 2) return name;
-  return clean.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+  // Step 2: For everything else, keep the original name
+  return name.trim();
 };
 
 const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
@@ -98,10 +64,16 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
   const [page, setPage]                   = useState(0);
   const [fetchError, setFetchError]       = useState(null);
 
+  const countryLabel = (Array.isArray(selectedCountry) && selectedCountry.length > 0)
+    ? (selectedCountry.length === 1 ? (COUNTRY_MAP[selectedCountry[0]]?.label || selectedCountry[0]) : `${selectedCountry.length} Countries`)
+    : 'All Countries';
+
   // On first mount: load top 1000 companies from summary table instantly
   useEffect(() => {
     bustCompaniesCache();
-    const cacheKey = `${selectedCountry}-${dateFilter?.quickDate}-${dateFilter?.from}-${dateFilter?.to}`;
+    const activeCountries = Array.isArray(selectedCountry) ? selectedCountry : (selectedCountry ? [selectedCountry] : []);
+    const countriesStr = activeCountries.length > 0 ? activeCountries.slice().sort().join(',') : 'all';
+    const cacheKey = `${countriesStr}-${dateFilter?.quickDate}-${dateFilter?.from}-${dateFilter?.to}`;
     const lsData = lsGet(cacheKey);
     if (lsData) {
       setCompanies(lsData);
@@ -131,7 +103,9 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
 
   // backgroundOnly=true → skip setLoading so UI stays responsive during revalidation
   const fetchCompanies = async (backgroundOnly = false) => {
-    const cacheKey = `${selectedCountry}-${dateFilter?.quickDate}-${dateFilter?.from}-${dateFilter?.to}`;
+    const activeCountries = Array.isArray(selectedCountry) ? selectedCountry : (selectedCountry ? [selectedCountry] : []);
+    const countriesStr = activeCountries.length > 0 ? activeCountries.slice().sort().join(',') : 'all';
+    const cacheKey = `${countriesStr}-${dateFilter?.quickDate}-${dateFilter?.from}-${dateFilter?.to}`;
 
     // In-memory cache hit
     if (
@@ -154,7 +128,7 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
     try {
       // Read top 100,000 companies from summary_company_jobs — < 100ms always
       const { data: fastData, error: fastErr } = await supabase.rpc('get_companies_fast', {
-        p_country: selectedCountry || null,
+        p_countries: activeCountries.length > 0 ? activeCountries : null,
         p_limit:   100000,
         p_offset:  0,
         p_search:  null,
@@ -181,51 +155,51 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
 
   // Shared row processor — highly optimized to prevent UI freezing
   const processResults = (rows) => {
-    const famous = [];
-    const regular = [];
+    const aggMap = new Map();
     
-    // O(n) pass to map and split (DB already sorted by count)
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      const name = row.company_name;
-      const isF = isFamous(name);
-      const item = {
-        name,
-        count: Number(row.job_count),
-        isFamous: isF,
-        rank: isF ? getCompanyRank(name) : 999,
-        type: isTechRole(name) ? 'TECH' : 'NON-TECH'
-      };
+      const canonicalName = normalizeDisplayName(row.company_name);
       
-      if (isF) famous.push(item);
-      else regular.push(item);
+      if (!aggMap.has(canonicalName)) {
+        aggMap.set(canonicalName, {
+          name: canonicalName,
+          originalNames: new Set([row.company_name]),
+          count: Number(row.job_count),
+          isFamous: isFamous(row.company_name),
+          type: isTechRole(row.company_name) ? 'TECH' : 'NON-TECH'
+        });
+      } else {
+        const existing = aggMap.get(canonicalName);
+        existing.count += Number(row.job_count);
+        existing.originalNames.add(row.company_name);
+        if (isFamous(row.company_name)) existing.isFamous = true;
+      }
     }
+
+    const aggregated = Array.from(aggMap.values()).map(item => ({
+      ...item,
+      originalNames: Array.from(item.originalNames),
+      rank: item.isFamous ? getCompanyRank(item.name) : 999
+    }));
+
+    const famous = aggregated.filter(i => i.isFamous);
+    const regular = aggregated.filter(i => !i.isFamous);
     
-    // Only sort the tiny famous array, keep the rest as they came from DB (ordered by count)
-    famous.sort((a, b) => {
-      if (a.rank !== b.rank) return a.rank - b.rank;
-      return b.count - a.count;
-    });
+    // Sort famous by rank, regular by job count
+    famous.sort((a, b) => a.rank - b.rank);
+    regular.sort((a, b) => b.count - a.count);
     
-    return famous.concat(regular);
+    return [...famous, ...regular];
   };
-
-  const totalJobCount = companies.reduce((sum, c) => sum + c.count, 0);
-
-  // Compiled regex for lightning-fast matching over 82k rows
-  const techRegex = /google|amazon|microsoft|meta|apple|netflix|tesla|nvidia|adobe|salesforce|oracle|intel|ibm|cisco|uber|lyft|airbnb|stripe|square|zoom|slack|twitter|linkedin|software|engineer|developer|tech|data|ml|ai|cloud|security|devops|web|frontend|backend|fullstack|infrastructure|network|computing|digital|robotics|automation/i;
-  
-  const isTechRole = (name) => techRegex.test(name);
-
-  const countryLabel = selectedCountry
-    ? (COUNTRY_MAP[selectedCountry]?.label || selectedCountry)
-    : 'All Countries';
 
   const filteredCompanies = companies.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filter === 'All' || c.type === filter.toUpperCase();
     return matchesSearch && matchesFilter;
   });
+
+  const totalJobCount = companies.reduce((sum, c) => sum + c.count, 0);
 
   const topTier = companies.filter(c => c.isFamous && c.rank < 15 && c.count > 0).slice(0, 10);
 
@@ -254,7 +228,7 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
           </div>
         </div>
 
-        <AllJobsTab fixedCompany={selectedCompany.rawNames} activeFilter="all" countryFilter={selectedCountry} dateFilter={dateFilter} />
+        <AllJobsTab fixedCompany={selectedCompany.originalNames} activeFilter="all" countryFilter={selectedCountry} dateFilter={dateFilter} isCompact={true} />
       </div>
     );
   }
@@ -339,7 +313,7 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-4 py-2 rounded-lg text-xs font-black transition-all ${
-                  filter === f ? 'bg-[#2C76FF] text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  filter === f ? '!bg-[#2C76FF] !text-white shadow-lg' : 'text-gray-500 hover:bg-gray-100 hover:text-[#1E1E1E]'
                 }`}
               >
                 {f}
@@ -360,7 +334,7 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
             {topTier.map((company, idx) => (
               <div
                 key={`top-${idx}`}
-                onClick={() => setSelectedCompany({ name: company.name, rawNames: company.rawNames })}
+                onClick={() => setSelectedCompany({ name: company.name, originalNames: company.originalNames })}
                 className="flex-shrink-0 w-44 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#2C76FF]/30 transition-all cursor-pointer group text-center"
               >
                 <div className="flex justify-center mb-4 relative">
@@ -400,7 +374,7 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
           {pagedCompanies.map((company, idx) => (
             <div
               key={idx}
-              onClick={() => setSelectedCompany({ name: company.name, rawNames: company.rawNames })}
+              onClick={() => onSelectCompany(company.name, company.originalNames)}
               className="group relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md hover:border-[#2C76FF]/20 transition-all duration-200 cursor-pointer flex items-center gap-5"
             >
               <LogoBox name={company.name} size={56} className="rounded-lg overflow-hidden border border-gray-100 shrink-0" />

@@ -65,7 +65,7 @@
 //         setLoading(true);
 //         try {
 //             let q = supabase
-//                 .from('h1b_sponsor_finder')
+//                 .from('h1b_sponsors')
 //                 .select('id, "Company", "LCA Filings", "Worker Positions", "HQ State", "# States", "Common Job Titles", "Avg Salary", "Median Salary"')
 //                 .order('LCA Filings', { ascending: false })
 //                 .limit(100);
@@ -101,7 +101,7 @@
 
 //         try {
 //             const { data } = await supabase
-//                 .from('h1b_sponsor_finder')
+//                 .from('h1b_sponsors')
 //                 .select('"Company Job Title", "LCA Filings", "Avg Salary", "State"')
 //                 .eq('Company', companyName)
 //                 .not('Company Job Title', 'is', null)
@@ -135,7 +135,7 @@
 
 //         try {
 //             const { data } = await supabase
-//                 .from('h1b_sponsor_finder')
+//                 .from('h1b_sponsors')
 //                 .select('"City", "State", "Salary", "Visa Type", "Employment Type"')
 //                 .eq('Company', companyName)
 //                 .eq('Company Job Title', roleTitle)
@@ -154,7 +154,7 @@
 //         setRoleCatLoading(true);
 //         try {
 //             const { data, error } = await supabase
-//                 .from('h1b_sponsor_finder')
+//                 .from('h1b_sponsors')
 //                 .select('"Common Job Titles", "LCA Filings"')
 //                 .not('Common Job Titles', 'is', null)
 //                 .not('Common Job Titles', 'eq', '')
@@ -194,7 +194,7 @@
 //         setJobTitlesLoading(true);
 //         try {
 //             const { data, error } = await supabase
-//                 .from('h1b_sponsor_finder')
+//                 .from('h1b_sponsors')
 //                 .select('"Company Job Title", "Company", "LCA Filings", "Avg Salary"')
 //                 .ilike('Common Job Titles', `%${cat}%`)
 //                 .not('Company Job Title', 'is', null)
@@ -241,7 +241,7 @@
 
 //         try {
 //             const { data } = await supabase
-//                 .from('h1b_sponsor_finder')
+//                 .from('h1b_sponsors')
 //                 .select('"Company", "LCA Filings", "Avg Salary"')
 //                 .eq('Company Job Title', title)
 //                 .order('LCA Filings', { ascending: false })
@@ -273,7 +273,7 @@
 
 //         try {
 //             const { data } = await supabase
-//                 .from('h1b_sponsor_finder')
+//                 .from('h1b_sponsors')
 //                 .select('"City", "State", "Salary", "Visa Type", "Employment Type"')
 //                 .eq('Company', companyName)
 //                 .eq('Company Job Title', title)
@@ -754,7 +754,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
     const fetchSponsorData = async () => {
         setLoading(true);
         try {
-            let query = supabase.from('h1b_sponsor_finder').select('*');
+            let query = supabase.from('h1b_sponsors').select('*');
 
             if (searchTerm) {
                 if (searchType === 'company') {
@@ -812,7 +812,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
     const fetchRolesForCompany = async (companyName) => {
         try {
             const { data: filings } = await supabase
-                .from('h1b_sponsor_finder')
+                .from('h1b_sponsors')
                 .select('*')
                 .eq('Company', companyName);
 

@@ -36,33 +36,54 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
     return () => clearTimeout(timer);
   }, [localSearchTerm]);
 
-  const processResults = (rows) => {
-    const famous = [];
-    const regular = [];
+  // Helper to clean up DB names for display
+  const normalizeDisplayName = (name) => {
+    if (!name) return '';
+    let n = String(name).toLowerCase().trim();
+
+    // Step 1: Explicit Brand Mapping — ONLY for Amazon variants as requested
+    if (n.includes('amazon') && !n.includes('aws') && !n.includes('web services')) return 'Amazon';
     
-    // O(n) pass to map and split (DB already sorted by count)
+    // Step 2: For everything else, keep the original name
+    return name.trim();
+  };
+
+  const processResults = (rows) => {
+    const aggMap = new Map();
+    
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      const name = row.company_name;
-      const isF = isFamous(name);
-      const item = {
-        name,
-        count: Number(row.job_count),
-        isFamous: isF,
-        rank: isF ? getCompanyRank(name) : 999,
-      };
+      const canonicalName = normalizeDisplayName(row.company_name);
       
-      if (isF) famous.push(item);
-      else regular.push(item);
+      if (!aggMap.has(canonicalName)) {
+        aggMap.set(canonicalName, {
+          name: canonicalName,
+          originalNames: new Set([row.company_name]),
+          count: Number(row.job_count),
+          isFamous: isFamous(row.company_name),
+        });
+      } else {
+        const existing = aggMap.get(canonicalName);
+        existing.count += Number(row.job_count);
+        existing.originalNames.add(row.company_name);
+        if (isFamous(row.company_name)) existing.isFamous = true;
+      }
     }
+
+    const aggregated = Array.from(aggMap.values()).map(item => ({
+      ...item,
+      originalNames: Array.from(item.originalNames),
+      rank: item.isFamous ? getCompanyRank(item.name) : 999
+    }));
+
+    const famous = aggregated.filter(i => i.isFamous);
+    const regular = aggregated.filter(i => !i.isFamous);
     
-    // Only sort the tiny famous array, keep the rest as they came from DB (ordered by count)
-    famous.sort((a, b) => {
-      if (a.rank !== b.rank) return a.rank - b.rank;
-      return b.count - a.count;
-    });
+    // Sort famous by rank, regular by job count
+    famous.sort((a, b) => a.rank - b.rank);
+    regular.sort((a, b) => b.count - a.count);
     
-    return famous.concat(regular);
+    return [...famous, ...regular];
   };
 
   const fetchCompanies = async () => {
@@ -83,8 +104,8 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
     }
   };
 
-  const countryLabel = selectedCountry
-    ? (COUNTRY_MAP[selectedCountry]?.label || selectedCountry)
+  const countryLabel = (Array.isArray(selectedCountry) && selectedCountry.length > 0)
+    ? (selectedCountry.length === 1 ? (COUNTRY_MAP[selectedCountry[0]]?.label || selectedCountry[0]) : `${selectedCountry.length} Countries`)
     : 'All Countries';
 
   const filteredCompanies = companies.filter(c =>
@@ -93,7 +114,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
 
   const totalPages     = Math.ceil(filteredCompanies.length / ITEMS_PER_PAGE);
   const pagedCompanies = filteredCompanies.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
-
+ 
   // ── Detail view ───────────────────────────────────────────────────────────────
   if (selectedCompany) {
     return (
@@ -105,22 +126,22 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
           Back to all companies
         </button>
-
+ 
         <div className="bg-white rounded-2xl p-2 border border-gray-100 shadow-sm mb-8">
           <div className="flex items-center gap-4 p-4">
-            <LogoBox name={selectedCompany} size={64} className="rounded-xl border border-gray-100 shadow-sm" />
+            <LogoBox name={selectedCompany.name} size={64} className="rounded-xl border border-gray-100 shadow-sm" />
             <div>
-              <h2 className="text-2xl font-[900] text-[#1E1E1E]">{selectedCompany}</h2>
+              <h2 className="text-2xl font-[900] text-[#1E1E1E]">{selectedCompany.name}</h2>
               <p className="text-gray-500 font-bold">Showing all active job openings</p>
             </div>
           </div>
         </div>
-
-        <AllJobsTab fixedCompany={selectedCompany} activeFilter="all" countryFilter={selectedCountry} dateFilter={dateFilter} />
+ 
+        <AllJobsTab fixedCompany={selectedCompany.originalNames} activeFilter="all" countryFilter={selectedCountry} dateFilter={dateFilter} isCompact={true} />
       </div>
     );
   }
-
+ 
   // ── Loading ───────────────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -130,7 +151,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
       </div>
     );
   }
-
+ 
   // ── List view ─────────────────────────────────────────────────────────────────
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -142,7 +163,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
           {filteredCompanies.length !== companies.length && ` (filtered from ${companies.length.toLocaleString()} total)`}
         </p>
       </div>
-
+ 
       {/* Search */}
       <div className="relative mb-8">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -154,7 +175,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
           className="w-full bg-white border border-gray-200 rounded-2xl pl-12 pr-4 py-4 text-base font-bold text-[#1E1E1E] outline-none focus:ring-2 focus:ring-[#2C76FF]/50 focus:border-[#2C76FF] transition-all shadow-sm"
         />
       </div>
-
+ 
       {/* Grid */}
       {pagedCompanies.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
@@ -166,7 +187,10 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter }) =
           {pagedCompanies.map((company, idx) => (
             <div
               key={idx}
-              onClick={() => setSelectedCompany(company.name)}
+              onClick={() => {
+                setSelectedCompany(company);
+                onSelectCompany(company.name, company.originalNames);
+              }}
               className="group relative bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md hover:border-[#2C76FF]/30 transition-all duration-200 cursor-pointer flex items-center gap-5"
             >
               <LogoBox name={company.name} size={56} className="rounded-lg overflow-hidden border border-gray-100 shrink-0" />

@@ -56,7 +56,7 @@ const CompanyJobCard = ({ job, onSave, isSaved = false, isLandingPage = false, i
                     };
                     const coreTerm = normalize(job.company).split(' ')[0] || normalize(job.company);
                     try {
-                        const { data } = await supabase.from('h1b_sponsor_finder').select('"LCA Filings"').ilike('Company', `%${coreTerm}%`).limit(1);
+                        const { data } = await supabase.from('h1b_sponsors').select('"LCA Filings"').ilike('Company', `%${coreTerm}%`).limit(1);
                         const count = (data && data[0]) ? (parseInt(data[0]["LCA Filings"]) || 0) : 0;
                         _cjcSet(fKey, count);
                         setFilingCount(count);

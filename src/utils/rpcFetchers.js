@@ -3,11 +3,12 @@ import { supabase } from '../supabaseClient';
 // ── New Fast RPCs with Date Filter Support
 
 /**
- * Fetch top companies from the fast RPC, supporting date ranges.
+ * Fetch top companies from the fast RPC, supporting date ranges and multiple countries.
  */
-export async function fetchAllCompanies(country, startDate = null, endDate = null) {
+export async function fetchAllCompanies(countries, startDate = null, endDate = null) {
+  const activeCountries = Array.isArray(countries) ? countries : (countries ? [countries] : []);
   const { data, error } = await supabase.rpc('get_companies_fast_json', {
-    p_country: country || null,
+    p_countries: activeCountries.length > 0 ? activeCountries : null,
     p_search:  null,
     p_start_date: startDate || null,
     p_end_date:   endDate || null,
@@ -23,11 +24,12 @@ export async function fetchAllCompanies(country, startDate = null, endDate = nul
 }
 
 /**
- * Fetch top domains from the fast RPC, supporting date ranges.
+ * Fetch top domains from the fast RPC, supporting date ranges and multiple countries.
  */
-export async function fetchAllDomains(country, startDate = null, endDate = null) {
+export async function fetchAllDomains(countries, startDate = null, endDate = null) {
+  const activeCountries = Array.isArray(countries) ? countries : (countries ? [countries] : []);
   const { data, error } = await supabase.rpc('get_domains_fast_json', {
-    p_country: country || null,
+    p_countries: activeCountries.length > 0 ? activeCountries : null,
     p_search:  null,
     p_start_date: startDate || null,
     p_end_date:   endDate || null,

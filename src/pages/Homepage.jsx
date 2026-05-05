@@ -62,7 +62,7 @@
 //   const [selectedTeaserCompany, setSelectedTeaserCompany] = useState(null);
 //   const [teaserJobs, setTeaserJobs] = useState([]);
 //   const [teaserLoading, setTeaserLoading] = useState(true);
-//   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+//   const [sidebarOpen, setsidebarOpen] = useState(false);
 //   const [mobileActiveCol, setMobileActiveCol] = useState('left'); // 'left' or 'right'
 //   const [filingCounts, setFilingCounts] = useState({});
 
@@ -71,8 +71,8 @@
 //   const S = {
 //     page: { display: 'flex', height: '100vh', overflow: 'hidden', background: '#f5f5f7', fontFamily: "'Inter', sans-serif" },
 //     sidebar: {
-//       width: showSidebarDrawer ? (mobileMenuOpen ? '280px' : '0') : '260px',
-//       minWidth: showSidebarDrawer ? (mobileMenuOpen ? '280px' : '0') : '260px',
+//       width: showSidebarDrawer ? (sidebarOpen ? '280px' : '0') : '260px',
+//       minWidth: showSidebarDrawer ? (sidebarOpen ? '280px' : '0') : '260px',
 //       background: '#ffffff',
 //       borderRight: '1px solid #e8e8e8',
 //       display: 'flex',
@@ -85,7 +85,7 @@
 //       top: 0,
 //       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 //       overflow: 'hidden',
-//       boxShadow: showSidebarDrawer && mobileMenuOpen ? '0 0 40px rgba(0,0,0,0.1)' : 'none'
+//       boxShadow: showSidebarDrawer && sidebarOpen ? '0 0 40px rgba(0,0,0,0.1)' : 'none'
 //     },
 //     sidebarLogo: { padding: '24px 24px 20px', minWidth: '260px' },
 //     sidebarNav: { flex: 1, padding: '0 12px', overflowY: 'auto', minWidth: '260px' },
@@ -183,7 +183,7 @@
 //         const names = teaserCompanies.map(c => c.company);
 //         const searchNames = [...new Set(names.map(n => normalizeName(n)))];
 //         const { data } = await supabase
-//           .from('h1b_sponsor_finder')
+//           .from('h1b_sponsors')
 //           .select('Company, "LCA Filings"')
 //           .or(searchNames.map(n => `Company.ilike.%${n}%`).join(','));
 
@@ -233,8 +233,8 @@
 
 //   return (
 //     <div style={S.page}>
-//       {isMobile && mobileMenuOpen && (
-//         <div onClick={() => setMobileMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }} />
+//       {isMobile && sidebarOpen && (
+//         <div onClick={() => setsidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }} />
 //       )}
 
 //       {/* Sidebar */}
@@ -254,7 +254,7 @@
 //               </div>
 //             </div>
 //             {isMobile && (
-//               <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', color: '#666' }}>
+//               <button onClick={() => setsidebarOpen(false)} style={{ background: 'transparent', border: 'none', color: '#666' }}>
 //                 <X size={24} />
 //               </button>
 //             )}
@@ -262,11 +262,11 @@
 //         </div>
 
 //         <nav style={S.sidebarNav}>
-//           <button style={S.navItem(true)} onClick={() => { if (isMobile) setMobileMenuOpen(false); }}>
+//           <button style={S.navItem(true)} onClick={() => { if (isMobile) setsidebarOpen(false); }}>
 //             <Building2 size={18} strokeWidth={2.2} />
 //             <span>Dashboard</span>
 //           </button>
-//           <button style={S.navItem(false)} onClick={() => { navigate('/pricing'); if (isMobile) setMobileMenuOpen(false); }}>
+//           <button style={S.navItem(false)} onClick={() => { navigate('/pricing'); if (isMobile) setsidebarOpen(false); }}>
 //             <Gift size={18} strokeWidth={1.6} />
 //             <span>Pricing Plans</span>
 //           </button>
@@ -293,7 +293,7 @@
 //       <div style={S.main}>
 //         <header style={S.topBar}>
 //           {(isMobile || showSidebarDrawer) && (
-//             <button onClick={() => setMobileMenuOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
+//             <button onClick={() => setsidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
 //               <Menu size={24} color="#24385E" />
 //             </button>
 //           )}
@@ -437,7 +437,7 @@
 //   const [isMobile, setIsMobile] = useState(window.innerWidth < 960);
 //   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 //   const [showSidebarDrawer, setShowSidebarDrawer] = useState(window.innerWidth < 1280);
-//   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+//   const [sidebarOpen, setsidebarOpen] = useState(false);
 //   const [mobileActiveCol, setMobileActiveCol] = useState('left'); // 'left' or 'right'
 //   const [countryFilter, setCountryFilter] = useState('USA');
 
@@ -449,7 +449,7 @@
 //       setIsMobile(isMob);
 //       const isDrawer = width < 1280;
 //       setShowSidebarDrawer(isDrawer);
-//       if (!isDrawer) setMobileMenuOpen(false);
+//       if (!isDrawer) setsidebarOpen(false);
 //     };
 //     window.addEventListener('resize', handleResize);
 //     return () => window.removeEventListener('resize', handleResize);
@@ -523,7 +523,7 @@
 //         const orFilter = searchNames.map(n => `Company.ilike.*${n.replace(/,/g, '\\,')}*`).join(',');
 
 //         const { data, error } = await supabase
-//           .from('h1b_sponsor_finder')
+//           .from('h1b_sponsors')
 //           .select('Company, "LCA Filings"')
 //           .or(orFilter);
 
@@ -1312,7 +1312,7 @@
 //       // Fetch filing count for this company to show on cards
 //       let lcaCount = 0;
 //       const { data: sData } = await supabase
-//         .from('h1b_sponsor_finder')
+//         .from('h1b_sponsors')
 //         .select('"LCA Filings"')
 //         .ilike('Company', `%${selectedCompany}%`)
 //         .limit(1);
@@ -1550,8 +1550,8 @@
 //   const S = {
 //     page: { display: 'flex', height: '100vh', overflow: 'hidden', background: '#f5f5f7', fontFamily: "'Inter', sans-serif" },
 //     sidebar: {
-//       width: (activeView === 'h1b_finder' && !isMobile) ? '0' : (showSidebarDrawer ? (mobileMenuOpen ? '280px' : '0') : '260px'),
-//       minWidth: (activeView === 'h1b_finder' && !isMobile) ? '0' : (showSidebarDrawer ? (mobileMenuOpen ? '280px' : '0') : '260px'),
+//       width: (activeView === 'h1b_finder' && !isMobile) ? '0' : (showSidebarDrawer ? (sidebarOpen ? '280px' : '0') : '260px'),
+//       minWidth: (activeView === 'h1b_finder' && !isMobile) ? '0' : (showSidebarDrawer ? (sidebarOpen ? '280px' : '0') : '260px'),
 //       background: '#ffffff',
 //       borderRight: (activeView === 'h1b_finder' && !isMobile) ? 'none' : '1px solid #e8e8e8',
 //       display: 'flex',
@@ -1564,7 +1564,7 @@
 //       top: 0,
 //       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 //       overflow: 'hidden',
-//       boxShadow: showSidebarDrawer && mobileMenuOpen ? '0 0 40px rgba(0,0,0,0.1)' : 'none'
+//       boxShadow: showSidebarDrawer && sidebarOpen ? '0 0 40px rgba(0,0,0,0.1)' : 'none'
 //     },
 //     sidebarLogo: { padding: '24px 24px 20px', minWidth: '260px' },
 //     sidebarNav: { flex: 1, padding: '0 12px', overflowY: 'auto', minWidth: '260px' },
@@ -1624,9 +1624,9 @@
 //     <div style={S.page}>
 
 //       {/* Sidebar Overlay for Mobile */}
-//       {isMobile && mobileMenuOpen && (
+//       {isMobile && sidebarOpen && (
 //         <div
-//           onClick={() => setMobileMenuOpen(false)}
+//           onClick={() => setsidebarOpen(false)}
 //           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }}
 //         />
 //       )}
@@ -1650,7 +1650,7 @@
 //             </div>
 //             {isMobile && (
 //               <button
-//                 onClick={() => setMobileMenuOpen(false)}
+//                 onClick={() => setsidebarOpen(false)}
 //                 style={{ background: 'transparent', border: 'none', color: '#666' }}
 //               >
 //                 <X size={24} />
@@ -1666,7 +1666,7 @@
 //             const active = activeView === item.id;
 //             const isMultiLine = item.label.includes('\n');
 //             return (
-//               <button key={item.id} style={S.navItem(active)} onClick={() => { setActiveView(item.id); if (isMobile) setMobileMenuOpen(false); }}
+//               <button key={item.id} style={S.navItem(active)} onClick={() => { setActiveView(item.id); if (isMobile) setsidebarOpen(false); }}
 //                 onMouseEnter={e => { if (!active) { e.currentTarget.style.background = '#f5f5f5'; e.currentTarget.style.color = '#333'; } }}
 //                 onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#666'; } }}
 //               >
@@ -1682,7 +1682,7 @@
 
 //         {/* Bottom */}
 //         <div style={S.sidebarBottom}>
-//           <button style={S.navItem(activeView === 'settings')} onClick={() => { setActiveView('settings'); if (isMobile) setMobileMenuOpen(false); }}
+//           <button style={S.navItem(activeView === 'settings')} onClick={() => { setActiveView('settings'); if (isMobile) setsidebarOpen(false); }}
 //             onMouseEnter={e => { if (activeView !== 'settings') { e.currentTarget.style.background = '#f5f5f5'; } }}
 //             onMouseLeave={e => { if (activeView !== 'settings') { e.currentTarget.style.background = 'transparent'; } }}
 //           >
@@ -1699,7 +1699,7 @@
 //                 border: '1px solid rgba(36,56,94,0.15)',
 //                 marginTop: '4px',
 //               }}
-//               onClick={() => { navigate('/admin'); if (isMobile) setMobileMenuOpen(false); }}
+//               onClick={() => { navigate('/admin'); if (isMobile) setSidebarOpen(false); }}
 //               onMouseEnter={e => e.currentTarget.style.background = 'rgba(36,56,94,0.14)'}
 //               onMouseLeave={e => e.currentTarget.style.background = 'rgba(36,56,94,0.08)'}
 //             >
@@ -1743,7 +1743,7 @@
 //         {!(activeView === 'h1b_finder' && !isMobile) && (
 //           <div style={S.topBar}>
 //             {(isMobile || showSidebarDrawer) && (
-//               <button onClick={() => setMobileMenuOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
+//               <button onClick={() => setsidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
 //                 <Menu size={24} color="#24385E" />
 //               </button>
 //             )}
@@ -2357,7 +2357,7 @@ import {
   ChevronLeft, ChevronRight, ArrowUpDown, Eye, Star,
   MessageSquare, Gift, Archive, Building2, X, Users, Mail,
   ExternalLink, SlidersHorizontal, HelpCircle, Lock, LogOut, CreditCard,
-  Menu, Zap, Sparkles, Shield, Globe
+  Menu, Zap, Sparkles, Shield, Globe, Activity
 } from 'lucide-react';
 
 import { getCompanyLogo } from '../utils/logoHelper';
@@ -2379,6 +2379,8 @@ import DomainsTab from '../components/DomainsTab';
 import CompaniesTab from '../components/CompaniesTab';
 import AllCompaniesListTab from '../components/AllCompaniesListTab';
 import H1BSponsorFinderTab from '../components/H1BSponsorFinderTab';
+import AdminStatsTab from '../components/AdminStatsTab';
+import AppTour from '../components/AppTour';
 import { fetchJobRoles, filterRoles } from '../utils/rolesSuggestions';
 import { isFamous } from '../utils/famousCompanies';
 import { getWageLevel } from '../dataSyncService';
@@ -2393,11 +2395,7 @@ const normalizeName = (name) => {
     .replace(/\s+/g, ' ')
     .trim();
   // Enhanced mapping for major tech entities
-  if (n.includes('amazon')) return 'amazon';
-  if (n.includes('google') || n.includes('alphabet')) return 'google';
-  if (n.includes('meta') || n.includes('facebook')) return 'meta';
-  if (n.includes('microsoft')) return 'microsoft';
-  if (n === 'apple' || n.startsWith('apple ')) return 'apple';
+  if (n.includes('amazon') && !n.includes('aws') && !n.includes('web services')) return 'amazon';
   return n;
 };
 
@@ -2412,7 +2410,7 @@ const TeaserDashboard = ({ user, signOut, navigate, isMobile }) => {
   const [selectedTeaserCompany, setSelectedTeaserCompany] = useState(null);
   const [teaserJobs, setTeaserJobs] = useState([]);
   const [teaserLoading, setTeaserLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1280);
   const [mobileActiveCol, setMobileActiveCol] = useState('left'); // 'left' or 'right'
   const [filingCounts, setFilingCounts] = useState({});
 
@@ -2421,8 +2419,8 @@ const TeaserDashboard = ({ user, signOut, navigate, isMobile }) => {
   const S = {
     page: { display: 'flex', height: '100vh', overflow: 'hidden', background: '#f5f5f7', fontFamily: "'Inter', sans-serif" },
     sidebar: {
-      width: isMobile ? (mobileMenuOpen ? '280px' : '0') : '260px',
-      minWidth: isMobile ? (mobileMenuOpen ? '280px' : '0') : '260px',
+      width: sidebarOpen ? '260px' : '0',
+      minWidth: sidebarOpen ? '260px' : '0',
       background: '#ffffff',
       borderRight: '1px solid #e8e8e8',
       display: 'flex',
@@ -2435,7 +2433,7 @@ const TeaserDashboard = ({ user, signOut, navigate, isMobile }) => {
       top: 0,
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden',
-      boxShadow: isMobile && mobileMenuOpen ? '0 0 40px rgba(0,0,0,0.1)' : 'none'
+      boxShadow: isMobile && sidebarOpen ? '0 0 40px rgba(0,0,0,0.1)' : 'none'
     },
     sidebarLogo: { padding: '24px 24px 20px', minWidth: '260px' },
     sidebarNav: { flex: 1, padding: '0 12px', overflowY: 'auto', minWidth: '260px' },
@@ -2454,10 +2452,10 @@ const TeaserDashboard = ({ user, signOut, navigate, isMobile }) => {
       borderBottom: '1px solid #e8e8e8',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: isMobile ? 'space-between' : 'center',
+      justifyContent: (isMobile || !sidebarOpen) ? 'space-between' : 'center',
       gap: '12px',
-      padding: isMobile ? '0 16px' : '11px 24px',
-      height: isMobile ? '60px' : 'auto',
+      padding: (isMobile || !sidebarOpen) ? '0 16px' : '11px 24px',
+      height: (isMobile || !sidebarOpen) ? '60px' : 'auto',
       flexShrink: 0
     },
     content: { flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' },
@@ -2537,7 +2535,7 @@ const TeaserDashboard = ({ user, signOut, navigate, isMobile }) => {
         const names = teaserCompanies.map(c => c.company);
         const searchNames = [...new Set(names.map(n => normalizeName(n)))];
         const { data } = await supabase
-          .from('h1b_sponsor_finder')
+          .from('h1b_sponsors')
           .select('Company, "LCA Filings"')
           .or(searchNames.map(n => `Company.ilike.%${n}%`).join(','));
 
@@ -2587,8 +2585,8 @@ const TeaserDashboard = ({ user, signOut, navigate, isMobile }) => {
 
   return (
     <div style={S.page}>
-      {isMobile && mobileMenuOpen && (
-        <div onClick={() => setMobileMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }} />
+      {sidebarOpen && isMobile && (
+        <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }} />
       )}
 
       {/* Sidebar */}
@@ -2607,20 +2605,34 @@ const TeaserDashboard = ({ user, signOut, navigate, isMobile }) => {
                 <span style={{ fontSize: '20px', fontWeight: 800, color: '#EAB308' }}>Partner</span>
               </div>
             </div>
-            {isMobile && (
-              <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', color: '#666' }}>
-                <X size={24} />
-              </button>
-            )}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              style={{ 
+                background: 'transparent', 
+                border: 'none', 
+                color: '#999', 
+                cursor: 'pointer', 
+                padding: '8px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#f5f5f5'; e.currentTarget.style.color = '#2C76FF'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#999'; }}
+            >
+              <X size={20} strokeWidth={2.5} />
+            </button>
           </div>
         </div>
 
         <nav style={S.sidebarNav}>
-          <button style={S.navItem(true)} onClick={() => { if (isMobile) setMobileMenuOpen(false); }}>
+          <button style={S.navItem(true)} onClick={() => { if (isMobile) setsidebarOpen(false); }}>
             <Building2 size={18} strokeWidth={2.2} />
             <span>Dashboard</span>
           </button>
-          <button style={S.navItem(false)} onClick={() => { navigate('/pricing'); if (isMobile) setMobileMenuOpen(false); }}>
+          <button style={S.navItem(false)} onClick={() => { navigate('/pricing'); if (isMobile) setsidebarOpen(false); }}>
             <Gift size={18} strokeWidth={1.6} />
             <span>Pricing Plans</span>
           </button>
@@ -2646,11 +2658,9 @@ const TeaserDashboard = ({ user, signOut, navigate, isMobile }) => {
       {/* Main Content */}
       <div style={S.main}>
         <header style={S.topBar}>
-          {isMobile && (
-            <button onClick={() => setMobileMenuOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
-              <Menu size={24} color="#24385E" />
-            </button>
-          )}
+          <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
+            <Menu size={24} color="#24385E" />
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Building2 size={20} color="#24385E" />
             <span style={{ fontSize: isMobile ? '13px' : '15px', fontWeight: 700, color: '#1a1a1a' }}>Limited Preview — Unlock Full Access</span>
@@ -2791,19 +2801,18 @@ const JOBS_PER_PAGE = 15;
 const COMPANIES_PER_PAGE = 25;
 
 const Homepage = () => {
-  const { user, loading: authLoading, subscriptionExpired, signOut, paymentStatus, paymentLoading, refresh: refreshAuth, isAdmin: isAdminFromCtx, role } = useAuth();
+  const { user, loading: authLoading, subscriptionExpired, signOut, paymentStatus, paymentLoading, refresh: refreshAuth, isAdmin: isAdminFromCtx, role, isDummy } = useAuth();
   // Safety net: also check localStorage in case context hasn't hydrated yet
   const isAdmin = isAdminFromCtx || role === 'admin' || localStorage.getItem('userRole') === 'admin';
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1280);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1280);
   const [mobileActiveCol, setMobileActiveCol] = useState('left'); // 'left' or 'right'
 
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 1280;
       setIsMobile(mobile);
-      if (!mobile) setMobileMenuOpen(false);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -2846,7 +2855,7 @@ const Homepage = () => {
   const [allProcessedCompanies, setAllProcessedCompanies] = useState(window._allProcessedCompanies || []);
   const [isInitialLoadDone, setIsInitialLoadDone] = useState(!!window._allProcessedCompanies);
   const [levelFilter, setLevelFilter] = useState([]); // Array like ['Lv 1', 'Lv 2']
-  const [countryFilter, setCountryFilter] = useState(null);
+  const [countryFilter, setCountryFilter] = useState([]); // Array like ['USA', 'UK']
   const [dateFilter, setDateFilter] = useState({ quickDate: 'all', from: null, to: null });
   const [activeJobFilter, setActiveJobFilter] = useState('all');
   const [showCompanyFilters, setShowCompanyFilters] = useState(false);
@@ -3786,8 +3795,9 @@ const Homepage = () => {
     { id: 'all_jobs', label: 'All Jobs', icon: Briefcase },
     { id: 'all_companies_list', label: 'All Companies', icon: Building2 },
     { id: 'domains', label: 'Domains', icon: Globe },
-    { id: 'h1b_finder', label: 'H-1B Finder', icon: Shield },
-    { id: 'all_companies', label: 'All companies that sponsor', icon: Building2 },
+    // { id: 'h1b_finder', label: 'H-1B Finder', icon: Shield },
+    { id: 'admin_stats', label: 'Admin Stats', icon: Activity },
+    // { id: 'all_companies', label: 'All companies that sponsor', icon: Building2 },
   ];
 
   /* ─────────────────────────────────────── */
@@ -3796,10 +3806,11 @@ const Homepage = () => {
   const S = {
     page: { display: 'flex', height: '100vh', overflow: 'hidden', background: '#FFFFFF', fontFamily: "'Inter', sans-serif" },
     sidebar: {
-      width: isMobile ? (mobileMenuOpen ? '280px' : '0') : '260px',
-      minWidth: isMobile ? (mobileMenuOpen ? '280px' : '0') : '260px',
-      background: '#ffffff',
-      borderRight: '1px solid #f0f0f0',
+      width: sidebarOpen ? '260px' : '0',
+      minWidth: sidebarOpen ? '260px' : '0',
+      background: 'rgba(255, 255, 255, 0.98)',
+      backdropFilter: 'blur(10px)',
+      borderRight: '1px solid rgba(0, 0, 0, 0.05)',
       display: 'flex',
       flexDirection: 'column',
       flexShrink: 0,
@@ -3808,9 +3819,9 @@ const Homepage = () => {
       height: '100vh',
       left: 0,
       top: 0,
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden',
-      boxShadow: isMobile && mobileMenuOpen ? '0 0 40px rgba(0,0,0,0.05)' : 'none'
+      boxShadow: sidebarOpen ? '20px 0 50px rgba(0,0,0,0.05)' : 'none'
     },
     sidebarLogo: { padding: '24px 24px 20px', minWidth: '260px' },
     sidebarNav: { flex: 1, padding: '0 12px', overflowY: 'auto', minWidth: '260px' },
@@ -3871,9 +3882,9 @@ const Homepage = () => {
     <div style={S.page}>
 
       {/* Sidebar Overlay for Mobile */}
-      {isMobile && mobileMenuOpen && (
+      {sidebarOpen && isMobile && (
         <div
-          onClick={() => setMobileMenuOpen(false)}
+          onClick={() => setSidebarOpen(false)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }}
         />
       )}
@@ -3896,14 +3907,25 @@ const Homepage = () => {
                 <span style={{ fontSize: '20px', fontWeight: 900, color: '#2C76FF', letterSpacing: '-0.03em' }}>Partner</span>
               </div>
             </div>
-            {isMobile && (
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                style={{ background: 'transparent', border: 'none', color: '#666' }}
-              >
-                <X size={24} />
-              </button>
-            )}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              style={{ 
+                background: '#fef2f2', 
+                border: 'none', 
+                color: '#ef4444', 
+                cursor: 'pointer', 
+                padding: '8px',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#fef2f2'; }}
+            >
+              <X size={20} strokeWidth={2.5} />
+            </button>
           </div>
         </div>
 
@@ -3925,7 +3947,7 @@ const Homepage = () => {
                     setActiveView(item.id);
                   }
                 }
-                if (isMobile) setMobileMenuOpen(false);
+                if (isMobile) setSidebarOpen(false);
               }}
                 onMouseEnter={e => { if (!active && item.id !== 'consultation') { e.currentTarget.style.background = 'rgba(0,0,0,0.03)'; } }}
                 onMouseLeave={e => { if (!active && item.id !== 'consultation') { e.currentTarget.style.background = 'transparent'; } }}
@@ -3942,7 +3964,7 @@ const Homepage = () => {
 
         {/* Bottom */}
         <div style={S.sidebarBottom}>
-          <button style={S.navItem(activeView === 'settings')} onClick={() => { setActiveView('settings'); if (isMobile) setMobileMenuOpen(false); }}
+          <button style={S.navItem(activeView === 'settings')} onClick={() => { setActiveView('settings'); if (isMobile) setsidebarOpen(false); }}
             onMouseEnter={e => { if (activeView !== 'settings') { e.currentTarget.style.background = '#f5f5f5'; } }}
             onMouseLeave={e => { if (activeView !== 'settings') { e.currentTarget.style.background = 'transparent'; } }}
           >
@@ -3959,7 +3981,7 @@ const Homepage = () => {
                 border: '1px solid rgba(36,56,94,0.15)',
                 marginTop: '4px',
               }}
-              onClick={() => { navigate('/admin'); if (isMobile) setMobileMenuOpen(false); }}
+              onClick={() => { navigate('/admin'); if (isMobile) setSidebarOpen(false); }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(36,56,94,0.14)'}
               onMouseLeave={e => e.currentTarget.style.background = 'rgba(36,56,94,0.08)'}
             >
@@ -4000,10 +4022,13 @@ const Homepage = () => {
       <div style={S.main}>
 
         <div style={S.topBar}>
-          {isMobile && (
-            <button onClick={() => setMobileMenuOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
+          {isMobile && !sidebarOpen && (
+            <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
               <Menu size={24} color="#24385E" />
             </button>
+          )}
+          {!isMobile && !sidebarOpen && (
+             <div style={{ width: '40px' }} /> // Placeholder to keep title centered if toggle is absolute
           )}
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -4042,7 +4067,8 @@ const Homepage = () => {
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <AllJobsTab
                 activeFilter={activeJobFilter}
-                searchTerm={companySearch}
+                searchTerm={Array.isArray(companySearch) ? '' : companySearch}
+                fixedCompany={Array.isArray(companySearch) ? companySearch : null}
                 countryFilter={countryFilter}
                 dateFilter={dateFilter}
               />
@@ -4054,9 +4080,8 @@ const Homepage = () => {
             <AllCompaniesListTab
               selectedCountry={countryFilter}
               dateFilter={dateFilter}
-              onSelectCompany={(companyName) => {
-                setCompanySearch(companyName);
-                setActiveView('all_jobs');
+              onSelectCompany={(companyName, originalNames) => {
+                setCompanySearch(originalNames || companyName);
               }}
             />
           )}
@@ -4068,7 +4093,6 @@ const Homepage = () => {
               dateFilter={dateFilter}
               onSelectDomain={(domainName) => {
                 setCompanySearch(domainName);
-                setActiveView('all_jobs');
               }}
             />
           )}
@@ -4078,14 +4102,18 @@ const Homepage = () => {
             <CompaniesTab
               selectedCountry={countryFilter}
               dateFilter={dateFilter}
-              onSelectCompany={(companyName) => {
-                setCompanySearch(companyName);
-                setActiveView('all_jobs');
+              onSelectCompany={(companyName, originalNames) => {
+                setCompanySearch(originalNames || companyName);
               }}
             />
           )}
 
-          {/* ━━━━━━ H1B FINDER VIEW ━━━━━━ */}
+          {/* ━━━━━━ ADMIN STATS VIEW ━━━━━━ */}
+          {activeView === 'admin_stats' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <AdminStatsTab />
+            </div>
+          )}
           {activeView === 'h1b_finder' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <H1BSponsorFinderTab />
@@ -4104,6 +4132,54 @@ const Homepage = () => {
 
         </div>
       </div>
+
+      {/* Floating Reopen Button (Desktop) - Premium Glassmorphism */}
+      {!sidebarOpen && !isMobile && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          style={{
+            position: 'fixed',
+            left: '24px',
+            top: '20px',
+            background: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(44, 118, 255, 0.1)',
+            borderRadius: '16px',
+            padding: '10px',
+            cursor: 'pointer',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#2C76FF',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            opacity: 0,
+            animation: 'fadeIn 0.5s ease forwards'
+          }}
+          onMouseEnter={e => { 
+            e.currentTarget.style.transform = 'scale(1.1) rotate(5deg)'; 
+            e.currentTarget.style.background = '#fff';
+            e.currentTarget.style.boxShadow = '0 12px 40px rgba(44, 118, 255, 0.2)';
+          }}
+          onMouseLeave={e => { 
+            e.currentTarget.style.transform = 'scale(1) rotate(0deg)'; 
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)';
+            e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.08)';
+          }}
+        >
+          <Menu size={24} strokeWidth={2.5} />
+          <style>{`
+            @keyframes fadeIn {
+              from { opacity: 0; transform: translateX(-20px); }
+              to { opacity: 1; transform: translateX(0); }
+            }
+          `}</style>
+        </button>
+      )}
+
+      {/* Guided Tour */}
+      <AppTour isDemoUser={isDummy} activeView={activeView} />
     </div>
   );
 };

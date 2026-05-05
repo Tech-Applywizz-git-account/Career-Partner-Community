@@ -499,6 +499,7 @@ const wageCache = new Map();
  * Used by JobCard to show wage level info
  */
 export const getWageLevel = async (occupation, locationStr = null, salary = null) => {
+    return []; // H1B table disabled by user request
     const cacheKey = `${occupation}|${locationStr}|${salary}`;
     if (wageCache.has(cacheKey)) return wageCache.get(cacheKey);
 
@@ -683,6 +684,7 @@ export const getWageLevel = async (occupation, locationStr = null, salary = null
  * Fetch wage level data with pagination (for admin/dashboard views)
  */
 export const fetchWageData = async (page = 1, pageSize = 50, filters = {}) => {
+    return { data: [], total: 0, page, pageSize }; // H1B table disabled by user request
     try {
         let query = supabase
             .from('h1b_wage_data')

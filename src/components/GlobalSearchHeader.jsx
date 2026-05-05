@@ -12,7 +12,7 @@ const DEFAULT_COUNTRIES = [
 ];
 
 const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDateRangeChange }) => {
-  const [activeCountry, setActiveCountry] = useState(selectedCountry);
+  const activeCountries = Array.isArray(selectedCountry) ? selectedCountry : (selectedCountry ? [selectedCountry] : []);
   const [countries, setCountries] = useState(DEFAULT_COUNTRIES);
   const [showAllCountries, setShowAllCountries] = useState(false);
   const [customFrom, setCustomFrom] = useState('');
@@ -32,8 +32,8 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
     };
     
     if (id === 'today')     return { quickDate: 'today',     from: fmt(today),                           to: fmt(today) };
-    if (id === 'yesterday') { const y = new Date(today); y.setDate(y.getDate() - 1); return { quickDate: 'yesterday', from: fmt(y), to: fmt(y) }; }
     if (id === '7days')     { const s = new Date(today); s.setDate(s.getDate() - 6); return { quickDate: '7days',     from: fmt(s), to: fmt(today) }; }
+    if (id === 'lastmonth') { const s = new Date(today); s.setMonth(s.getMonth() - 1); return { quickDate: 'lastmonth', from: fmt(s), to: fmt(today) }; }
     return { quickDate: 'all', from: null, to: null };
   };
 
@@ -66,26 +66,25 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
     loadCountries();
   }, []);
 
-  // Sync internal state with prop
-  useEffect(() => {
-    setActiveCountry(selectedCountry);
-  }, [selectedCountry]);
-
   const handleCountryClick = (id) => {
-    const newVal = activeCountry === id ? null : id;
-    setActiveCountry(newVal);
+    const isSelected = activeCountries.includes(id);
+    let newVal;
+    if (isSelected) {
+      newVal = activeCountries.filter(c => c !== id);
+    } else {
+      newVal = [...activeCountries, id];
+    }
     onCountryChange?.(newVal);
   };
 
   const handleClearAll = () => {
-    setActiveCountry(null);
-    onCountryChange?.(null);
+    onCountryChange?.([]);
     onDateRangeChange?.(computeRange('all'));
     setCustomFrom('');
     setCustomTo('');
   };
 
-  const currentCountry = countries.find(c => c.id === activeCountry);
+  const selectedCountryObjects = countries.filter(c => activeCountries.includes(c.id));
   
   // Logic to show limited countries
   const INITIAL_COUNT = 7;
@@ -93,14 +92,14 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
     ? (showAllCountries ? countries : countries.slice(0, INITIAL_COUNT))
     : [];
     
-  // If active country is NOT in the displayed list, we should probably inject it
-  const isSelectedHidden = activeCountry && !displayedCountries.some(c => c && c.id === activeCountry);
-  const finalDisplay = (isSelectedHidden && currentCountry) 
-    ? [...displayedCountries, currentCountry] 
-    : displayedCountries;
+  // If active countries are NOT in the displayed list, we should probably inject them
+  const hiddenSelected = countries.filter(c => activeCountries.includes(c.id) && !displayedCountries.some(dc => dc.id === c.id));
+  
+  const finalDisplay = [...displayedCountries, ...hiddenSelected];
 
-  // Final safety filter to remove any undefined/null entries
-  const safeDisplay = finalDisplay.filter(Boolean);
+  // Final safety filter to remove any undefined/null entries and duplicates
+  const safeDisplay = Array.from(new Set(finalDisplay.filter(Boolean).map(c => c.id)))
+    .map(id => finalDisplay.find(c => c.id === id));
 
   const remainingCount = Math.max(0, countries.length - displayedCountries.length);
 
@@ -109,7 +108,13 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
       {/* Country Selection */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2 text-sm font-medium text-gray-400">
-          Showing: <span className="text-[#1E1E1E] font-bold">{currentCountry ? currentCountry.name : 'All Countries'}</span>
+          Showing: <span className="text-[#1E1E1E] font-bold">
+            {selectedCountryObjects.length > 0 
+              ? (selectedCountryObjects.length === 1 
+                  ? selectedCountryObjects[0].name 
+                  : `${selectedCountryObjects.length} Countries Selected`)
+              : 'All Countries'}
+          </span>
         </div>
         <button 
           onClick={handleClearAll}
@@ -125,7 +130,7 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
             key={c.id}
             onClick={() => handleCountryClick(c.id)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all border"
-            style={activeCountry === c.id ? {
+            style={activeCountries.includes(c.id) ? {
               backgroundColor: '#2C76FF',
               color: '#FFFFFF',
               borderColor: '#2C76FF',
@@ -142,7 +147,7 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
               className="w-5 h-3.5 object-cover rounded-sm shadow-sm"
             />
             {c.name}
-            {activeCountry === c.id && <X size={14} className="ml-1 opacity-60" />}
+            {activeCountries.includes(c.id) && <X size={14} className="ml-1 opacity-60" />}
           </button>
         ))}
         
@@ -194,8 +199,8 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
           {[
             { id: 'all', label: 'All', icon: <Globe size={14} /> },
             { id: 'today', label: 'Today' },
-            { id: 'yesterday', label: 'Yesterday' },
             { id: '7days', label: 'Last 7 Days' },
+            { id: 'lastmonth', label: 'Last Month' },
           ].map((d) => (
             <button
               key={d.id}
@@ -218,23 +223,25 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
         </div>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-gray-50 flex items-center gap-4">
+      <div className="mt-6 pt-4 border-t border-gray-50 flex items-center gap-4 flex-wrap">
         <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Current Selection:</div>
-        <div className="bg-[#2C76FF]/10 px-3 py-1 rounded-full text-[11px] font-black text-[#2C76FF] flex items-center gap-2 border border-[#2C76FF]/20">
-          {currentCountry ? (
-            <>
-              <img 
-                src={`https://flagcdn.com/w20/${currentCountry.flagCode}.png`} 
-                alt="flag" 
-                className="w-3.5 h-2.5 object-cover rounded-[1px]"
-              />
-              {currentCountry.name}
-            </>
+        <div className="flex flex-wrap gap-2">
+          {selectedCountryObjects.length > 0 ? (
+            selectedCountryObjects.map(c => (
+              <div key={c.id} className="bg-[#2C76FF]/10 px-3 py-1 rounded-full text-[11px] font-black text-[#2C76FF] flex items-center gap-2 border border-[#2C76FF]/20">
+                <img 
+                  src={`https://flagcdn.com/w20/${c.flagCode}.png`} 
+                  alt="flag" 
+                  className="w-3.5 h-2.5 object-cover rounded-[1px]"
+                />
+                {c.name}
+              </div>
+            ))
           ) : (
-            <>
+            <div className="bg-[#2C76FF]/10 px-3 py-1 rounded-full text-[11px] font-black text-[#2C76FF] flex items-center gap-2 border border-[#2C76FF]/20">
               <Globe size={12} className="text-[#2C76FF]" />
               All Countries
-            </>
+            </div>
           )}
         </div>
         <div className="text-[11px] font-black text-[#1E1E1E]">
@@ -244,8 +251,8 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
               return "All Time";
             }
             if (range.quickDate === 'today') return "Today";
-            if (range.quickDate === 'yesterday') return "Yesterday";
             if (range.quickDate === '7days') return "Last 7 Days";
+            if (range.quickDate === 'lastmonth') return "Last Month";
             
             // Custom Range
             const formatDate = (dateStr) => {

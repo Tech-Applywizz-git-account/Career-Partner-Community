@@ -39,7 +39,7 @@ const SavedJobsTab = () => {
             const companyNames = [...new Set(data.map(item => item.job_data?.company))].filter(Boolean);
             if (companyNames.length > 0) {
                 const { data: filingsData } = await supabase
-                    .from('h1b_sponsor_finder')
+                    .from('h1b_sponsors')
                     .select('Company, "LCA Filings"')
                     .or(companyNames.map(n => `Company.ilike.%${n}%`).join(','));
 
