@@ -3797,8 +3797,7 @@ const Homepage = () => {
     { id: 'all_companies_list', label: 'All Companies', icon: Building2 },
     { id: 'domains', label: 'Domains', icon: Globe },
     { id: 'h1b_finder', label: 'H-1B Finder', icon: Shield },
-    { id: 'admin_stats', label: 'Admin Stats', icon: Activity },
-    // { id: 'all_companies', label: 'All companies that sponsor', icon: Building2 },
+    ...(isAdmin ? [{ id: 'admin_stats', label: 'Admin Stats', icon: Activity }] : []),
   ];
 
   /* ─────────────────────────────────────── */
@@ -4116,7 +4115,7 @@ const Homepage = () => {
           )}
 
           {/* ━━━━━━ ADMIN STATS VIEW ━━━━━━ */}
-          {activeView === 'admin_stats' && (
+          {activeView === 'admin_stats' && isAdmin && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <AdminStatsTab />
             </div>
