@@ -190,7 +190,7 @@ const Login = () => {
                         )}
                     </button>
                 </form>
-
+                {/* 
                 <div className="mt-8 pt-6 border-t border-gray-100">
                     <div className="text-center">
                         <p className="text-[#1E1E1E] font-bold">
@@ -200,7 +200,7 @@ const Login = () => {
                             </Link>
                         </p>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );
