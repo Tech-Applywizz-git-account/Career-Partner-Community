@@ -250,7 +250,7 @@ const JobRow = ({ job, isSaved, onSave }) => {
                             <Link
                                 to="/pricing"
                                 className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
-                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF' }}
+                                style={{ backgroundColor: '#29FE29', color: '#FFFFFF' }}
                             >
                                 Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
                             </Link>
@@ -260,13 +260,74 @@ const JobRow = ({ job, isSaved, onSave }) => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
-                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF' }}
+                                style={{ backgroundColor: '#29FE29', color: '#FFFFFF' }}
                             >
                                 Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
                             </a>
                         )}
                     </div>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+const JobRowList = ({ job, isSaved, onSave }) => {
+    return (
+        <div className="bg-white rounded-[16px] border border-[#f0f0f0] mb-3 p-4 flex items-center gap-4 hover:shadow-md hover:border-[#2C76FF]/20 transition-all group">
+            <div className="shrink-0 bg-white border border-[#f1f5f9] rounded-xl p-1.5 shadow-sm">
+                <LogoBox name={job.company} officialUrl={job.url} size={40} fontSize={14} />
+            </div>
+            
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                    <h3 className="text-[15px] font-black text-[#1E1E1E] truncate">
+                        {job.isTeaser ? (
+                            <Link to="/pricing" className="hover:text-[#2C76FF] transition-colors">{job.title}</Link>
+                        ) : (
+                            <a href={job.url || job.apply_url} target="_blank" rel="noopener noreferrer" className="hover:text-[#2C76FF] transition-colors">{job.title}</a>
+                        )}
+                    </h3>
+                    {job.isVerified && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#29FE29" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                            <path d="M12 2L14.43 3.63L17.29 2.89L18.47 5.56L21.31 6.36L21.14 9.3L23 11.5L21.14 13.7L21.31 16.64L18.47 17.44L17.29 20.11L14.43 19.37L12 21L9.57 19.37L6.71 20.11L5.53 17.44L2.69 16.64L2.86 13.7L1 11.5L2.86 9.3L2.69 6.36L5.53 5.56L6.71 2.89L9.57 3.63L12 2Z" />
+                            <path d="M10 14.5L7.5 12L6.5 13L10 16.5L17.5 9L16.5 8L10 14.5Z" fill="#1E1E1E" />
+                        </svg>
+                    )}
+                </div>
+                <div className="flex items-center gap-3 text-[12px] font-bold text-gray-400">
+                    <span className="text-[#1E1E1E]">{job.company}</span>
+                    <span className="w-1 h-1 rounded-full bg-gray-200" />
+                    <span>{job.location || 'United States'}</span>
+                    {job.salary && (
+                        <>
+                            <span className="w-1 h-1 rounded-full bg-gray-200" />
+                            <span className="text-gray-600">{job.salary}</span>
+                        </>
+                    )}
+                </div>
+            </div>
+
+            <div className="shrink-0">
+                {job.isTeaser ? (
+                    <Link
+                        to="/pricing"
+                        className="h-9 px-5 rounded-full flex items-center justify-center gap-2 font-black text-[13px] transition-all text-white hover:scale-105"
+                        style={{ backgroundColor: '#29FE29' }}
+                    >
+                        Apply <ExternalLink size={14} />
+                    </Link>
+                ) : (
+                    <a
+                        href={job.url || job.apply_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="h-9 px-5 rounded-full flex items-center justify-center gap-2 font-black text-[13px] transition-all text-white hover:scale-105"
+                        style={{ backgroundColor: '#29FE29' }}
+                    >
+                        Apply <ExternalLink size={14} />
+                    </a>
+                )}
             </div>
         </div>
     );
@@ -282,7 +343,8 @@ const AllJobsTab = ({
     dateFilter = null,
     fixedCompany = null,
     fixedDomain = null,
-    isCompact = false
+    isCompact = false,
+    viewMode = 'grid'
 }) => {
     const { user, paymentStatus } = useAuth();
     const [jobs, setJobs] = useState([]);
@@ -1136,15 +1198,27 @@ const AllJobsTab = ({
             {!loading && !error && jobs.length > 0 && (
                 <>
                     {jobs.map((job, i) => (
-                        <JobRow
-                            key={`${job.id || job.url || 'job'}_${i}`}
-                            job={{
-                                ...job,
-                                isVerified: job.isVerified || verifiedSet?.has(job.company)
-                            }}
-                            isSaved={savedJobIds.has(String(job.id || job.job_id || ''))}
-                            onSave={handleSave}
-                        />
+                        viewMode === 'list' ? (
+                            <JobRowList
+                                key={`${job.id || job.url || 'job'}_${i}`}
+                                job={{
+                                    ...job,
+                                    isVerified: job.isVerified || verifiedSet?.has(job.company)
+                                }}
+                                isSaved={savedJobIds.has(String(job.id || job.job_id || ''))}
+                                onSave={handleSave}
+                            />
+                        ) : (
+                            <JobRow
+                                key={`${job.id || job.url || 'job'}_${i}`}
+                                job={{
+                                    ...job,
+                                    isVerified: job.isVerified || verifiedSet?.has(job.company)
+                                }}
+                                isSaved={savedJobIds.has(String(job.id || job.job_id || ''))}
+                                onSave={handleSave}
+                            />
+                        )
                     ))}
 
                     {/* ── Pagination ── */}

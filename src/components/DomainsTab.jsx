@@ -94,7 +94,7 @@ import { fetchAllDomains } from '../utils/rpcFetchers';
 
 const ITEMS_PER_PAGE = 12;
 
-const DomainsTab = ({ onSelectDomain, selectedCountry, dateFilter }) => {
+const DomainsTab = ({ onSelectDomain, selectedCountry, dateFilter, viewMode = 'grid' }) => {
   const [searchTerm, setSearchTerm]           = useState('');
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [filter, setFilter]                   = useState('All');
@@ -260,11 +260,46 @@ const DomainsTab = ({ onSelectDomain, selectedCountry, dateFilter }) => {
         </div>
       </div>
 
-      {/* Grid */}
+      {/* Content */}
       {pagedDomains.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
           <Briefcase size={40} className="mb-3 opacity-40" />
           <p className="font-bold">No domains found</p>
+        </div>
+      ) : viewMode === 'list' ? (
+        <div className="flex flex-col gap-3">
+          {pagedDomains.map((domain, idx) => {
+            const { icon: Icon, color, bg } = getDomainData(domain.name);
+            return (
+              <div
+                key={idx}
+                onClick={() => setSelectedDomain(domain.name)}
+                className="group bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-[#2C76FF]/20 transition-all cursor-pointer flex items-center gap-4"
+              >
+                <div 
+                  className="w-10 h-10 flex items-center justify-center rounded-lg shrink-0"
+                  style={{ backgroundColor: bg, color: color }}
+                >
+                  <Icon size={20} strokeWidth={1.5} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[15px] font-black text-[#1E1E1E] group-hover:text-[#2C76FF] transition-colors truncate">
+                      {domain.name}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-3 text-[11px] font-bold text-gray-400">
+                     <span>{domain.type}</span>
+                     <span className="w-1 h-1 rounded-full bg-gray-200" />
+                     <span className="text-[#2C76FF]">{domain.count.toLocaleString()} jobs</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-[#2C76FF]/50 font-bold text-[11px] group-hover:text-[#2C76FF] transition-colors">
+                  View <ChevronRight size={12} />
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

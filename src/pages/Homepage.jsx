@@ -2858,6 +2858,7 @@ const Homepage = () => {
   const [countryFilter, setCountryFilter] = useState([]); // Array like ['USA', 'UK']
   const [dateFilter, setDateFilter] = useState({ quickDate: 'all', from: null, to: null });
   const [activeJobFilter, setActiveJobFilter] = useState('all');
+  const [viewMode, setViewMode] = useState('grid');
   const [showCompanyFilters, setShowCompanyFilters] = useState(false);
   const [showJobFilters, setShowJobFilters] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
@@ -3795,7 +3796,7 @@ const Homepage = () => {
     { id: 'all_jobs', label: 'All Jobs', icon: Briefcase },
     { id: 'all_companies_list', label: 'All Companies', icon: Building2 },
     { id: 'domains', label: 'Domains', icon: Globe },
-    // { id: 'h1b_finder', label: 'H-1B Finder', icon: Shield },
+    { id: 'h1b_finder', label: 'H-1B Finder', icon: Shield },
     { id: 'admin_stats', label: 'Admin Stats', icon: Activity },
     // { id: 'all_companies', label: 'All companies that sponsor', icon: Building2 },
   ];
@@ -4059,6 +4060,8 @@ const Homepage = () => {
               onCountryChange={setCountryFilter}
               dateRange={dateFilter}
               onDateRangeChange={setDateFilter}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
             />
           )}
 
@@ -4071,6 +4074,7 @@ const Homepage = () => {
                 fixedCompany={Array.isArray(companySearch) ? companySearch : null}
                 countryFilter={countryFilter}
                 dateFilter={dateFilter}
+                viewMode={viewMode}
               />
             </div>
           )}
@@ -4080,6 +4084,7 @@ const Homepage = () => {
             <AllCompaniesListTab
               selectedCountry={countryFilter}
               dateFilter={dateFilter}
+              viewMode={viewMode}
               onSelectCompany={(companyName, originalNames) => {
                 setCompanySearch(originalNames || companyName);
               }}
@@ -4091,6 +4096,7 @@ const Homepage = () => {
             <DomainsTab
               selectedCountry={countryFilter}
               dateFilter={dateFilter}
+              viewMode={viewMode}
               onSelectDomain={(domainName) => {
                 setCompanySearch(domainName);
               }}
@@ -4102,6 +4108,7 @@ const Homepage = () => {
             <CompaniesTab
               selectedCountry={countryFilter}
               dateFilter={dateFilter}
+              viewMode={viewMode}
               onSelectCompany={(companyName, originalNames) => {
                 setCompanySearch(originalNames || companyName);
               }}

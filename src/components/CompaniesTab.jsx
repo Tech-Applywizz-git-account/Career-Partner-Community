@@ -53,7 +53,7 @@ const normalizeDisplayName = (name) => {
   return name.trim();
 };
 
-const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
+const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter, viewMode = 'grid' }) => {
   const [searchTerm, setSearchTerm]       = useState('');
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [filter, setFilter]               = useState('All');
@@ -363,11 +363,38 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter }) => {
         </h3>
       </div>
 
-      {/* Grid */}
+      {/* Content */}
       {pagedCompanies.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
           <Building2 size={40} className="mb-3 opacity-40" />
           <p className="font-bold">No companies found</p>
+        </div>
+      ) : viewMode === 'list' ? (
+        <div className="flex flex-col gap-3">
+          {pagedCompanies.map((company, idx) => (
+            <div
+              key={idx}
+              onClick={() => onSelectCompany(company.name, company.originalNames)}
+              className="group bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-[#2C76FF]/20 transition-all cursor-pointer flex items-center gap-4"
+            >
+              <LogoBox name={company.name} size={40} className="rounded-lg overflow-hidden border border-gray-50 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-[15px] font-black text-gray-900 group-hover:text-[#2C76FF] transition-colors truncate">
+                    {company.name}
+                  </h3>
+                  {company.isFamous && <TrendingUp size={12} className="text-[#2C76FF] shrink-0" />}
+                </div>
+                <div className="flex items-center gap-3 text-[11px] font-bold text-gray-400">
+                   <div className="flex items-center gap-1">
+                      <Briefcase size={12} />
+                      {company.count.toLocaleString()} {company.count === 1 ? 'job' : 'jobs'}
+                   </div>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-gray-300 group-hover:text-[#2C76FF] transition-colors shrink-0" />
+            </div>
+          ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

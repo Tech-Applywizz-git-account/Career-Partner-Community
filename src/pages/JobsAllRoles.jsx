@@ -3,8 +3,10 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import {
   Search, MapPin, Briefcase, Globe, Loader2, X,
-  Calendar, ExternalLink, Wifi, WifiOff, ChevronLeft, ChevronRight
+  Calendar, ExternalLink, Wifi, WifiOff, ChevronLeft, ChevronRight,
+  LayoutGrid, List
 } from 'lucide-react';
+import JobCard from '../components/JobCard';
 import { jobsClient } from '../jobsAllRolesClient';
 import { getAvailableCountries, COUNTRY_MAP } from '../utils/countryHelper';
 
@@ -22,6 +24,7 @@ const JobsAllRoles = () => {
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [clientReady, setClientReady] = useState(true);
+  const [viewMode, setViewMode] = useState('list');
   const debounceRef = useRef(null);
 
   // Fetch available countries from DB
@@ -235,7 +238,27 @@ const JobsAllRoles = () => {
               {/* Stats */}
               <div className="bg-blue-50 rounded-xl p-4 mt-2">
                 <p className="text-xs font-bold text-blue-700 mb-1">Total Results</p>
-                <p className="text-2xl font-extrabold text-[#2C76FF]">{total.toLocaleString()}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-extrabold text-[#2C76FF]">{total.toLocaleString()}</p>
+                  
+                  {/* View Toggle */}
+                  <div className="flex items-center bg-white p-1 rounded-lg border border-gray-200">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`p-1.5 rounded transition-all ${viewMode === 'grid' ? 'bg-[#2C76FF] text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                      title="Grid View"
+                    >
+                      <LayoutGrid size={14} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`p-1.5 rounded transition-all ${viewMode === 'list' ? 'bg-[#2C76FF] text-white' : 'text-gray-400 hover:text-gray-600'}`}
+                      title="List View"
+                    >
+                      <List size={14} />
+                    </button>
+                  </div>
+                </div>
                 <p className="text-xs text-blue-600 mt-0.5">matching jobs</p>
               </div>
 
@@ -250,74 +273,86 @@ const JobsAllRoles = () => {
             </div>
           </aside>
 
-          {/* Job List + Detail */}
-          <div className="flex-1 min-w-0 flex flex-col xl:flex-row gap-6">
-
-            {/* List */}
-            <div className="xl:w-[420px] flex-shrink-0 flex flex-col gap-4">
+          {/* Job List / Grid */}
+          <div className={`flex-1 min-w-0 ${viewMode === 'grid' ? 'w-full' : 'flex flex-col xl:flex-row gap-6'}`}>
+              
+            {/* Main List Container */}
+            <div className={viewMode === 'grid' ? "w-full grid grid-cols-1 md:grid-cols-2 gap-6" : "xl:w-[420px] flex-shrink-0 flex flex-col gap-4"}>
               {loading ? (
-                <div className="bg-white rounded-2xl p-16 flex flex-col items-center justify-center shadow-sm border border-gray-100">
+                <div className={`bg-white rounded-2xl p-16 flex flex-col items-center justify-center shadow-sm border border-gray-100 ${viewMode === 'grid' ? 'col-span-full' : ''}`}>
                   <Loader2 className="animate-spin text-blue-600 mb-3" size={36} />
                   <p className="text-gray-400 text-sm font-medium">Fetching jobs...</p>
                 </div>
               ) : jobs.length === 0 ? (
-                <div className="bg-white rounded-2xl p-16 text-center shadow-sm border border-gray-100">
+                <div className={`bg-white rounded-2xl p-16 text-center shadow-sm border border-gray-100 ${viewMode === 'grid' ? 'col-span-full' : ''}`}>
                   <Search size={40} className="text-gray-200 mx-auto mb-4" />
                   <h3 className="text-lg font-bold text-gray-900 mb-2">No jobs found</h3>
                   <p className="text-gray-500 text-sm">Try a different search or remove filters.</p>
                 </div>
               ) : (
                 jobs.map(job => (
-                  <div
-                    key={job.id}
-                    onClick={() => setSelectedJob(job)}
-                    className={`bg-white rounded-2xl p-5 border cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md hover:border-blue-100 ${selectedJob?.id === job.id ? 'border-blue-400 ring-1 ring-blue-400/20' : 'border-gray-100'}`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0 ${getColor(job.company_name)}`}>
-                        {getLogo(job.company_name)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 text-sm leading-snug truncate mb-1">{job.title || '—'}</h3>
-                        <p className="text-[#2C76FF] text-xs font-semibold flex items-center gap-1 mb-2">
-                          <Briefcase size={12} /> {job.company_name || 'Unknown'}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-2">
-                          {job.location && (
-                            <span className="text-gray-500 text-[11px] flex items-center gap-1">
-                              <MapPin size={11} /> {job.location}
-                            </span>
-                          )}
-                          {job.country && (
-                            <span className="text-gray-400 text-[11px] flex items-center gap-1">
-                              <Globe size={11} /> {job.country}
-                            </span>
-                          )}
-                          {job.is_remote && (
-                            <span className="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] font-bold rounded-full border border-green-100">
-                              Remote
+                  viewMode === 'list' ? (
+                    <div
+                      key={job.id}
+                      onClick={() => setSelectedJob(job)}
+                      className={`bg-white rounded-2xl p-5 border cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md hover:border-blue-100 ${selectedJob?.id === job.id ? 'border-blue-400 ring-1 ring-blue-400/20' : 'border-gray-100'}`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black flex-shrink-0 ${getColor(job.company_name)}`}>
+                          {getLogo(job.company_name)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-gray-900 text-sm leading-snug truncate mb-1">{job.title || '—'}</h3>
+                          <p className="text-[#2C76FF] text-xs font-semibold flex items-center gap-1 mb-2">
+                            <Briefcase size={12} /> {job.company_name || 'Unknown'}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {job.location && (
+                              <span className="text-gray-500 text-[11px] flex items-center gap-1">
+                                <MapPin size={11} /> {job.location}
+                              </span>
+                            )}
+                            {job.country && (
+                              <span className="text-gray-400 text-[11px] flex items-center gap-1">
+                                <Globe size={11} /> {job.country}
+                              </span>
+                            )}
+                            {job.is_remote && (
+                              <span className="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] font-bold rounded-full border border-green-100">
+                                Remote
+                              </span>
+                            )}
+                          </div>
+                          {job.role_name && (
+                            <span className="mt-2 inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100">
+                              {job.role_name}
                             </span>
                           )}
                         </div>
-                        {job.role_name && (
-                          <span className="mt-2 inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100">
-                            {job.role_name}
-                          </span>
-                        )}
                       </div>
+                      {job.date_posted && (
+                        <p className="text-[11px] text-gray-400 mt-3 flex items-center gap-1">
+                          <Calendar size={11} /> {formatDate(job.date_posted)}
+                        </p>
+                      )}
                     </div>
-                    {job.date_posted && (
-                      <p className="text-[11px] text-gray-400 mt-3 flex items-center gap-1">
-                        <Calendar size={11} /> {formatDate(job.date_posted)}
-                      </p>
-                    )}
-                  </div>
+                  ) : (
+                    <JobCard 
+                      key={job.id} 
+                      job={{
+                        ...job,
+                        company: job.company_name,
+                        url: job.job_url_direct || job.job_url,
+                        employment_type: job.is_remote ? 'Remote' : 'Full-time'
+                      }} 
+                    />
+                  )
                 ))
               )}
 
               {/* Pagination */}
               {!loading && totalPages > 1 && (
-                <div className="flex items-center justify-between bg-white rounded-2xl px-5 py-4 shadow-sm border border-gray-100">
+                <div className={`flex items-center justify-between bg-white rounded-2xl px-5 py-4 shadow-sm border border-gray-100 ${viewMode === 'grid' ? 'col-span-full' : ''}`}>
                   <button
                     disabled={page === 0}
                     onClick={() => setPage(p => p - 1)}
@@ -339,102 +374,104 @@ const JobsAllRoles = () => {
               )}
             </div>
 
-            {/* Detail Panel */}
-            <div className="flex-1 min-w-0">
-              {selectedJob ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sticky top-24">
-                  {/* Header */}
-                  <div className="flex items-start gap-5 mb-6 pb-6 border-b border-gray-100">
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black flex-shrink-0 ${getColor(selectedJob.company_name)}`}>
-                      {getLogo(selectedJob.company_name)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-xl font-extrabold text-gray-900 mb-1 leading-tight">{selectedJob.title}</h2>
-                      <p className="text-[#2C76FF] font-bold text-sm flex items-center gap-1.5 mb-3">
-                        <Briefcase size={14} /> {selectedJob.company_name || 'Unknown Company'}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedJob.location && (
-                          <span className="flex items-center gap-1 text-xs text-gray-600 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-                            <MapPin size={12} /> {selectedJob.location}
-                          </span>
-                        )}
-                        {selectedJob.country && (
-                          <span className="flex items-center gap-1 text-xs text-gray-600 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-                            <Globe size={12} /> {selectedJob.country}
-                          </span>
-                        )}
-                        {selectedJob.is_remote && (
-                          <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 px-3 py-1 rounded-full border border-green-100 font-semibold">
-                            <Wifi size={12} /> Remote
-                          </span>
-                        )}
-                        {selectedJob.date_posted && (
-                          <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-                            <Calendar size={12} /> {formatDate(selectedJob.date_posted)}
-                          </span>
-                        )}
+            {/* Detail Panel (only in list mode) */}
+            {viewMode === 'list' && (
+              <div className="flex-1 min-w-0">
+                {selectedJob ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sticky top-24">
+                    {/* Header */}
+                    <div className="flex items-start gap-5 mb-6 pb-6 border-b border-gray-100">
+                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black flex-shrink-0 ${getColor(selectedJob.company_name)}`}>
+                        {getLogo(selectedJob.company_name)}
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Badges */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {selectedJob.role_name && (
-                      <span className="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100">
-                        {selectedJob.role_name}
-                      </span>
-                    )}
-                    {selectedJob.indeed_search_country && (
-                      <span className="px-3 py-1.5 bg-[#2C76FF]/10 text-[#2C76FF] text-xs font-bold rounded-lg border border-[#2C76FF]/20">
-                        Indeed: {selectedJob.indeed_search_country}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Apply Buttons */}
-                  <div className="flex flex-wrap gap-3 mb-6">
-                    {selectedJob.job_url_direct && (
-                      <a
-                        href={selectedJob.job_url_direct}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 bg-[#29FE29] text-[#1E1E1E] px-6 py-3 rounded-xl font-bold text-sm hover:bg-[#25e525] transition-colors shadow-lg shadow-[#29FE29]/20"
-                      >
-                        Apply Directly <ExternalLink size={14} />
-                      </a>
-                    )}
-                    {selectedJob.job_url && (
-                      <a
-                        href={selectedJob.job_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 border border-[#2C76FF] text-[#2C76FF] px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors"
-                      >
-                        View on Indeed <ExternalLink size={14} />
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  {selectedJob.description && (
-                    <div>
-                      <h4 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Job Description</h4>
-                      <div className="bg-gray-50 rounded-xl p-5 max-h-96 overflow-y-auto">
-                        <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
-                          {selectedJob.description}
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-xl font-extrabold text-gray-900 mb-1 leading-tight">{selectedJob.title}</h2>
+                        <p className="text-[#2C76FF] font-bold text-sm flex items-center gap-1.5 mb-3">
+                          <Briefcase size={14} /> {selectedJob.company_name || 'Unknown Company'}
                         </p>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedJob.location && (
+                            <span className="flex items-center gap-1 text-xs text-gray-600 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                              <MapPin size={12} /> {selectedJob.location}
+                            </span>
+                          )}
+                          {selectedJob.country && (
+                            <span className="flex items-center gap-1 text-xs text-gray-600 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                              <Globe size={12} /> {selectedJob.country}
+                            </span>
+                          )}
+                          {selectedJob.is_remote && (
+                            <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 px-3 py-1 rounded-full border border-green-100 font-semibold">
+                              <Wifi size={12} /> Remote
+                            </span>
+                          )}
+                          {selectedJob.date_posted && (
+                            <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                              <Calendar size={12} /> {formatDate(selectedJob.date_posted)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-16 flex flex-col items-center justify-center text-center">
-                  <Briefcase size={48} className="text-gray-200 mb-4" />
-                  <h3 className="text-lg font-bold text-gray-400">Select a job to view details</h3>
-                </div>
-              )}
-            </div>
+
+                    {/* Badges */}
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {selectedJob.role_name && (
+                        <span className="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100">
+                          {selectedJob.role_name}
+                        </span>
+                      )}
+                      {selectedJob.indeed_search_country && (
+                        <span className="px-3 py-1.5 bg-[#2C76FF]/10 text-[#2C76FF] text-xs font-bold rounded-lg border border-[#2C76FF]/20">
+                          Indeed: {selectedJob.indeed_search_country}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Apply Buttons */}
+                    <div className="flex flex-wrap gap-3 mb-6">
+                      {selectedJob.job_url_direct && (
+                        <a
+                          href={selectedJob.job_url_direct}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 bg-[#29FE29] text-[#1E1E1E] px-6 py-3 rounded-xl font-bold text-sm hover:bg-[#25e525] transition-colors shadow-lg shadow-[#29FE29]/20"
+                        >
+                          Apply Directly <ExternalLink size={14} />
+                        </a>
+                      )}
+                      {selectedJob.job_url && (
+                        <a
+                          href={selectedJob.job_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 border border-[#2C76FF] text-[#2C76FF] px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors"
+                        >
+                          View on Indeed <ExternalLink size={14} />
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    {selectedJob.description && (
+                      <div>
+                        <h4 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Job Description</h4>
+                        <div className="bg-gray-50 rounded-xl p-5 max-h-96 overflow-y-auto">
+                          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                            {selectedJob.description}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-16 flex flex-col items-center justify-center text-center">
+                    <Briefcase size={48} className="text-gray-200 mb-4" />
+                    <h3 className="text-lg font-bold text-gray-400">Select a job to view details</h3>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

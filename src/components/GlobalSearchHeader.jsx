@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, X, ChevronRight, Globe } from 'lucide-react';
+import { Calendar, Clock, X, ChevronRight, Globe, LayoutGrid, List } from 'lucide-react';
 import { getAvailableCountries } from '../utils/countryHelper';
 
 const DEFAULT_COUNTRIES = [
@@ -11,7 +11,7 @@ const DEFAULT_COUNTRIES = [
   { id: 'IRELAND', name: 'Ireland', flagCode: 'ie' },
 ];
 
-const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDateRangeChange }) => {
+const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDateRangeChange, viewMode, onViewModeChange }) => {
   const activeCountries = Array.isArray(selectedCountry) ? selectedCountry : (selectedCountry ? [selectedCountry] : []);
   const [countries, setCountries] = useState(DEFAULT_COUNTRIES);
   const [showAllCountries, setShowAllCountries] = useState(false);
@@ -223,58 +223,84 @@ const GlobalSearchHeader = ({ selectedCountry, onCountryChange, dateRange, onDat
         </div>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-gray-50 flex items-center gap-4 flex-wrap">
-        <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Current Selection:</div>
-        <div className="flex flex-wrap gap-2">
-          {selectedCountryObjects.length > 0 ? (
-            selectedCountryObjects.map(c => (
-              <div key={c.id} className="bg-[#2C76FF]/10 px-3 py-1 rounded-full text-[11px] font-black text-[#2C76FF] flex items-center gap-2 border border-[#2C76FF]/20">
-                <img 
-                  src={`https://flagcdn.com/w20/${c.flagCode}.png`} 
-                  alt="flag" 
-                  className="w-3.5 h-2.5 object-cover rounded-[1px]"
-                />
-                {c.name}
+      <div className="mt-6 pt-4 border-t border-gray-50 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Current Selection:</div>
+          <div className="flex flex-wrap gap-2">
+            {selectedCountryObjects.length > 0 ? (
+              selectedCountryObjects.map(c => (
+                <div key={c.id} className="bg-[#2C76FF]/10 px-3 py-1 rounded-full text-[11px] font-black text-[#2C76FF] flex items-center gap-2 border border-[#2C76FF]/20">
+                  <img 
+                    src={`https://flagcdn.com/w20/${c.flagCode}.png`} 
+                    alt="flag" 
+                    className="w-3.5 h-2.5 object-cover rounded-[1px]"
+                  />
+                  {c.name}
+                </div>
+              ))
+            ) : (
+              <div className="bg-[#2C76FF]/10 px-3 py-1 rounded-full text-[11px] font-black text-[#2C76FF] flex items-center gap-2 border border-[#2C76FF]/20">
+                <Globe size={12} className="text-[#2C76FF]" />
+                All Countries
               </div>
-            ))
-          ) : (
-            <div className="bg-[#2C76FF]/10 px-3 py-1 rounded-full text-[11px] font-black text-[#2C76FF] flex items-center gap-2 border border-[#2C76FF]/20">
-              <Globe size={12} className="text-[#2C76FF]" />
-              All Countries
-            </div>
-          )}
-        </div>
-        <div className="text-[11px] font-black text-[#1E1E1E]">
-          {(() => {
-            const range = dateRange;
-            if (!range || range.quickDate === 'all' || (!range.from && !range.to)) {
+            )}
+          </div>
+          <div className="text-[11px] font-black text-[#1E1E1E]">
+            {(() => {
+              const range = dateRange;
+              if (!range || range.quickDate === 'all' || (!range.from && !range.to)) {
+                return "All Time";
+              }
+              if (range.quickDate === 'today') return "Today";
+              if (range.quickDate === '7days') return "Last 7 Days";
+              if (range.quickDate === 'lastmonth') return "Last Month";
+              
+              const formatDate = (dateStr) => {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              };
+              
+              const fromStr = formatDate(range.from);
+              const toStr = formatDate(range.to);
+              
+              if (fromStr && toStr) {
+                return (
+                  <span className="flex items-center">
+                    {fromStr} <span className="mx-2 text-[#2C76FF]">→</span> {toStr}
+                  </span>
+                );
+              }
+              if (fromStr) return `From ${fromStr}`;
+              if (toStr) return `Until ${toStr}`;
               return "All Time";
-            }
-            if (range.quickDate === 'today') return "Today";
-            if (range.quickDate === '7days') return "Last 7 Days";
-            if (range.quickDate === 'lastmonth') return "Last Month";
-            
-            // Custom Range
-            const formatDate = (dateStr) => {
-              if (!dateStr) return '';
-              const d = new Date(dateStr);
-              return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            };
-            
-            const fromStr = formatDate(range.from);
-            const toStr = formatDate(range.to);
-            
-            if (fromStr && toStr) {
-              return (
-                <>
-                  {fromStr} <span className="mx-2 text-[#2C76FF]">→</span> {toStr}
-                </>
-              );
-            }
-            if (fromStr) return `From ${fromStr}`;
-            if (toStr) return `Until ${toStr}`;
-            return "All Time";
-          })()}
+            })()}
+          </div>
+        </div>
+
+        {/* View Mode Toggle */}
+        <div className="flex items-center bg-gray-50 p-1 rounded-xl border border-gray-200">
+          {[
+            { id: 'grid', icon: <LayoutGrid size={16} /> },
+            { id: 'list', icon: <List size={16} /> },
+          ].map((v) => (
+            <button
+              key={v.id}
+              onClick={() => onViewModeChange?.(v.id)}
+              className="flex items-center justify-center w-10 h-10 rounded-lg transition-all"
+              style={viewMode === v.id ? {
+                backgroundColor: '#2C76FF',
+                color: '#FFFFFF',
+                border: '1px solid #2C76FF',
+                boxShadow: '0 2px 4px rgba(44, 118, 255, 0.2)'
+              } : {
+                backgroundColor: 'transparent',
+                color: '#6B7280',
+              }}
+            >
+              {v.icon}
+            </button>
+          ))}
         </div>
       </div>
     </div>
