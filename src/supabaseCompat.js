@@ -106,31 +106,6 @@ const makeStub = (isInsert = false) => {
   return stub;
 };
 
-// ── Profiles stub (returns fake paid profile so no subscription walls) ────────
-const makeProfileStub = (userId) => {
-  const now = new Date();
-  const futureDate = new Date(now);
-  futureDate.setFullYear(futureDate.getFullYear() + 10);
-  const fakeProfile = {
-    id: userId || 'dummy-user',
-    role: 'user',
-    payment_status: 'paid',
-    subscription_end_date: futureDate.toISOString(),
-    first_name: localStorage.getItem('userFirstName') || 'Demo',
-    last_name: localStorage.getItem('userLastName') || 'User',
-    created_at: now.toISOString(),
-    updated_at: now.toISOString(),
-  };
-  const stub = {
-    select: () => stub,
-    eq: () => stub,
-    single: () => Promise.resolve({ data: fakeProfile, error: null }),
-    maybeSingle: () => Promise.resolve({ data: fakeProfile, error: null }),
-    then: (resolve) => resolve({ data: [fakeProfile], error: null, count: 1 }),
-  };
-  return stub;
-};
-
 // ── Real Supabase client (for tables that DO exist) ──────────────────────────
 const _realClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
@@ -150,11 +125,6 @@ const compatClient = new Proxy(_realClient, {
       // 1. Stubbed tables → silent no-op
       if (STUB_TABLES.has(tableName)) {
         return makeStub();
-      }
-
-      // 2. Profiles → fake paid profile
-      if (tableName === 'profiles') {
-        return makeProfileStub();
       }
 
       // 3. job_jobrole_sponsored_sync → jobs_all_roles with remapping

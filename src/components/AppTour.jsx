@@ -239,7 +239,7 @@ const getTourSteps = () => [
  *   isDemoUser  — If true, the tour can be replayed unlimited times via a floating button.
  *   activeView  — Current active view ID (used to determine when the dashboard is ready).
  */
-const AppTour = ({ isDemoUser = false, activeView }) => {
+const AppTour = ({ activeView }) => {
   const [showReplayBtn, setShowReplayBtn] = useState(false);
   const [tourInstance, setTourInstance] = useState(null);
 
@@ -318,21 +318,15 @@ const AppTour = ({ isDemoUser = false, activeView }) => {
         progressText: '{{current}} of {{total}}',
         steps: steps,
         onDestroyed: () => {
-          // Mark tour as completed for non-demo users
-          if (!isDemoUser) {
-            localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
-          }
-          // Show replay button for demo users
-          if (isDemoUser) {
-            setShowReplayBtn(true);
-          }
+          localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
+          setShowReplayBtn(true);
         },
       });
 
       setTourInstance(driverInstance);
       driverInstance.drive();
     }, 800); // Small delay to ensure sidebar is rendered
-  }, [isDemoUser]);
+  }, []);
 
   useEffect(() => {
     injectTourStyles();
@@ -340,18 +334,10 @@ const AppTour = ({ isDemoUser = false, activeView }) => {
     // Check if tour should auto-start
     const tourCompleted = localStorage.getItem(TOUR_COMPLETED_KEY);
 
-    if (isDemoUser) {
-      // Demo user: always show replay button, auto-start on first visit
-      if (!tourCompleted) {
-        startTour();
-      } else {
-        setShowReplayBtn(true);
-      }
+    if (!tourCompleted) {
+      startTour();
     } else {
-      // Regular user: show tour only once (first time)
-      if (!tourCompleted) {
-        startTour();
-      }
+      setShowReplayBtn(true);
     }
   }, []); // Run once on mount
 
@@ -360,8 +346,8 @@ const AppTour = ({ isDemoUser = false, activeView }) => {
     startTour();
   };
 
-  // Only show replay button for demo users
-  if (!isDemoUser || !showReplayBtn) return null;
+  // Show replay button if tour was completed
+  if (!showReplayBtn) return null;
 
   return (
     <button

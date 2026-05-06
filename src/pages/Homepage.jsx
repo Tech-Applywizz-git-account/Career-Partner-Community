@@ -4179,7 +4179,7 @@ const Homepage = () => {
       )}
 
       {/* Guided Tour */}
-      <AppTour isDemoUser={isDummy} activeView={activeView} />
+      <AppTour activeView={activeView} />
     </div>
   );
 };

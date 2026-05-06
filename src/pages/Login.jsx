@@ -1,33 +1,9 @@
 //src/pages/Login.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Zap, User, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import useAuth from '../hooks/useAuth';
-
-// ─── Dummy Users (for demo / dev use only) ───────────────────────────────────
-const DUMMY_USERS = [
-    {
-        label: 'Demo User',
-        icon: 'user',
-        email: 'demo@wagetrail.com',
-        password: 'demo1234',
-        role: 'user',
-        firstName: 'Demo',
-        lastName: 'User',
-        redirectTo: '/app',
-    },
-    {
-        label: 'Demo Admin',
-        icon: 'admin',
-        email: 'admin@wagetrail.com',
-        password: 'admin1234',
-        role: 'admin',
-        firstName: 'Admin',
-        lastName: 'User',
-        redirectTo: '/admin',
-    },
-];
 
 const Login = () => {
     const { user, loading: authLoading } = useAuth();
@@ -37,7 +13,6 @@ const Login = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [dummyLoading, setDummyLoading] = useState(null); // label of dummy being loaded
 
     useEffect(() => {
         if (!authLoading && user) {
@@ -79,27 +54,6 @@ const Login = () => {
         }
     };
 
-    const handleDummyLogin = (dummy) => {
-        setDummyLoading(dummy.label);
-        // Store fake session so useAuth picks it up immediately
-        const fakeUser = {
-            id: `dummy-${dummy.role}`,
-            email: dummy.email,
-            user_metadata: { full_name: `${dummy.firstName} ${dummy.lastName}` },
-        };
-        localStorage.setItem('dummy_session', JSON.stringify(fakeUser));
-        localStorage.setItem('userRole', dummy.role);
-        localStorage.setItem('userFirstName', dummy.firstName);
-        localStorage.setItem('userLastName', dummy.lastName);
-        // Full page reload so AuthProvider re-mounts and reads dummy_session fresh
-        setTimeout(() => {
-            setDummyLoading(null);
-            window.location.href = dummy.redirectTo;
-        }, 600);
-    };
-
-
-
     return (
         <div className="min-h-screen bg-[#FFFFFF] flex items-center justify-center p-4 relative overflow-hidden">
             {/* Decorative background elements */}
@@ -130,8 +84,6 @@ const Login = () => {
                 <p className="text-gray-500 text-sm font-medium text-center mb-8">
                     Login to access your dashboard
                 </p>
-
-
 
                 {error && (
                     <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
@@ -247,34 +199,6 @@ const Login = () => {
                                 Sign up now
                             </Link>
                         </p>
-                    </div>
-                </div>
-
-                {/* ── Demo / Dummy Logins ── */}
-                <div className="mt-6 rounded-2xl bg-[#78EB54]/5 p-5">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Zap size={14} style={{ color: '#1E1E1E' }} />
-                        <span className="text-xs font-black text-[#1E1E1E] uppercase tracking-wider">Quick Demo Login</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                        {DUMMY_USERS.map((dummy) => (
-                            <button
-                                key={dummy.label}
-                                onClick={() => handleDummyLogin(dummy)}
-                                disabled={!!dummyLoading || loading}
-                                className={`relative flex flex-col items-center gap-2 py-3 px-2 rounded-xl border border-gray-200 transition-all font-bold text-sm bg-white text-[#1E1E1E] hover:bg-gray-50 hover:border-gray-300 disabled:opacity-60 disabled:cursor-not-allowed`}
-                            >
-                                {dummyLoading === dummy.label ? (
-                                    <div className="w-5 h-5 border-2 border-[#1E1E1E] border-t-transparent rounded-full animate-spin" />
-                                ) : dummy.role === 'admin' ? (
-                                    <ShieldCheck size={20} />
-                                ) : (
-                                    <User size={20} />
-                                )}
-                                <span>{dummy.label}</span>
-                                <span className="text-[10px] opacity-60 font-normal">{dummy.email}</span>
-                            </button>
-                        ))}
                     </div>
                 </div>
             </div>

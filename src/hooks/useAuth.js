@@ -337,300 +337,270 @@ const AuthContext = createContext({
   signOut: async () => { },
 });
 
-// Cache for user roles to prevent redundant DB queries
-// Kept intentionally short (90s) so DB role changes (e.g. user→admin) propagate promptly
-const roleCache = new Map();
-const CACHE_DURATION = 90 * 1000; // 90-second cache — short enough to pick up role changes quickly
+  // Cache for user roles to prevent redundant DB queries
+  // Kept intentionally short (90s) so DB role changes (e.g. user→admin) propagate promptly
+  const roleCache = new Map();
+  const CACHE_DURATION = 90 * 1000; // 90-second cache — short enough to pick up role changes quickly
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [role, setRole] = useState(() => {
-    // Initialize from localStorage immediately
-    const storedRole = localStorage.getItem("userRole");
-    return storedRole || null;
-  });
-  const [subscriptionExpired, setSubscriptionExpired] = useState(false);
-  const [subscriptionEndDate, setSubscriptionEndDate] = useState(null);
-  const [checkingSub, setCheckingSub] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [paymentStatus, setPaymentStatus] = useState(null);
-  const [paymentLoading, setPaymentLoading] = useState(true);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [loggingOut, setLoggingOut] = useState(false);
-  const isInitialLoad = useRef(true);
-  const hasProfileQueryRun = useRef(false);
-  const isAuthInitialized = useRef(false);
+  export function AuthProvider({ children }) {
+    const [user, setUser] = useState(null);
+    const [role, setRole] = useState(() => {
+      // Initialize from localStorage immediately
+      const storedRole = localStorage.getItem("userRole");
+      return storedRole || null;
+    });
+    const [subscriptionExpired, setSubscriptionExpired] = useState(false);
+    const [subscriptionEndDate, setSubscriptionEndDate] = useState(null);
+    const [checkingSub, setCheckingSub] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [paymentStatus, setPaymentStatus] = useState(null);
+    const [paymentLoading, setPaymentLoading] = useState(true);
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [loggingOut, setLoggingOut] = useState(false);
+    const isInitialLoad = useRef(true);
+    const hasProfileQueryRun = useRef(false);
+    const isAuthInitialized = useRef(false);
 
-  // ─── Dummy session support (dev/demo) ───────────────────────────────────────
-  // If a dummy_session key exists in localStorage, skip Supabase auth entirely.
-  const getDummySession = () => {
-    try {
-      const raw = localStorage.getItem('dummy_session');
-      return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
-  };
+    // Helper: load profile.role for a user with caching
+    const loadUserRole = async (userObj) => {
+      if (!userObj) {
+        setRole(null);
+        localStorage.removeItem("userRole");
+        return;
+      }
 
-  // Helper: load profile.role for a user with caching
-  const loadUserRole = async (userObj) => {
-    if (!userObj) {
-      setRole(null);
-      localStorage.removeItem("userRole");
-      return;
-    }
+      const userId = userObj.id;
 
-    const userId = userObj.id;
+      // Check cache first
+      const cachedData = roleCache.get(userId);
+      if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_DURATION) {
+        setRole(cachedData.role);
+        setSubscriptionExpired(cachedData.subscriptionExpired);
+        setSubscriptionEndDate(cachedData.subscriptionEndDate);
+        setFirstName(cachedData.firstName || "");
+        setLastName(cachedData.lastName || "");
+        setCheckingSub(false);
+        localStorage.setItem("userRole", cachedData.role);
+        return;
+      }
 
-    // Check cache first
-    const cachedData = roleCache.get(userId);
-    if (cachedData && (Date.now() - cachedData.timestamp) < CACHE_DURATION) {
-      setRole(cachedData.role);
-      setSubscriptionExpired(cachedData.subscriptionExpired);
-      setSubscriptionEndDate(cachedData.subscriptionEndDate);
-      setFirstName(cachedData.firstName || "");
-      setLastName(cachedData.lastName || "");
-      setCheckingSub(false);
-      localStorage.setItem("userRole", cachedData.role);
-      return;
-    }
-
-    // NOTE: profiles table doesn't exist in the new DB.
-    // All users are treated as fully paid — no subscription gating.
-    hasProfileQueryRun.current = true;
-
-    const storedRole = localStorage.getItem('userRole') || 'user';
-    setRole(storedRole);
-    setSubscriptionExpired(false);   // ← always open access
-    setSubscriptionEndDate(null);
-    setPaymentStatus('paid');        // ← always paid
-    setPaymentLoading(false);
-    setCheckingSub(false);
-    setFirstName(localStorage.getItem('userFirstName') || userObj?.user_metadata?.given_name || '');
-    setLastName(localStorage.getItem('userLastName') || userObj?.user_metadata?.family_name || '');
-    localStorage.setItem('userRole', storedRole);
-    isInitialLoad.current = false;
-  };
-
-  // On first load: check for dummy session OR real Supabase session
-  useEffect(() => {
-    const dummyUser = getDummySession();
-    if (dummyUser) {
-      // Fake user injected — skip all Supabase calls
-      setUser(dummyUser);
-      setRole(localStorage.getItem('userRole') || 'user');
-      setFirstName(localStorage.getItem('userFirstName') || '');
-      setLastName(localStorage.getItem('userLastName') || '');
-      setSubscriptionExpired(false);
-      setCheckingSub(false);
-      setLoading(false);
-      setPaymentLoading(false);
-      return; // early exit — no Supabase needed
-    }
-
-    let isMounted = true;
-    let initTimeout;
-
-    const init = async () => {
       try {
-        // Set a loading timeout to prevent infinite loading
-        initTimeout = setTimeout(() => {
-          if (isMounted && !isAuthInitialized.current) {
-            const storedRole = localStorage.getItem("userRole");
-            if (storedRole && !role) setRole(storedRole);
-            setLoading(false);
-          }
-        }, 8000);
+        console.log("📡 Querying profiles table for user:", userId);
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
 
-        // 1. Get session first (usually from local storage, very fast)
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError) {
-          // If the session is invalid (stale refresh token), clear local data
-          if (sessionError.message?.includes('Refresh Token')) {
-            localStorage.removeItem("userRole");
-            localStorage.removeItem("userId");
-            setUser(null);
-            setRole(null);
+        if (error) {
+          if (error.code !== 'PGRST116') {
+            console.error("❌ Error loading profile role:", error.message);
           }
-          throw sessionError;
+          setRole("user");
+          localStorage.setItem("userRole", "user");
+        } else {
+          const userRole = profile?.role || "user";
+          const fullName = profile?.full_name || "";
+          const [fName, ...lNames] = fullName.split(' ');
+
+          setRole(userRole);
+          setFirstName(fName || "");
+          setLastName(lNames.join(' ') || "");
+          localStorage.setItem("userRole", userRole);
+
+          // Update cache
+          roleCache.set(userId, {
+            role: userRole,
+            timestamp: Date.now(),
+            firstName: fName,
+            lastName: lNames.join(' '),
+            subscriptionExpired: false,
+            subscriptionEndDate: null
+          });
         }
+      } catch (err) {
+        console.error("💥 Unexpected error loading profile role:", err);
+        setRole("user");
+        localStorage.setItem("userRole", "user");
+      } finally {
+        setCheckingSub(false);
+        setPaymentLoading(false);
+        isInitialLoad.current = false;
+        hasProfileQueryRun.current = true;
+      }
+    };
 
-        let currentUser = session?.user || null;
+    // On first load: check for real Supabase session
+    useEffect(() => {
+      let isMounted = true;
+      let initTimeout;
 
-        // 2. ONLY if we have a session, verify it with getUser() to prevent 403 logs
-        if (currentUser) {
-          try {
-            const { data: { user: freshUser }, error: userError } = await supabase.auth.getUser();
-            if (userError) {
-              // If getUser fails (e.g. 403/expired), we rely on state being cleared by onAuthStateChange
-            } else if (freshUser) {
-              currentUser = freshUser;
+      const init = async () => {
+        try {
+          // Set a loading timeout to prevent infinite loading
+          initTimeout = setTimeout(() => {
+            if (isMounted && !isAuthInitialized.current) {
+              const storedRole = localStorage.getItem("userRole");
+              if (storedRole && !role) setRole(storedRole);
+              setLoading(false);
             }
-          } catch (e) {
-            // Silence getUser verification errors to keep console clean
-          }
-        }
+          }, 8000);
 
-        if (currentUser && isMounted) {
-          setUser(currentUser);
-          // Load role in background
-          loadUserRole(currentUser).finally(() => {
+          // 1. Get session first (usually from local storage, very fast)
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+          if (sessionError) {
+            // If the session is invalid (stale refresh token), clear local data
+            if (sessionError.message?.includes('Refresh Token')) {
+              localStorage.removeItem("userRole");
+              localStorage.removeItem("userId");
+              setUser(null);
+              setRole(null);
+            }
+            throw sessionError;
+          }
+
+          let currentUser = session?.user || null;
+
+          // 2. ONLY if we have a session, verify it with getUser() to prevent 403 logs
+          if (currentUser) {
+            try {
+              const { data: { user: freshUser }, error: userError } = await supabase.auth.getUser();
+              if (!userError && freshUser) {
+                currentUser = freshUser;
+              }
+            } catch (e) {
+              // Silence getUser verification errors
+            }
+          }
+
+          if (currentUser && isMounted) {
+            setUser(currentUser);
+            // Load role in background
+            loadUserRole(currentUser).finally(() => {
+              if (isMounted) {
+                isAuthInitialized.current = true;
+                clearTimeout(initTimeout);
+                setLoading(false);
+              }
+            });
+          } else {
             if (isMounted) {
               isAuthInitialized.current = true;
               clearTimeout(initTimeout);
+              setUser(null);
+              setRole(null);
               setLoading(false);
+              setCheckingSub(false);
             }
-          });
-        } else {
+          }
+
+        } catch (err) {
           if (isMounted) {
             isAuthInitialized.current = true;
             clearTimeout(initTimeout);
-            setUser(null);
-            setRole(null);
             setLoading(false);
             setCheckingSub(false);
           }
         }
+      };
 
-      } catch (err) {
-        const isAuthError = err.message?.includes('Refresh Token') || err.message?.includes('Invalid token');
-        const isNetworkError = err.message?.includes('fetch') || !window.navigator.onLine;
-        
-        if (!isNetworkError && !isAuthError) {
-          // Only log unexpected non-network, non-auth errors
-          console.error("💥 Error during auth init:", err);
-        }
-        
-        if (isMounted) {
-          isAuthInitialized.current = true;
-          clearTimeout(initTimeout);
-          setLoading(false);
-          setCheckingSub(false);
-        }
-      }
-    };
+      init();
 
-    init();
+      // Listen for auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!isMounted) return;
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!isMounted) return;
-
-
-
-      switch (event) {
-        case 'SIGNED_OUT':
-          // Signed out silenced
-
-          setUser(null);
-          setRole(null);
-          localStorage.removeItem("userRole");
-          roleCache.clear();
-          hasProfileQueryRun.current = false;
-          break;
-
-        case 'SIGNED_IN':
-        case 'USER_UPDATED':
-          if (session?.user) {
-            setUser(session.user);
-            // On a fresh sign-in: ALWAYS bypass cache and hit the DB.
-            // This ensures a user whose role was changed to 'admin' in Supabase
-            // sees the Admin Panel button immediately after their next login.
-            roleCache.delete(session.user.id);
+        switch (event) {
+          case 'SIGNED_OUT':
+            setUser(null);
+            setRole(null);
+            localStorage.removeItem("userRole");
+            roleCache.clear();
             hasProfileQueryRun.current = false;
-            setTimeout(() => loadUserRole(session.user), 100);
-          }
-          break;
+            break;
 
-        case 'TOKEN_REFRESHED':
-        case 'INITIAL_SESSION':
-          if (session?.user) {
-            setUser(session.user);
-            // On token refresh / initial session we still load role,
-            // but we let the short 90s cache serve if fresh enough.
-            setTimeout(() => loadUserRole(session.user), 100);
-          }
-          break;
+          case 'SIGNED_IN':
+          case 'USER_UPDATED':
+            if (session?.user) {
+              setUser(session.user);
+              roleCache.delete(session.user.id);
+              hasProfileQueryRun.current = false;
+              setTimeout(() => loadUserRole(session.user), 100);
+            }
+            break;
 
-        default:
-        // Unhandled event silenced
+          case 'TOKEN_REFRESHED':
+          case 'INITIAL_SESSION':
+            if (session?.user) {
+              setUser(session.user);
+              setTimeout(() => loadUserRole(session.user), 100);
+            }
+            break;
 
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      clearTimeout(initTimeout);
-      subscription?.unsubscribe();
-    };
-  }, []);
-
-  const refresh = async () => {
-    if (user) {
-      console.log("🔄 Manually refreshing auth for:", user.email);
-      roleCache.delete(user.id);
-      hasProfileQueryRun.current = false;
-      await loadUserRole(user);
-    }
-  };
-
-  const signOut = async () => {
-    // Clear dummy session if present
-    const isDummy = !!getDummySession();
-    if (isDummy) {
-      localStorage.removeItem('dummy_session');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userFirstName');
-      localStorage.removeItem('userLastName');
-      setUser(null);
-      setRole(null);
-      return;
-    }
-
-    // Signout logic silenced
-
-    setLoggingOut(true);
-    try {
-      // Clear cache and storage first for immediate UI feedback
-      roleCache.clear();
-      localStorage.removeItem("userRole");
-      localStorage.removeItem("userId");
-
-      // Update state
-      setUser(null);
-      setRole(null);
-      hasProfileQueryRun.current = false;
-
-      // Sign out from Supabase (fire and forget)
-      supabase.auth.signOut().catch(err => {
-        console.error("❌ Supabase signOut error:", err);
+          default:
+            break;
+        }
       });
 
+      return () => {
+        isMounted = false;
+        clearTimeout(initTimeout);
+        subscription?.unsubscribe();
+      };
+    }, []);
 
-    } catch (err) {
-      console.error("💥 SignOut exception:", err);
-    } finally {
-      setLoggingOut(false);
-    }
-  };
+    const refresh = async () => {
+      if (user) {
+        roleCache.delete(user.id);
+        hasProfileQueryRun.current = false;
+        await loadUserRole(user);
+      }
+    };
 
-  const value = {
-    user,
-    role,
-    isAdmin: role === 'admin',
-    isDummy: !!getDummySession(),
-    subscriptionExpired,
-    subscriptionEndDate,
-    checkingSub,
-    loading,
-    paymentStatus,
-    paymentLoading,
-    firstName,
-    lastName,
-    loggingOut,
-    refresh,
-    signOut,
-  };
+    const signOut = async () => {
+      setLoggingOut(true);
+      try {
+        // Clear cache and storage first for immediate UI feedback
+        roleCache.clear();
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("userId");
+
+        // Update state
+        setUser(null);
+        setRole(null);
+        hasProfileQueryRun.current = false;
+
+        // Sign out from Supabase (fire and forget)
+        supabase.auth.signOut().catch(err => {
+          console.error("❌ Supabase signOut error:", err);
+        });
+
+      } catch (err) {
+        console.error("💥 SignOut exception:", err);
+      } finally {
+        setLoggingOut(false);
+      }
+    };
+
+    const value = {
+      user,
+      role,
+      isAdmin: role === 'admin',
+      isDummy: false,
+      subscriptionExpired,
+      subscriptionEndDate,
+      checkingSub,
+      loading,
+      paymentStatus,
+      paymentLoading,
+      firstName,
+      lastName,
+      loggingOut,
+      refresh,
+      signOut,
+    };
 
   return React.createElement(AuthContext.Provider, { value }, children);
 }
