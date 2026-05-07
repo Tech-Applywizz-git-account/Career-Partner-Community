@@ -4185,7 +4185,7 @@ const Homepage = () => {
       )}
 
       {/* Guided Tour */}
-      <AppTour activeView={activeView} />
+      <AppTour activeView={activeView} isAdmin={isAdmin} />
     </div>
   );
 };

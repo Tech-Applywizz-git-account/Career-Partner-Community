@@ -239,7 +239,7 @@ const getTourSteps = () => [
  *   isDemoUser  — If true, the tour can be replayed unlimited times via a floating button.
  *   activeView  — Current active view ID (used to determine when the dashboard is ready).
  */
-const AppTour = ({ activeView }) => {
+const AppTour = ({ activeView, isAdmin }) => {
   const [showReplayBtn, setShowReplayBtn] = useState(false);
   const [tourInstance, setTourInstance] = useState(null);
 
@@ -318,7 +318,9 @@ const AppTour = ({ activeView }) => {
         progressText: '{{current}} of {{total}}',
         steps: steps,
         onDestroyed: () => {
-          localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
+          if (!isAdmin) {
+            localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
+          }
           setShowReplayBtn(true);
         },
       });
@@ -326,7 +328,7 @@ const AppTour = ({ activeView }) => {
       setTourInstance(driverInstance);
       driverInstance.drive();
     }, 800); // Small delay to ensure sidebar is rendered
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     injectTourStyles();
@@ -334,12 +336,13 @@ const AppTour = ({ activeView }) => {
     // Check if tour should auto-start
     const tourCompleted = localStorage.getItem(TOUR_COMPLETED_KEY);
 
-    if (!tourCompleted) {
+    // Auto-start if it's an admin OR if the user hasn't completed it yet
+    if (isAdmin || !tourCompleted) {
       startTour();
     } else {
       setShowReplayBtn(true);
     }
-  }, []); // Run once on mount
+  }, [isAdmin, startTour]); // Run on mount or if isAdmin changes
 
   const handleReplay = () => {
     setShowReplayBtn(false);
