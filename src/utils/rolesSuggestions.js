@@ -8,18 +8,14 @@ const CACHE_KEY = '_jobRolesCache_v1';
 
 // Fallback list — always available instantly, even before Supabase responds
 const FALLBACK_ROLES = [
-    "Accountant", "AI Engineer", "Backend Developer", "Business Analyst",
-    "Business Intelligence Engineer", "Cloud Architect", "Cloud Engineer",
-    "Compliance Analyst", "Cyber Security Analyst", "Data Analyst",
-    "Data Engineer", "Data Scientist", "Database Administrator",
-    "DevOps Engineer", "Embedded Software Engineer", "Financial Analyst",
-    "Frontend Developer", "Full Stack Engineer", "Hardware Engineer",
-    "Java Developer", "Machine Learning Engineer", "Network Engineer",
-    "Product Manager", "Project Manager", "Python Developer",
-    "QA Engineer", "Research Scientist", "SAP Consultant",
-    "Site Reliability Engineer", "Software Engineer", "Solutions Architect",
-    "Staff Engineer", "Systems Analyst", "Systems Engineer",
-    "UI/UX Designer", "Validation Engineer"
+    "AI/ML Engineer", "Generative AI", "MLOps Engineer", "Data Scientist",
+    "Software Engineer", "Software Developer", "Computer Science", "Full Stack",
+    "Java Full Stack", "Frontend Engineering", "Java Developer", "python developer",
+    ".Net", "DevOps", "Cloud Engineer", "Cyber security",
+    "Security Engineer", "Data Engineer", "Big Data Engineer", "Data Analyst",
+    "Business Intelligence Engineer", "QA Automation Engineer", "Quality Assurance Engineer",
+    "Project Manager", "Product Manager", "Salesforce Developer", "ServiceNow Developer",
+    "Workday Analyst", "UX Designer", "Network Engineer", "Systems Engineer"
 ];
 
 /**

@@ -172,11 +172,10 @@ const ForgotPassword = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#29FE29] flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Background Decorations */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#29FE29]/10 rounded-full -translate-y-1/2 translate-x-1/3"></div>
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/5 rounded-full translate-y-1/2 -translate-x-1/3"></div>
-            <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-[#29FE29]/5 rounded-full -translate-y-1/2"></div>
+        <div className="min-h-screen bg-[#FFFFFF] flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background Decorations - matching Login page */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#29FE29]/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#2C76FF]/10 rounded-full translate-y-1/2 -translate-x-1/3 blur-3xl"></div>
 
             <style>{`
                 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -184,7 +183,7 @@ const ForgotPassword = () => {
                 @keyframes animateIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
             `}</style>
 
-            <div className="relative bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 md:p-10 transition-all duration-300">
+            <div className="relative bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 max-w-md w-full p-8 md:p-10 transition-all duration-300">
                 {/* Back Link */}
                 {step !== 'success' && (
                     <button
@@ -194,39 +193,39 @@ const ForgotPassword = () => {
                             else navigate('/login');
                             setError('');
                         }}
-                        className="absolute top-6 left-6 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="absolute top-6 left-6 text-gray-400 hover:text-[#1E1E1E] transition-colors"
                     >
                         <ArrowLeft size={20} />
                     </button>
                 )}
 
-                {/* Logo */}
+                {/* Logo - matching Login page */}
                 <div className="text-center mb-8 pt-4">
-                    <div className="inline-flex items-center gap-3">
+                    <Link to="/" className="inline-flex items-center gap-3 group">
                         <div className="relative">
-                            <img 
-                                src="/cp-logo.png" 
-                                alt="Career Partner" 
+                            <img
+                                src="https://res.cloudinary.com/dpuziwnvl/image/upload/v1751357541/apply_wizz_logo_hrvtmm.jpg"
+                                alt="Apply Wizz"
                                 className="w-10 h-10 rounded-xl object-contain shadow-lg"
                             />
                         </div>
                         <div className="flex flex-col text-left">
-                            <span className="text-xl font-bold text-[#29FE29] tracking-tight leading-none">Career</span>
-                            <span className="text-xl font-bold text-[#29FE29] tracking-tight leading-none">Partner</span>
+                            <span className="text-xl font-bold text-[#1E1E1E] tracking-tight leading-none">Career</span>
+                            <span className="text-xl font-bold text-[#2C76FF] tracking-tight leading-none">Partner</span>
                         </div>
-                    </div>
+                    </Link>
                 </div>
 
                 {/* ─── EMAIL STEP ─── */}
                 {step === 'email' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <h1 className="text-2xl font-black text-gray-900 text-center mb-2">Forgot Password?</h1>
+                        <h1 className="text-2xl font-black text-[#1E1E1E] text-center mb-2">Forgot Password?</h1>
                         <p className="text-sm text-gray-400 text-center mb-8 font-medium">
                             No worries! Enter your email and we'll send you a reset code.
                         </p>
 
                         <form onSubmit={handleSendOtp} className="space-y-4">
-                            <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-4 border border-gray-100 focus-within:border-[#29FE29]/30 focus-within:ring-1 focus-within:ring-[#29FE29]/10 transition-all">
+                            <div className="flex items-center gap-3 bg-gray-50/50 rounded-xl px-4 py-3.5 border border-gray-200 focus-within:ring-2 focus-within:ring-[#2C76FF] focus-within:border-transparent transition-all">
                                 <Mail size={18} className="text-gray-300 shrink-0" />
                                 <input
                                     type="email"
@@ -243,9 +242,10 @@ const ForgotPassword = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-4 bg-[#29FE29] hover:bg-[#1a2a47] text-[#1E1E1E] font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF', boxShadow: '0 10px 20px rgba(120,235,84,0.3)' }}
+                                className="w-full py-4 font-black text-base rounded-xl border-none transition-all active:scale-[0.98] disabled:opacity-50 mt-2"
                             >
-                                {loading ? 'Sending...' : 'Send Reset Link'}
+                                {loading ? 'Sending...' : 'Send Reset Code'}
                             </button>
                         </form>
                     </div>
@@ -254,10 +254,10 @@ const ForgotPassword = () => {
                 {/* ─── OTP STEP ─── */}
                 {step === 'otp' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <h1 className="text-2xl font-black text-gray-900 text-center mb-2">Check your email</h1>
+                        <h1 className="text-2xl font-black text-[#1E1E1E] text-center mb-2">Check your email</h1>
                         <p className="text-sm text-gray-400 text-center mb-6 font-medium">
                             We've sent a 6-digit code to <br/>
-                            <span className="text-[#29FE29] font-bold">{email}</span>
+                            <span className="text-[#2C76FF] font-bold">{email}</span>
                         </p>
 
                         <OtpInput value={otp} onChange={setOtp} disabled={loading} />
@@ -271,7 +271,7 @@ const ForgotPassword = () => {
                                     onClick={handleResend}
                                     disabled={resendCooldown > 0}
                                     className={`font-black uppercase tracking-wider ${
-                                        resendCooldown > 0 ? 'text-gray-300 cursor-not-allowed' : 'text-[#29FE29] hover:text-[#e5a811]'
+                                        resendCooldown > 0 ? 'text-gray-300 cursor-not-allowed' : 'text-[#2C76FF] hover:text-[#1E1E1E]'
                                     }`}
                                 >
                                     {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Now'}
@@ -282,7 +282,8 @@ const ForgotPassword = () => {
                         <button
                             onClick={handleVerifyOtp}
                             disabled={otp.length < 6 || loading}
-                            className="w-full py-4 bg-[#29FE29] hover:bg-[#1a2a47] text-[#1E1E1E] font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                            style={{ backgroundColor: '#78EB54', color: '#FFFFFF', boxShadow: '0 10px 20px rgba(120,235,84,0.3)' }}
+                            className="w-full py-4 font-black text-base rounded-xl border-none transition-all active:scale-[0.98] disabled:opacity-50"
                         >
                             {loading ? 'Verifying...' : 'Verify Code'}
                         </button>
@@ -292,14 +293,14 @@ const ForgotPassword = () => {
                 {/* ─── RESET PASSWORD STEP ─── */}
                 {step === 'reset' && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <h1 className="text-2xl font-black text-gray-900 text-center mb-2">New Password</h1>
+                        <h1 className="text-2xl font-black text-[#1E1E1E] text-center mb-2">New Password</h1>
                         <p className="text-sm text-gray-400 text-center mb-8 font-medium">
                             Create a secure password to protect your account.
                         </p>
 
                         <form onSubmit={handleResetPassword} className="space-y-4">
                             <div className="space-y-3">
-                                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-4 border border-gray-100 focus-within:border-[#29FE29]/30 transition-all">
+                                <div className="flex items-center gap-3 bg-gray-50/50 rounded-xl px-4 py-3.5 border border-gray-200 focus-within:ring-2 focus-within:ring-[#2C76FF] focus-within:border-transparent transition-all">
                                     <Lock size={18} className="text-gray-300 shrink-0" />
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -318,7 +319,7 @@ const ForgotPassword = () => {
                                     </button>
                                 </div>
 
-                                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-4 border border-gray-100 focus-within:border-[#29FE29]/30 transition-all">
+                                <div className="flex items-center gap-3 bg-gray-50/50 rounded-xl px-4 py-3.5 border border-gray-200 focus-within:ring-2 focus-within:ring-[#2C76FF] focus-within:border-transparent transition-all">
                                     <ShieldCheck size={18} className="text-gray-300 shrink-0" />
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -335,8 +336,9 @@ const ForgotPassword = () => {
 
                             <button
                                 type="submit"
-                                disabled={loading}
-                                className="w-full py-4 bg-[#29FE29] hover:bg-[#1a2a47] text-[#1E1E1E] font-black text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                                disabled={loading || newPassword.length < 6 || newPassword !== confirmPassword}
+                                style={{ backgroundColor: '#78EB54', color: '#FFFFFF', boxShadow: '0 10px 20px rgba(120,235,84,0.3)' }}
+                                className="w-full py-4 font-black text-base rounded-xl border-none transition-all active:scale-[0.98] disabled:opacity-50 mt-2"
                             >
                                 {loading ? 'Resetting...' : 'Create New Password'}
                             </button>
@@ -348,19 +350,20 @@ const ForgotPassword = () => {
                 {step === 'success' && (
                     <div className="text-center animate-in zoom-in duration-500">
                         <div className="flex justify-center mb-6">
-                            <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center">
-                                <CheckCircle className="w-12 h-12 text-emerald-500" />
+                            <div className="w-20 h-20 bg-[#78EB54]/10 rounded-full flex items-center justify-center">
+                                <CheckCircle className="w-12 h-12 text-[#78EB54]" />
                             </div>
                         </div>
 
-                        <h1 className="text-2xl font-black text-gray-900 mb-2">Password Reset!</h1>
+                        <h1 className="text-2xl font-black text-[#1E1E1E] mb-2">Password Reset!</h1>
                         <p className="text-sm text-gray-400 font-medium mb-8">
                             Your password has been changed successfully. You can now log in with your new credentials.
                         </p>
 
                         <button
                             onClick={() => navigate('/login')}
-                            className="w-full py-4 bg-[#29FE29] hover:bg-[#1a2a47] text-[#1E1E1E] font-black text-base rounded-2xl shadow-lg hover:shadow-xl transition-all active:scale-[0.95]"
+                            style={{ backgroundColor: '#78EB54', color: '#FFFFFF', boxShadow: '0 10px 20px rgba(120,235,84,0.3)' }}
+                            className="w-full py-4 font-black text-base rounded-xl border-none transition-all active:scale-[0.95]"
                         >
                             Go to Login →
                         </button>
@@ -372,7 +375,7 @@ const ForgotPassword = () => {
                     <div className="mt-8 text-center border-t border-gray-100 pt-6">
                         <p className="text-gray-400 font-medium text-sm">
                             Remember your password?{' '}
-                            <Link to="/login" className="text-[#29FE29] font-bold hover:underline">Log in</Link>
+                            <Link to="/login" className="text-[#2C76FF] font-black hover:underline">Log in</Link>
                         </p>
                     </div>
                 )}

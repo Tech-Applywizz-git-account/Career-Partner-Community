@@ -346,9 +346,6 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter, viewMode =
                 <h4 className="font-black text-[#1E1E1E] text-sm mb-2 truncate group-hover:text-[#2C76FF] transition-colors">
                   {company.name}
                 </h4>
-                <div className="bg-[#f0f7ff] text-[#2C76FF] py-1 px-3 rounded-full text-[10px] font-black inline-block">
-                  {company.count.toLocaleString()} OPENINGS
-                </div>
               </div>
             ))}
           </div>
@@ -386,10 +383,6 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter, viewMode =
                   {company.isFamous && <TrendingUp size={12} className="text-[#2C76FF] shrink-0" />}
                 </div>
                 <div className="flex items-center gap-3 text-[11px] font-bold text-gray-400">
-                   <div className="flex items-center gap-1">
-                      <Briefcase size={12} />
-                      {company.count.toLocaleString()} {company.count === 1 ? 'job' : 'jobs'}
-                   </div>
                 </div>
               </div>
               <ChevronRight size={16} className="text-gray-300 group-hover:text-[#2C76FF] transition-colors shrink-0" />
@@ -412,12 +405,6 @@ const CompaniesTab = ({ onSelectCompany, selectedCountry, dateFilter, viewMode =
                     {company.name}
                   </h3>
                   {company.isFamous && <TrendingUp size={14} className="text-[#2C76FF] shrink-0" />}
-                </div>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <Briefcase size={14} className="text-gray-400" />
-                  <span className="text-sm font-bold text-gray-500">
-                    {company.count.toLocaleString()} {company.count === 1 ? 'job' : 'jobs'}
-                  </span>
                 </div>
               </div>
 

@@ -60,12 +60,6 @@ const CompanyCard = ({ company, jobCount, wageLevel, wageLevels, industries, isS
                             <p style={{ fontSize: isLandingPage ? '16px' : (isMobile ? '15px' : '17px'), fontWeight: 700, color: '#111', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {company}
                             </p>
-                            {lca_filings !== undefined && lca_filings !== null && lca_filings > 0 && (
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, color: '#29FE29', background: '#f1f5f9', padding: '2px 6px', borderRadius: '6px' }}>
-                                    <Globe size={11} strokeWidth={2.5} />
-                                    {lca_filings.toLocaleString()} Filings
-                                </span>
-                            )}
                             {isVerified && (
                                 <svg width="14" height="14" viewBox="0 0 100 100" style={{ flexShrink: 0 }}>
                                     <path d="M50 4 L57 16 L70 10 L70 24 L84 24 L78 37 L91 44 L81 55 L88 68 L74 69 L70 83 L57 78 L50 90 L43 78 L30 83 L26 69 L12 68 L19 55 L9 44 L22 37 L16 24 L30 24 L30 10 L43 16 Z" fill="#22c55e" />

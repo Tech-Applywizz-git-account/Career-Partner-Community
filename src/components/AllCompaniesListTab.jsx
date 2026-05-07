@@ -202,10 +202,6 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter, vie
                   {company.isFamous && <TrendingUp size={12} className="text-[#2C76FF] shrink-0" />}
                 </div>
                 <div className="flex items-center gap-3 text-[11px] font-bold text-gray-400">
-                   <div className="flex items-center gap-1">
-                      <Briefcase size={12} />
-                      {company.count.toLocaleString()} {company.count === 1 ? 'job' : 'jobs'}
-                   </div>
                 </div>
               </div>
               <ChevronRight size={16} className="text-gray-300 group-hover:text-[#2C76FF] transition-colors shrink-0" />
@@ -231,12 +227,6 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter, vie
                     {company.name}
                   </h3>
                   {company.isFamous && <TrendingUp size={14} className="text-[#2C76FF] shrink-0" />}
-                </div>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <Briefcase size={14} className="text-gray-400" />
-                  <span className="text-sm font-bold text-gray-500">
-                    {company.count.toLocaleString()} {company.count === 1 ? 'job' : 'jobs'}
-                  </span>
                 </div>
               </div>
 

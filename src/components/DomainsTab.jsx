@@ -5,8 +5,11 @@ import {
   Smartphone, Terminal, Activity, PenTool, Megaphone, Users,
   Zap, Stethoscope, Landmark, Truck, ShoppingCart, Microscope, Headphones,
   Layers, Layout, Code2, ShieldCheck, Target, ClipboardList, Crown, PencilRuler,
-  BarChart3, Users2, Banknote, Scale, Box, GraduationCap, Lightbulb, HeartPulse
+  BarChart3, Users2, Banknote, Scale, Box, GraduationCap, Lightbulb, HeartPulse,
+  Brain, Sparkles, Network, Globe, Waypoints, Workflow
 } from 'lucide-react';
+
+import { FEATURED_DOMAINS } from '../data/featuredDomains';
 
 const getDomainData = (roleName) => {
   const defaultData = { icon: Briefcase, color: '#64748b', bg: '#f1f5f9' };
@@ -14,28 +17,40 @@ const getDomainData = (roleName) => {
   const lower = roleName.toLowerCase();
 
   // Tech / Engineering
+  if (lower.includes('ai/ml')) 
+    return { icon: Waypoints, color: '#3b82f6', bg: '#f0f7ff' };
+  if (lower.includes('mlops')) 
+    return { icon: Workflow, color: '#8b5cf6', bg: '#f5f3ff' };
+  if (lower.includes('generative ai'))
+    return { icon: Zap, color: '#f59e0b', bg: '#fffbeb' };
+  if (lower.match(/ai|machine learning/)) 
+    return { icon: Brain, color: '#3b82f6', bg: '#f0f7ff' };
+  if (lower.includes('scientist'))
+    return { icon: BarChart, color: '#2563eb', bg: '#eff6ff' };
+
   if (lower.match(/full stack|systems engineer|infrastructure/))
-    return { icon: Layers, color: '#3b82f6', bg: '#eff6ff' };
+    return { icon: Layers, color: '#8b5cf6', bg: '#f5f3ff' };
   if (lower.match(/frontend|react|angular|vue|javascript|typescript|web developer|ui developer/))
     return { icon: Layout, color: '#0ea5e9', bg: '#f0f9ff' };
   if (lower.match(/backend|node|java|python|c\+\+|\.net|golang|ruby/))
     return { icon: Code2, color: '#2563eb', bg: '#eff6ff' };
-  if (lower.match(/software|developer|programmer/)) 
-    return { icon: Code, color: '#3b82f6', bg: '#eff6ff' };
+  if (lower.includes('software engineer')) 
+    return { icon: Code, color: '#10b981', bg: '#ecfdf5' };
+  if (lower.includes('software developer') || lower.match(/programmer/)) 
+    return { icon: Cpu, color: '#3b82f6', bg: '#eff6ff' };
+  
   if (lower.match(/data|sql|database|oracle|etl|bi|tableau|power bi|snowflake/)) 
-    return { icon: Database, color: '#8b5cf6', bg: '#f5f3ff' };
+    return { icon: Database, color: '#6366f1', bg: '#eef2ff' };
   if (lower.match(/cyber|security|sailpoint|iam|soc|firewall/)) 
     return { icon: ShieldCheck, color: '#ef4444', bg: '#fef2f2' };
   if (lower.match(/cloud|aws|azure|gcp|salesforce|servicenow|sap|cloud architect/)) 
     return { icon: Cloud, color: '#0ea5e9', bg: '#f0f9ff' };
   if (lower.match(/devops|sre|platform engineer/))
-    return { icon: Zap, color: '#f59e0b', bg: '#fffbeb' };
+    return { icon: Network, color: '#f43f5e', bg: '#fff1f2' };
   if (lower.match(/network|system|active directory/)) 
     return { icon: Terminal, color: '#14b8a6', bg: '#f0fdfa' };
   if (lower.match(/qa|test|quality|automation|manual testing/)) 
     return { icon: Activity, color: '#f59e0b', bg: '#fffbeb' };
-  if (lower.match(/ai|machine learning|mlops|scientist|deep learning|llm|nlp/)) 
-    return { icon: Cpu, color: '#d946ef', bg: '#fdf4ff' };
   if (lower.match(/mobile|ios|android|react native|flutter/)) 
     return { icon: Smartphone, color: '#2563eb', bg: '#eff6ff' };
   
@@ -135,9 +150,21 @@ const DomainsTab = ({ onSelectDomain, selectedCountry, dateFilter, viewMode = 'g
         name:  row.role_name,
         count: Number(row.job_count),
         type:  isTechRole(row.role_name) ? 'TECH' : 'NON-TECH',
-      })).sort((a, b) => b.count - a.count);
+      }));
 
-      setDomains(domainList);
+      // Sort: prioritize FEATURED_DOMAINS first, then by count
+      const sorted = domainList.sort((a, b) => {
+        const aIndex = FEATURED_DOMAINS.findIndex(f => f.toLowerCase() === a.name.toLowerCase());
+        const bIndex = FEATURED_DOMAINS.findIndex(f => f.toLowerCase() === b.name.toLowerCase());
+        
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        
+        return b.count - a.count;
+      });
+
+      setDomains(sorted);
       setPage(0);
     } catch (err) {
       console.error('[DomainsTab] Error:', err);
