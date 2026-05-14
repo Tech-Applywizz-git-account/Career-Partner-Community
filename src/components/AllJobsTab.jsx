@@ -104,7 +104,7 @@ const applyDateFilter = (query, df) => {
     return query;
 };
 
-const JobRow = ({ job, isSaved, onSave }) => {
+const JobRow = ({ job, isSaved, onSave, scoringPanel, onApplyClick }) => {
     const [hovered, setHovered] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
@@ -133,7 +133,7 @@ const JobRow = ({ job, isSaved, onSave }) => {
 
     return (
         <div
-            className="bg-white rounded-[24px] border border-[#f0f0f0] mb-5 shadow-sm hover:shadow-xl hover:border-[#2C76FF]/20 transition-all duration-300 flex flex-col lg:flex-row overflow-hidden group"
+            className="bg-white rounded-[24px] border border-[#f0f0f0] mb-5 shadow-sm hover:shadow-xl hover:border-[#2C76FF]/20 transition-all duration-300 flex flex-col lg:flex-row group"
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
@@ -261,6 +261,7 @@ const JobRow = ({ job, isSaved, onSave }) => {
                                 rel="noopener noreferrer"
                                 className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
                                 style={{ backgroundColor: '#29FE29', color: '#FFFFFF' }}
+                                onClick={onApplyClick ? (e) => { e.preventDefault(); onApplyClick(job.url || job.apply_url); } : undefined}
                             >
                                 Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
                             </a>
@@ -268,17 +269,30 @@ const JobRow = ({ job, isSaved, onSave }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Optional scoring right panel — only rendered for the first 2 cards */}
+            {scoringPanel && (
+                <div
+                    className="flex shrink-0 flex-col lg:w-[200px]"
+                    style={{
+                        borderTop: isMobile ? '1px solid #f1f5f9' : 'none',
+                        borderLeft: isMobile ? 'none' : '1px solid #f1f5f9'
+                    }}
+                >
+                    {scoringPanel}
+                </div>
+            )}
         </div>
     );
 };
 
-const JobRowList = ({ job, isSaved, onSave }) => {
+const JobRowList = ({ job, isSaved, onSave, onApplyClick, scoringPanel }) => {
     return (
         <div className="bg-white rounded-[16px] border border-[#f0f0f0] mb-3 p-4 flex items-center gap-4 hover:shadow-md hover:border-[#2C76FF]/20 transition-all group">
             <div className="shrink-0 bg-white border border-[#f1f5f9] rounded-xl p-1.5 shadow-sm">
                 <LogoBox name={job.company} officialUrl={job.url} size={40} fontSize={14} />
             </div>
-            
+
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                     <h3 className="text-[15px] font-black text-[#1E1E1E] truncate">
@@ -324,11 +338,19 @@ const JobRowList = ({ job, isSaved, onSave }) => {
                         rel="noopener noreferrer"
                         className="h-9 px-5 rounded-full flex items-center justify-center gap-2 font-black text-[13px] transition-all text-white hover:scale-105"
                         style={{ backgroundColor: '#29FE29' }}
+                        onClick={onApplyClick ? (e) => { e.preventDefault(); onApplyClick(job.url || job.apply_url); } : undefined}
                     >
                         Apply <ExternalLink size={14} />
                     </a>
                 )}
             </div>
+
+            {/* Optional scoring right panel — only rendered for the first 2 list items */}
+            {scoringPanel && (
+                <div className="hidden lg:flex w-[180px] shrink-0 flex-col" style={{ borderLeft: '1px solid #f1f5f9', marginLeft: '12px' }}>
+                    {scoringPanel}
+                </div>
+            )}
         </div>
     );
 };
@@ -362,6 +384,36 @@ const AllJobsTab = ({
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [allRoles, setAllRoles] = useState([]);
     const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
+
+    // ── Apply-click interception: show upgrade modal at thresholds ──────────
+    const POPUP_THRESHOLDS = new Set([3, 8, 14, 21, 30]);
+    const [upgradeModal, setUpgradeModal] = useState({ open: false, pendingUrl: null });
+    const applyCountRef = React.useRef(0);
+
+    const handleApplyClick = (url) => {
+        const newCount = applyCountRef.current + 1;
+        applyCountRef.current = newCount;
+        if (POPUP_THRESHOLDS.has(newCount)) {
+            setUpgradeModal({ open: true, pendingUrl: url });
+        } else {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+    };
+
+    const closeModalAndApply = () => {
+        const url = upgradeModal.pendingUrl;
+        setUpgradeModal({ open: false, pendingUrl: null });
+        if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    };
+
+    const closeModalOnly = () => {
+        setUpgradeModal({ open: false, pendingUrl: null });
+    };
+
+    const closeModalUpgrade = () => {
+        setUpgradeModal({ open: false, pendingUrl: null });
+        window.open('https://www.applywizz.ai/job-board#pricing', '_blank', 'noopener,noreferrer');
+    };
 
     useEffect(() => {
         setSearchTerm(propSearchTerm);
@@ -480,7 +532,6 @@ const AllJobsTab = ({
         return s;
     };
 
-
     // ── Verified seal SVG ──────────────────────────────────────────────────────
     const VerifiedSeal = ({ size = 16 }) => (
         <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
@@ -492,7 +543,7 @@ const AllJobsTab = ({
     const interleaveJobs = (list) => {
         if (!list || list.length === 0) return [];
 
-        // 1. Normalize URLs and remove duplicates
+        // 1. De-duplicate by URL
         const seenUrls = new Set();
         const uniqueList = [];
         list.forEach(j => {
@@ -502,32 +553,22 @@ const AllJobsTab = ({
             uniqueList.push(j);
         });
 
-        // 2. Pre-process metadata for sorting
+        // 2. Enrich each job
+        const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
         const enriched = uniqueList.map(j => {
             const hasSal = j.salary && String(j.salary).includes('$');
             const hasLvl = parseWageLevel(j.wage_level) || parseWageLevel(j.wage_num) || parseWageLevel(j.salary);
             const isEligible = !!(hasSal || hasLvl);
-
             const dateStr = j.date_posted || j.created_at || j.upload_date || j.ingestedAt || '1970-01-01';
             const timestamp = new Date(dateStr).getTime() || 0;
             const wageLvl = parseWageLevel(j.wage_level) || parseWageLevel(j.wage_num) || parseWageLevel(j.salary) || 0;
             const filings = parseInt(j.lca_filings) || 0;
-            const brandRank = getCompanyRank(j.company);
-            const isFamousCo = brandRank !== Infinity;
-
-            return {
-                ...j,
-                _isEligible: isEligible,
-                _timestamp: timestamp,
-                _wageLvl: wageLvl,
-                _filings: filings,
-                _brandRank: brandRank,
-                _isFamous: isFamousCo,
-                _uk: _urlKey(j.url)
-            };
+            const isFresh = (now - timestamp) <= THREE_DAYS_MS;
+            return { ...j, _isEligible: isEligible, _timestamp: timestamp, _wageLvl: wageLvl, _filings: filings, _isFresh: isFresh, _uk: _urlKey(j.url) };
         });
 
-        // 3. Sorting logic: Priority = Eligibility -> Freshness -> Wage -> Filings
+        // 3. Sorting helpers
         const jobSorter = (a, b) => {
             if (b._isEligible !== a._isEligible) return b._isEligible ? 1 : -1;
             if (b._timestamp !== a._timestamp) return b._timestamp - a._timestamp;
@@ -535,123 +576,99 @@ const AllJobsTab = ({
             return b._filings - a._filings;
         };
 
-        // 4. Categorize into Pools
-        // Pool A: Famous OR Verified (Aggressive Priority)
-        const primaryPool = enriched.filter(j => j._isFamous || j.isVerified);
+        // 4. Lenient key lookup — LOCAL to this function only, does not affect isFamous/getCompanyRank.
+        //    Maps 'Google LLC', 'Google India Pvt Ltd' → 'google'
+        //    Maps 'Amazon Web Services India' → 'amazon web services' (longest match wins)
+        const _rankedLower = RANKED_COMPANIES.map(r => r.toLowerCase().trim());
+        const getInterleavingKey = (companyName) => {
+            if (!companyName) return null;
+            const n = companyName.toLowerCase().trim();
+            // Pass 1: exact match
+            for (const rl of _rankedLower) { if (n === rl) return rl; }
+            // Pass 2: company starts with ranked brand (e.g. 'google llc' starts with 'google ')
+            let bestKey = null, bestLen = 0;
+            for (const rl of _rankedLower) {
+                if (rl.length >= 4 && rl.length > bestLen && (n.startsWith(rl + ' ') || n.startsWith(rl + ','))) {
+                    bestKey = rl; bestLen = rl.length;
+                }
+            }
+            if (bestKey) return bestKey;
+            // Pass 3: company name contains a ranked brand as a substring (longest match wins)
+            for (const rl of _rankedLower) {
+                if (rl.length >= 5 && rl.length > bestLen && n.includes(rl)) {
+                    bestKey = rl; bestLen = rl.length;
+                }
+            }
+            return bestKey;
+        };
 
-        // Pool B: Everyone else but have salary info
-        const secondaryPool = enriched.filter(j => !(j._isFamous || j.isVerified) && j._isEligible).sort(jobSorter);
-
-        // Pool C: Everyone else with no salary info
-        const tertiaryPool = enriched.filter(j => !(j._isFamous || j.isVerified) && !j._isEligible).sort((a, b) => b._timestamp - a._timestamp);
-
-        // 5. Build Interleaved Main Sequence from Primary Pool
-        const famousInPrimary = new Map();
-        primaryPool.filter(j => j._isFamous).forEach(j => {
-            const co = j.company;
-            if (!famousInPrimary.has(co)) famousInPrimary.set(co, []);
-            famousInPrimary.get(co).push(j);
+        // 5. Group all jobs by their interleaving key (or "unranked" bucket)
+        const rankedGroupMap = new Map(); // key → jobs[]
+        const unrankedJobs = [];
+        enriched.forEach(j => {
+            const key = getInterleavingKey(j.company);
+            if (key) {
+                if (!rankedGroupMap.has(key)) rankedGroupMap.set(key, []);
+                rankedGroupMap.get(key).push(j);
+            } else {
+                unrankedJobs.push(j);
+            }
         });
-        famousInPrimary.forEach(jobs => jobs.sort(jobSorter));
 
-        const verifiedInPrimary = primaryPool.filter(j => !j._isFamous && j.isVerified).sort(jobSorter);
+        // Sort each company's jobs: fresh (≤3 days) first, then by jobSorter
+        rankedGroupMap.forEach(jobs => {
+            jobs.sort((a, b) => {
+                if (a._isFresh !== b._isFresh) return a._isFresh ? -1 : 1;
+                return jobSorter(a, b);
+            });
+        });
 
+        // 6. Build deduplicated ordered RANKED key list
+        const seenRankedKeys = new Set();
+        const rankedKeys = [];
+        _rankedLower.forEach(k => { if (!seenRankedKeys.has(k)) { seenRankedKeys.add(k); rankedKeys.push(k); } });
+
+        // 7. 3-round round-robin through RANKED_COMPANIES (cap = 3 per company)
+        //    Companies with no jobs in this batch are skipped automatically.
+        const MAX_PER_CO = 3;
         const result = [];
         const finalSeen = new Set();
-        let vIdx = 0;
+        const coUsedCount = new Map();
 
-        const coMap = new Map();
-        famousInPrimary.forEach((jobs, coName) => coMap.set(coName.toLowerCase(), jobs));
-
-        // Interleaving rounds (famous + verified)
-        // We use the RANKED_COMPANIES order for the rounds
-        for (let round = 0; round < 20; round++) {
-            let foundInRound = 0;
-            for (const rankedCo of RANKED_COMPANIES) {
-                const searchKey = rankedCo.toLowerCase();
-                let group = coMap.get(searchKey);
-                if (!group) {
-                    // Fallback to partial match if exact match in map fails
-                    for (const [key, jobs] of coMap.entries()) {
-                        if (key.includes(searchKey) || searchKey.includes(key)) {
-                            group = jobs;
-                            break;
-                        }
-                    }
-                }
-
-                if (group && group[round]) {
-                    const job = group[round];
-                    if (!finalSeen.has(job._uk)) {
-                        result.push(job);
-                        finalSeen.add(job._uk);
-                        foundInRound++;
-
-                        // After a famous job, try to insert a verified job to keep variety
-                        if (vIdx < verifiedInPrimary.length) {
-                            const vJob = verifiedInPrimary[vIdx++];
-                            if (!finalSeen.has(vJob._uk)) {
-                                result.push(vJob);
-                                finalSeen.add(vJob._uk);
-                            }
-                        }
-                    }
-                }
+        for (let round = 0; round < MAX_PER_CO; round++) {
+            for (const key of rankedKeys) {
+                const group = rankedGroupMap.get(key);
+                if (!group) continue;
+                const used = coUsedCount.get(key) || 0;
+                if (used >= MAX_PER_CO) continue;
+                const job = group.find(j => !finalSeen.has(j._uk));
+                if (!job) continue;
+                result.push(job);
+                finalSeen.add(job._uk);
+                coUsedCount.set(key, used + 1);
             }
-            if (foundInRound === 0) break;
         }
 
-        // 6. Append remaining jobs to maintain "Appear Last" rule
-        // a. Remaining Primary jobs (famous/verified)
-        primaryPool.sort(jobSorter).forEach(j => {
-            if (!finalSeen.has(j._uk)) {
-                result.push(j);
-                finalSeen.add(j._uk);
-            }
+        // 8. Append unranked jobs (salary-first, then freshness)
+        unrankedJobs.sort(jobSorter).forEach(j => {
+            if (!finalSeen.has(j._uk)) { result.push(j); finalSeen.add(j._uk); }
         });
 
-        // b. Secondary Pool (Unrelated but have Salary)
-        secondaryPool.forEach(j => {
-            if (!finalSeen.has(j._uk)) {
-                result.push(j);
-                finalSeen.add(j._uk);
-            }
-        });
-
-        // c. Tertiary Pool (No Salary Info)
-        tertiaryPool.forEach(j => {
-            if (!finalSeen.has(j._uk)) {
-                result.push(j);
-                finalSeen.add(j._uk);
-            }
-        });
-
-        // 7. ── NEW: Country Interleaving ──
-        // The user wants "mixed results" (one US, one UK, etc.)
-        // We take our prioritized result and group it by country to interleave them.
+        // 9. Country interleaving (preserve existing behaviour)
         const countryGroups = new Map();
         result.forEach(j => {
             const c = (j.indeed_search_country || j.country || 'OTHER').toUpperCase();
             if (!countryGroups.has(c)) countryGroups.set(c, []);
             countryGroups.get(c).push(j);
         });
-
         const countryKeys = Array.from(countryGroups.keys());
         if (countryKeys.length <= 1) return result;
-
         const mixedResult = [];
         let maxLen = 0;
         countryGroups.forEach(g => { if (g.length > maxLen) maxLen = g.length; });
-
         for (let i = 0; i < maxLen; i++) {
-            for (const ck of countryKeys) {
-                const group = countryGroups.get(ck);
-                if (group[i]) {
-                    mixedResult.push(group[i]);
-                }
-            }
+            for (const ck of countryKeys) { const g = countryGroups.get(ck); if (g[i]) mixedResult.push(g[i]); }
         }
-
         return mixedResult;
     };
 
@@ -679,7 +696,7 @@ const AllJobsTab = ({
             const fixedStr = (fixedCompany || 'none') + '_' + (fixedDomain || 'none');
             const listCacheKey = `${filter}|${(activeSearch || '').trim().toLowerCase() || 'none'}|${levelStr}|${countriesStr}|${dateStr}|${fixedStr}`;
 
-            const LS_KEY = `ajt_v20_${listCacheKey}`; // bumped: multi-country support
+            const LS_KEY = `ajt_v21_${listCacheKey}`; // bumped: company pagination fix
             const LS_TTL_MS = 10 * 60 * 1000; // 10 minutes
             try {
                 const raw = localStorage.getItem(LS_KEY);
@@ -721,7 +738,7 @@ const AllJobsTab = ({
             // PROGRESSIVE LOADING  —  STALE WHILE REVALIDATE (SWR)
             // ══════════════════════════════════════════════════════════════════════
 
-            const QUICK_LS_KEY = `ajt_quick_v20_${listCacheKey}`; // bumped: multi-country support
+            const QUICK_LS_KEY = `ajt_quick_v21_${listCacheKey}`; // bumped: company pagination fix
             const QUICK_TTL_MS = 30 * 60 * 1000; // 30 min
 
             // ── Quick-cache hit? ────────────────────────────────────────────────
@@ -801,13 +818,16 @@ const AllJobsTab = ({
                     }));
 
                     if (directJobs.length > 0) {
-                        const finalInterleaved = interleaveJobs(directJobs);
-                        setJobs(finalInterleaved.length > 0 ? finalInterleaved : directJobs);
+                        // Skip interleaving for company/domain detail views — show all results sorted by date
+                        const finalList = (fixedCompany || fixedDomain)
+                            ? directJobs.sort((a, b) => new Date(b.date_posted || 0) - new Date(a.date_posted || 0))
+                            : interleaveJobs(directJobs);
+                        setJobs(finalList);
                         setTotalJobs(finalCount);
                         setCurrentPage(page);
                         setLoading(false);
                         if (!processedListCache.current.has(listCacheKey)) {
-                            processedListCache.current.set(listCacheKey, { list: finalInterleaved.length > 0 ? finalInterleaved : directJobs, total: finalCount });
+                            processedListCache.current.set(listCacheKey, { list: finalList, total: finalCount });
                         }
                         return;
                     }
@@ -818,7 +838,7 @@ const AllJobsTab = ({
 
             // ── Phase 1: High-Performance Server-Side Search ─────────────────────
             const QUICK_LIMIT = fixedCompany || fixedDomain ? 1000 : 500;
-            
+
             let qList = [];
             let qTotal = 0;
 
@@ -836,7 +856,7 @@ const AllJobsTab = ({
                     console.error('search_jobs RPC failed:', rpcErr);
                     throw rpcErr;
                 }
-                
+
                 qList = (rpcData || []).map(j => ({
                     ...j,
                     company: j.company_name || 'Unknown',
@@ -851,7 +871,7 @@ const AllJobsTab = ({
                 qTotal = parseInt(rpcData?.[0]?.total_count || 0);
             } else {
                 let quickQ = supabase.from('jobs_all_roles')
-                    .select('*', { count: 'exact' }) 
+                    .select('*', { count: 'exact' })
                     .order('date_posted', { ascending: false, nullsFirst: false })
                     .limit(QUICK_LIMIT);
 
@@ -861,13 +881,13 @@ const AllJobsTab = ({
                 } else if (fixedDomain) {
                     quickQ = quickQ.eq('role_name', fixedDomain);
                 }
-                
+
                 if (activeCountries.length > 0) quickQ = quickQ.in('indeed_search_country', activeCountries);
                 quickQ = applyDateFilter(quickQ, dateFilter);
 
                 const qStdRes = await quickQ;
                 if (qStdRes?.error) throw qStdRes.error;
-                
+
                 qList = (qStdRes.data || []).map(j => ({
                     ...j,
                     company: j.company_name || 'Unknown',
@@ -882,7 +902,10 @@ const AllJobsTab = ({
                 qTotal = qStdRes.count || qList.length;
             }
 
-            qList = interleaveJobs(qList);
+            // Skip interleaving for company/domain detail views
+            qList = (fixedCompany || fixedDomain)
+                ? qList.sort((a, b) => new Date(b.date_posted || 0) - new Date(a.date_posted || 0))
+                : interleaveJobs(qList);
 
             processedListCache.current.set(listCacheKey, { list: qList, total: qTotal });
             try { localStorage.setItem(QUICK_LS_KEY, JSON.stringify({ ts: Date.now(), total: qTotal, list: qList.slice(0, 150) })); } catch (_) { }
@@ -1010,7 +1033,10 @@ const AllJobsTab = ({
                         });
                     }
 
-                    const interleaved = interleaveJobs(fullList);
+                    // Skip interleaving for company/domain detail views
+                    const interleaved = (fixedCompany || fixedDomain)
+                        ? fullList.sort((a, b) => new Date(b.date_posted || 0) - new Date(a.date_posted || 0))
+                        : interleaveJobs(fullList);
                     const fullTotal = (search && search.trim()) ? interleaved.length : (standardRes.count || interleaved.length);
 
                     processedListCache.current.set(listCacheKey, { list: interleaved, total: fullTotal });
@@ -1150,135 +1176,327 @@ const AllJobsTab = ({
     };
 
     return (
-        <div style={{ fontFamily: 'inherit' }}>
-            {/* Internal headers/filters removed in favor of global dashboard filters */}
+        <>
+            <style>{`
+                .scoring-card-container:hover .scoring-card-overlay {
+                    opacity: 1 !important;
+                    transform: translateX(-50%) translateY(0) !important;
+                }
+            `}</style>
+            <div style={{ fontFamily: 'inherit' }}>
+                {/* Internal headers/filters removed in favor of global dashboard filters */}
 
-            {/* ── Verified filter banner ── */}
-            {activeFilter === 'verified' && !loading && !isCompact && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', fontSize: '13px', color: '#16a34a', fontWeight: 600, marginBottom: '14px' }}>
-                    <VerifiedSeal size={14} />
-                    Showing Jobs From <strong style={{ marginLeft: '4px' }}>Human-Verified H-1B Sponsoring Companies</strong>
-                </div>
-            )}
-
-
-
-            {/* ── Loading ── */}
-            {loading && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
-                    <div style={{ textAlign: 'center' }}>
-                        <Loader2 style={{ width: 32, height: 32, color: '#24385E', animation: 'spin 1s linear infinite', margin: '0 auto 10px', display: 'block' }} />
-                        <p style={{ color: '#aaa', fontSize: '13px', margin: 0 }}>Loading jobs…</p>
+                {/* ── Verified filter banner ── */}
+                {activeFilter === 'verified' && !loading && !isCompact && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', fontSize: '13px', color: '#16a34a', fontWeight: 600, marginBottom: '14px' }}>
+                        <VerifiedSeal size={14} />
+                        Showing Jobs From <strong style={{ marginLeft: '4px' }}>Human-Verified H-1B Sponsoring Companies</strong>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* ── Error ── */}
-            {error && !loading && (
-                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
-                    <AlertCircle size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: '1px' }} />
-                    <div>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: '#991b1b', margin: '0 0 6px' }}>Error loading jobs</p>
-                        <p style={{ fontSize: '12px', color: '#b91c1c', margin: '0 0 10px' }}>{error}</p>
-                        <button onClick={() => fetchJobs(currentPage, activeFilter, debouncedSearch, levelFilter)} style={{ padding: '5px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Retry</button>
+
+
+                {/* ── Loading ── */}
+                {loading && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <Loader2 style={{ width: 32, height: 32, color: '#24385E', animation: 'spin 1s linear infinite', margin: '0 auto 10px', display: 'block' }} />
+                            <p style={{ color: '#aaa', fontSize: '13px', margin: 0 }}>Loading jobs…</p>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* ── Empty ── */}
-            {!loading && !error && jobs.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '80px 0' }}>
-                    <Briefcase size={40} color="#e0e0e0" style={{ margin: '0 auto 12px', display: 'block' }} />
-                    <p style={{ fontSize: '15px', fontWeight: 600, color: '#555', margin: '0 0 4px' }}>No jobs found</p>
-                    <p style={{ fontSize: '13px', color: '#aaa', margin: 0 }}>{searchTerm ? 'Try a different search term' : 'No jobs available right now'}</p>
-                </div>
-            )}
+                {/* ── Error ── */}
+                {error && !loading && (
+                    <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
+                        <AlertCircle size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: '1px' }} />
+                        <div>
+                            <p style={{ fontSize: '14px', fontWeight: 600, color: '#991b1b', margin: '0 0 6px' }}>Error loading jobs</p>
+                            <p style={{ fontSize: '12px', color: '#b91c1c', margin: '0 0 10px' }}>{error}</p>
+                            <button onClick={() => fetchJobs(currentPage, activeFilter, debouncedSearch, levelFilter)} style={{ padding: '5px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Retry</button>
+                        </div>
+                    </div>
+                )}
 
-            {/* ── Job List ── */}
-            {!loading && !error && jobs.length > 0 && (
-                <>
-                    {jobs.map((job, i) => (
-                        viewMode === 'list' ? (
-                            <JobRowList
-                                key={`${job.id || job.url || 'job'}_${i}`}
-                                job={{
-                                    ...job,
-                                    isVerified: job.isVerified || verifiedSet?.has(job.company)
-                                }}
-                                isSaved={savedJobIds.has(String(job.id || job.job_id || ''))}
-                                onSave={handleSave}
-                            />
-                        ) : (
-                            <JobRow
-                                key={`${job.id || job.url || 'job'}_${i}`}
-                                job={{
-                                    ...job,
-                                    isVerified: job.isVerified || verifiedSet?.has(job.company)
-                                }}
-                                isSaved={savedJobIds.has(String(job.id || job.job_id || ''))}
-                                onSave={handleSave}
-                            />
-                        )
-                    ))}
+                {/* ── Empty ── */}
+                {!loading && !error && jobs.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '80px 0' }}>
+                        <Briefcase size={40} color="#e0e0e0" style={{ margin: '0 auto 12px', display: 'block' }} />
+                        <p style={{ fontSize: '15px', fontWeight: 600, color: '#555', margin: '0 0 4px' }}>No jobs found</p>
+                        <p style={{ fontSize: '13px', color: '#aaa', margin: 0 }}>{searchTerm ? 'Try a different search term' : 'No jobs available right now'}</p>
+                    </div>
+                )}
 
-                    {/* ── Pagination ── */}
-                    {totalPages > 1 && (
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: isMobile ? 'column' : 'row',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            marginTop: '24px',
-                            paddingTop: '20px',
-                            borderTop: '1px solid #f1f5f9',
-                            gap: isMobile ? '16px' : '0'
-                        }}>
-                            <span style={{ fontSize: '13px', color: '#718096', fontWeight: 500 }}>
-                                Page {currentPage} of {totalPages.toLocaleString()}
-                            </span>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', overflowX: 'auto', maxWidth: '100%', padding: '4px' }} className="no-scrollbar">
-                                <button
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.3 : 1, display: 'flex', alignItems: 'center' }}
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
+                {/* ── Job List ── */}
+                {!loading && !error && jobs.length > 0 && (
+                    <>
+                        {jobs.map((job, i) => {
+                            const showScoring = i < 2;
+                            const dummyScore = i === 0 ? 92 : 80;
+                            const dummyColor = i === 0 ? '#29FE29' : '#2C76FF';
+                            const dummyLabel = i === 0 ? 'Strong Match' : 'Good Match';
+                            const circumference = 2 * Math.PI * 34;
+                            const offset = circumference * (1 - dummyScore / 100);
 
-                                {getPageNumbers().map((pg, idx) =>
-                                    pg === '...' ? (
-                                        <span key={`e${idx}`} style={{ padding: '0 4px', color: '#cbd5e0', fontSize: '14px' }}>…</span>
-                                    ) : (
-                                        <button
-                                            key={pg}
-                                            onClick={() => handlePageChange(pg)}
+                            // Scoring + upgrade panel — right sidebar on desktop, bottom strip on mobile
+                            const scoringPanel = showScoring ? (
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: isMobile ? 'row' : 'column',
+                                        alignItems: 'center',
+                                        justifyContent: isMobile ? 'space-between' : 'center',
+                                        padding: isMobile ? '14px 16px' : '20px 16px',
+                                        gap: isMobile ? '10px' : '14px',
+                                        background: 'linear-gradient(135deg, #171717 0%, #353333 50%, #878787 100%)',
+                                        height: '100%', width: '100%', textAlign: 'center', position: 'relative',
+                                        borderRadius: isMobile ? '0 0 24px 24px' : '0 24px 24px 0'
+                                    }}>
+
+                                    {/* Ring */}
+                                    <div
+                                        className="scoring-card-container"
+                                        style={{ position: 'relative', width: isMobile ? '54px' : '72px', height: isMobile ? '54px' : '72px', cursor: 'help', flexShrink: 0 }}
+                                    >
+                                        <svg width={isMobile ? '54' : '72'} height={isMobile ? '54' : '72'} viewBox="0 0 80 80" style={{ transform: 'rotate(-90deg)' }}>
+                                            <circle cx="40" cy="40" r="34" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="transparent" />
+                                            <circle cx="40" cy="40" r="34" stroke={dummyColor} strokeWidth="8" fill="transparent"
+                                                strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
+                                        </svg>
+                                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                            <span style={{ fontSize: isMobile ? '13px' : '16px', fontWeight: 900, color: '#fff', lineHeight: 1 }}>{dummyScore}%</span>
+                                        </div>
+
+                                        {/* Tooltip Overlay */}
+                                        <div
+                                            className="scoring-card-overlay"
                                             style={{
-                                                padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
-                                                cursor: 'pointer', minWidth: '36px', textAlign: 'center', transition: 'all 0.2s',
-                                                border: '1.5px solid',
-                                                borderColor: currentPage === pg ? '#24385E' : '#e2e8f0',
-                                                background: currentPage === pg ? '#24385E' : '#fff',
-                                                color: currentPage === pg ? '#fff' : '#64748b'
+                                                position: 'absolute', bottom: '115%', left: '50%', transform: 'translateX(-50%) translateY(8px)',
+                                                width: '200px', background: 'rgba(10, 10, 20, 0.98)', borderRadius: '12px',
+                                                boxShadow: '0 15px 40px rgba(0,0,0,0.7)', border: '1px solid rgba(41,254,41,0.3)',
+                                                opacity: 0, transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                pointerEvents: 'none', padding: '14px', zIndex: 100
                                             }}
                                         >
-                                            {pg}
-                                        </button>
-                                    )
-                                )}
+                                            <div style={{ color: '#29FE29', fontSize: '12px', fontWeight: 900, lineHeight: 1.4, textAlign: 'center' }}>
+                                                Upgrade to Unlock Your AI Match Score<br />
+                                                <span style={{ color: '#fff', fontSize: '10px', opacity: 0.8 }}>Focus only on roles you can win</span>
+                                            </div>
+                                            {/* Tooltip Arrow */}
+                                            <div style={{
+                                                position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                                                borderWidth: '7px', borderStyle: 'solid', borderColor: 'rgba(10, 10, 20, 0.98) transparent transparent transparent'
+                                            }} />
+                                        </div>
+                                    </div>
 
-                                <button
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.3 : 1, display: 'flex', alignItems: 'center' }}
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
+                                    {/* Center block: label + (desktop only) divider & subtitle */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? '3px' : '10px', flex: isMobile ? 1 : 'unset' }}>
+                                        <div style={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 900, color: dummyColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{dummyLabel}</div>
+                                        {!isMobile && (
+                                            <>
+                                                {/* Divider */}
+                                                <div style={{ width: '40px', height: '1px', background: 'rgba(255,255,255,0.15)' }} />
+                                                {/* Upgrade CTA text */}
+                                                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: 600, lineHeight: 1.4 }}>
+                                                    Upgrade to get <span style={{ color: '#29FE29', fontWeight: 800 }}>perfect scoring</span> jobs
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* Upgrade button */}
+                                    <a
+                                        href="https://www.applywizz.ai/job-board#pricing"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            background: '#29FE29', color: '#1E1E1E',
+                                            fontWeight: 900, fontSize: isMobile ? '10px' : '11px',
+                                            padding: isMobile ? '7px 12px' : '8px 16px', borderRadius: '50px',
+                                            textDecoration: 'none', display: 'inline-flex',
+                                            alignItems: 'center', gap: '4px',
+                                            boxShadow: '0 4px 12px rgba(41,254,41,0.3)',
+                                            whiteSpace: 'nowrap', transition: 'transform 0.2s',
+                                            flexShrink: 0
+                                        }}
+                                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.06)'}
+                                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                                    >
+                                        🚀 {isMobile ? 'Upgrade' : 'Upgrade Now'}
+                                    </a>
+                                </div>
+                            ) : null;
+
+                            const jobEl = viewMode === 'list' ? (
+                                <JobRowList
+                                    key={`${job.id || job.url || 'job'}_${i}`}
+                                    job={{ ...job, isVerified: job.isVerified || verifiedSet?.has(job.company) }}
+                                    isSaved={savedJobIds.has(String(job.id || job.job_id || ''))}
+                                    onSave={handleSave}
+                                    onApplyClick={handleApplyClick}
+                                    scoringPanel={scoringPanel}
+                                />
+                            ) : (
+                                <JobRow
+                                    key={`${job.id || job.url || 'job'}_${i}`}
+                                    job={{ ...job, isVerified: job.isVerified || verifiedSet?.has(job.company) }}
+                                    isSaved={savedJobIds.has(String(job.id || job.job_id || ''))}
+                                    onSave={handleSave}
+                                    scoringPanel={scoringPanel}
+                                    onApplyClick={handleApplyClick}
+                                />
+                            );
+
+                            return (
+                                <React.Fragment key={`frag_${job.id || job.url || 'job'}_${i}`}>
+                                    {jobEl}
+                                </React.Fragment>
+                            );
+                        })}
+
+                        {/* ── Pagination ── */}
+                        {totalPages > 1 && (
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: isMobile ? 'column' : 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginTop: '24px',
+                                paddingTop: '20px',
+                                borderTop: '1px solid #f1f5f9',
+                                gap: isMobile ? '16px' : '0'
+                            }}>
+                                <span style={{ fontSize: '13px', color: '#718096', fontWeight: 500 }}>
+                                    Page {currentPage} of {totalPages.toLocaleString()}
+                                </span>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', overflowX: 'auto', maxWidth: '100%', padding: '4px' }} className="no-scrollbar">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.3 : 1, display: 'flex', alignItems: 'center' }}
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+
+                                    {getPageNumbers().map((pg, idx) =>
+                                        pg === '...' ? (
+                                            <span key={`e${idx}`} style={{ padding: '0 4px', color: '#cbd5e0', fontSize: '14px' }}>…</span>
+                                        ) : (
+                                            <button
+                                                key={pg}
+                                                onClick={() => handlePageChange(pg)}
+                                                style={{
+                                                    padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
+                                                    cursor: 'pointer', minWidth: '36px', textAlign: 'center', transition: 'all 0.2s',
+                                                    border: '1.5px solid',
+                                                    borderColor: currentPage === pg ? '#24385E' : '#e2e8f0',
+                                                    background: currentPage === pg ? '#24385E' : '#fff',
+                                                    color: currentPage === pg ? '#fff' : '#64748b'
+                                                }}
+                                            >
+                                                {pg}
+                                            </button>
+                                        )
+                                    )}
+
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.3 : 1, display: 'flex', alignItems: 'center' }}
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                </div>
                             </div>
+                        )}
+                    </>
+                )}
+            </div>
+
+            {/* ── Upgrade Modal: shown at apply-click thresholds 3, 5, 10, 18, 27 ── */}
+            {upgradeModal.open && (
+                <div
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 9999,
+                        background: 'rgba(10,10,20,0.78)', backdropFilter: 'blur(6px)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '20px'
+                    }}
+                    onClick={closeModalOnly}
+                >
+                    <div
+                        style={{
+                            background: 'linear-gradient(135deg, #171717 0%, #353333 50%, #878787 100%)',
+                            borderRadius: '28px', padding: '40px 36px',
+                            maxWidth: '480px', width: '100%',
+                            boxShadow: '0 32px 80px rgba(0,0,0,0.8)',
+                            position: 'relative', overflow: 'hidden', textAlign: 'center'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+
+
+                        {/* Icon */}
+                        <div style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, #29FE29, #22c55e)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 24px rgba(41,254,41,0.35)' }}>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1E1E1E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
                         </div>
-                    )}
-                </>
+
+                        {/* Heading */}
+                        <div style={{ fontSize: '24px', fontWeight: 900, color: '#2C76FF', marginBottom: '10px', lineHeight: 1.2 }}>
+                            You're Applying Actively - <span style={{ color: '#29FE29' }}>Apply Smarter!</span>
+                        </div>
+
+                        {/* Body */}
+                        <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.85)', fontWeight: 500, lineHeight: 1.7, margin: '0 0 10px' }}>
+                            You've clicked Apply on <strong style={{ color: '#2C76FF' }}>{applyCountRef.current} jobs</strong> - great hustle! But without a profile match score, you're applying blind and can't tell which roles truly fit your skills.
+                        </p>
+                        <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.72)', fontWeight: 500, lineHeight: 1.7, margin: '0 0 24px' }}>
+                            <strong style={{ color: '#29FE29' }}>ApplyWizz Job Board</strong> scores every job against your profile — so you focus on the right opportunities, get more callbacks, and land interviews faster.
+                        </p>
+
+                        {/* Feature pills */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '28px' }}>
+                            {['✅ AI Profile Match Score', '🎯 Personalised Job Ranking', '📈 Higher Interview Rate', '⚡ Save Hours Weekly'].map(f => (
+                                <span key={f} style={{ background: 'rgba(44,118,255,0.1)', border: '1px solid rgba(44,118,255,0.25)', borderRadius: '50px', padding: '6px 14px', fontSize: '12px', fontWeight: 800, color: '#2C76FF' }}>{f}</span>
+                            ))}
+                        </div>
+
+                        {/* CTA buttons */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <button
+                                onClick={closeModalUpgrade}
+                                style={{
+                                    background: 'linear-gradient(135deg, #29FE29, #22c55e)',
+                                    color: '#1E1E1E', fontWeight: 900, fontSize: '15px',
+                                    padding: '14px 28px', borderRadius: '50px', border: 'none',
+                                    cursor: 'pointer', width: '100%',
+                                    boxShadow: '0 6px 20px rgba(41,254,41,0.4)', transition: 'transform 0.2s'
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.03)'}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                                🚀 Upgrade to Job Board — See My Score
+                            </button>
+                            <button
+                                onClick={closeModalAndApply}
+                                style={{
+                                    background: 'transparent', color: '#2C76FF',
+                                    fontWeight: 700, fontSize: '13px',
+                                    padding: '10px', borderRadius: '50px',
+                                    border: '1px solid rgba(44,118,255,0.4)',
+                                    cursor: 'pointer', width: '100%', transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(44,118,255,0.1)'; e.currentTarget.style.borderColor = '#2C76FF'; }}
+                                onMouseLeave={e => { e.currentTarget.style.color = '#2C76FF'; e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(44,118,255,0.4)'; }}
+                            >
+                                Continue applying without scoring -&gt;
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
-        </div>
+        </>
     );
 };
 
