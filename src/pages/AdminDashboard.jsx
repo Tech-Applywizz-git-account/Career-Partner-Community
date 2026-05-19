@@ -44,7 +44,7 @@ const S = {
     select: { width: '100%', border: '1.5px solid #e0e0e0', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', background: '#fff' },
     btn: (color) => ({ padding: '9px 18px', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '13px', background: color || '#29FE29', color: color ? '#333' : '#fff', fontFamily: 'inherit' }),
     badge: (type) => {
-        const map = { completed: '#d1fae5:#065f46', paid: '#d1fae5:#065f46', pending: '#e9f1ff:#2C76FF', failed: '#fee2e2:#991b1b', cancelled: '#f3f4f6:#666', admin: '#ede9fe:#5b21b6', user: '#dbeafe:#1e40af', active: '#d1fae5:#065f46', anonymous: '#f1f5f9:#475569', india: '#eff6ff:#1d4ed8', international: '#f0fdf4:#166534' };
+        const map = { completed: '#d1fae5:#065f46', paid: '#d1fae5:#065f46', pending: '#e9f1ff:#2C76FF', failed: '#fee2e2:#991b1b', cancelled: '#fee2e2:#991b1b', admin: '#ede9fe:#5b21b6', user: '#dbeafe:#1e40af', active: '#d1fae5:#065f46', anonymous: '#f1f5f9:#475569', india: '#eff6ff:#1d4ed8', international: '#f0fdf4:#166534' };
         const [bg, col] = (map[type] || map.pending).split(':');
         return { display: 'inline-block', padding: '2px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, background: bg, color: col, textTransform: 'capitalize' };
     },
@@ -82,7 +82,7 @@ const StatCard = ({ icon: Icon, label, value, sub, iconBg, iconColor, onClick })
 
 // ── Overview Tab ──────────────────────────────────────────────────────────────
 const OverviewTab = ({ setActiveTab }) => {
-    const [stats, setStats] = useState({ totalUsers: 0, paidUsers: 0, pendingUsers: 0, failedUsers: 0, activeJobs: 0, totalVisits: 0, uniqueVisitors: 0 });
+    const [stats, setStats] = useState({ totalUsers: 0, activeUsers: 0, adminUsers: 0, suspendedUsers: 0, usUsers: 0, intlUsers: 0 });
     const [activity, setActivity] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -91,43 +91,24 @@ const OverviewTab = ({ setActiveTab }) => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [usersRes, jobsRes, recentRes, visitsRes] = await Promise.all([
-                supabase.from('profiles').select('id, email, first_name, last_name, created_at, payment_status, role'),
-                supabase.from('job_jobrole_sponsored_sync').select('id', { count: 'exact', head: true }),
-                supabase.from('profiles').select('email, first_name, last_name, created_at, payment_status').order('created_at', { ascending: false }).limit(6),
-                supabase.rpc('get_site_stats')
+            const [usersRes, recentRes] = await Promise.all([
+                supabase.from('profiles').select('*'),
+                supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(6)
             ]);
 
             const users = usersRes.data || [];
-            const paid = users.filter(u => u.role !== 'admin' && (u.payment_status === 'completed' || u.payment_status === 'paid' || u.payment_status === 'active')).length;
-            const pending = users.filter(u => u.role !== 'admin' && u.payment_status === 'pending').length;
-            const failed = users.filter(u => u.role !== 'admin' && u.payment_status === 'failed').length;
-            
-            const vData = (visitsRes.data && visitsRes.data[0]) || { today_unique: 0, total_unique: 0 };
-
-            // Calculate TODAY's unique specifically (matching local time logic)
-            const { data: vLogs } = await supabase.from('site_visits').select('session_id, user_email, created_at');
-            const { data: admins } = await supabase.from('profiles').select('email').eq('role', 'admin');
-            const adminEmails = new Set(admins?.map(a => a.email) || []);
-            
-            const startOfToday = new Date();
-            startOfToday.setHours(0,0,0,0);
-            
-            const todayUniqueSet = new Set();
-            (vLogs || []).forEach(v => {
-                const vDate = new Date(v.created_at);
-                if (vDate >= startOfToday && !adminEmails.has(v.user_email)) {
-                    todayUniqueSet.add(v.session_id);
-                }
-            });
+            const active = users.filter(u => u.status === true).length;
+            const suspended = users.length - active;
+            const admins = users.filter(u => u.role === 'admin').length;
+            const usUsers = users.filter(u => u.country?.toLowerCase().includes('united states')).length;
 
             setStats({ 
                 totalUsers: users.length, 
-                paidUsers: paid, 
-                pendingUsers: pending, 
-                failedUsers: failed,
-                todayUnique: todayUniqueSet.size || vData.today_unique, // Fallback to RPC if local calc empty
-                totalUnique: vData.total_unique
+                activeUsers: active, 
+                adminUsers: admins,
+                suspendedUsers: suspended,
+                usUsers: usUsers,
+                intlUsers: users.length - usUsers
             });
             setActivity(recentRes.data || []);
         } catch (e) { console.error(e); }
@@ -138,32 +119,32 @@ const OverviewTab = ({ setActiveTab }) => {
 
     return (
         <div>
-            {/* Row 1: Users & Payments */}
+            {/* Row 1: Members & Access */}
             <div style={{ ...S.grid4, marginBottom: 16 }}>
-                <StatCard icon={Users} label="Total Users" value={stats.totalUsers} sub="Registered" iconBg="#dbeafe" iconColor="#1d4ed8" />
-                <StatCard icon={CheckCircle} label="Paid Users" value={stats.paidUsers} sub="Active subs" iconBg="#d1fae5" iconColor="#059669" />
-                <StatCard icon={Clock} label="Pending" value={stats.pendingUsers} sub="Checkout open" iconBg="#e9f1ff" iconColor="#2C76FF" />
-                <StatCard icon={XCircle} label="Failed" value={stats.failedUsers} sub="Payment errors" iconBg="#fee2e2" iconColor="#dc2626" />
+                <StatCard icon={Users} label="Total Members" value={stats.totalUsers} sub="Registered Profiles" iconBg="#dbeafe" iconColor="#1d4ed8" />
+                <StatCard icon={CheckCircle} label="Active Members" value={stats.activeUsers} sub="Access Granted" iconBg="#d1fae5" iconColor="#059669" />
+                <StatCard icon={Shield} label="Admin Accounts" value={stats.adminUsers} sub="Console Access" iconBg="#ede9fe" iconColor="#7c3aed" />
+                <StatCard icon={XCircle} label="Suspended Accounts" value={stats.suspendedUsers} sub="Access Revoked" iconBg="#fee2e2" iconColor="#dc2626" />
             </div>
 
-            {/* Row 2: Pure Unique Traffic Stats */}
+            {/* Row 2: Geographic breakdown */}
             <div style={{ ...S.grid4, gridTemplateColumns: 'repeat(2, 1fr)', marginBottom: 20 }}>
                 <StatCard 
                    icon={Activity} 
-                   label="Today's Unq Visitors" 
-                   value={stats.todayUnique} 
-                   sub="Unique people today" 
+                   label="United States Members" 
+                   value={stats.usUsers} 
+                   sub="Domestic users" 
                    iconBg="#f0fdf4" 
                    iconColor="#15803d" 
                 />
                 <StatCard 
                     icon={PieChart} 
-                    label="Total Unq Visitors" 
-                    value={stats.totalUnique} 
-                    sub="Total unique base" 
+                    label="International Members" 
+                    value={stats.intlUsers} 
+                    sub="Global users" 
                     iconBg="#f5f3ff" 
                     iconColor="#6d28d9" 
-                    onClick={() => setActiveTab('visitors')}
+                    onClick={() => setActiveTab('analytics')}
                 />
             </div>
 
@@ -176,16 +157,16 @@ const OverviewTab = ({ setActiveTab }) => {
                         <button onClick={() => setActiveTab('users')} style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>View all <ArrowRight size={12} /></button>
                     </div>
                     {activity.length === 0 ? (
-                        <p style={{ textAlign: 'center', color: '#aaa', padding: '40px 0', fontSize: 13 }}>No recent activity</p>
+                        <p style={{ textAlign: 'center', color: '#aaa', padding: '40px 0', fontSize: 13 }}>No recent sign-ups</p>
                     ) : activity.map((u, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: i < activity.length - 1 ? '1px solid #f5f5f5' : 'none' }}>
-                            <Avatar name={`${u.first_name || 'U'} ${u.last_name || 'N'}`} size={34} />
+                            <Avatar name={u.full_name || u.email || 'U N'} size={34} />
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.first_name} {u.last_name}</p>
+                                <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: '#1a1a1a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.full_name || 'Anonymous Member'}</p>
                                 <p style={{ margin: 0, fontSize: 11, color: '#999', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                                <span style={S.badge(u.payment_status)}>{u.payment_status || 'pending'}</span>
+                                <span style={S.badge(u.status ? 'active' : 'cancelled')}>{u.status ? 'Active' : 'Suspended'}</span>
                                 <span style={{ fontSize: 10, color: '#ccc' }}>{fmtDT(u.created_at)}</span>
                             </div>
                         </div>
@@ -197,7 +178,7 @@ const OverviewTab = ({ setActiveTab }) => {
                     <p style={{ fontWeight: 800, fontSize: 15, marginBottom: 16, margin: '0 0 16px' }}>Quick Actions</p>
                     {[
                         { label: 'Manage Users', sub: 'Edit & view accounts', tab: 'users', icon: Users },
-                        { label: 'View Payments', sub: 'Revenue details', tab: 'payments', icon: CreditCard },
+                        { label: 'Account Access', sub: 'Status breakdown', tab: 'payments', icon: Shield },
                         { label: 'Analytics', sub: 'Growth trends', tab: 'analytics', icon: BarChart3 },
                     ].map(({ label, sub, tab, icon: Icon }) => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
@@ -249,8 +230,12 @@ const UsersTab = () => {
 
     const filtered = users.filter(u => {
         const q = search.toLowerCase();
-        const matchQ = !q || u.email?.toLowerCase().includes(q) || u.first_name?.toLowerCase().includes(q) || u.last_name?.toLowerCase().includes(q);
-        const matchF = filter === 'all' || u.payment_status === filter || (filter === 'admin' && u.role === 'admin');
+        const matchQ = !q || u.email?.toLowerCase().includes(q) || u.full_name?.toLowerCase().includes(q) || u.country?.toLowerCase().includes(q);
+        const matchF = filter === 'all' 
+            || (filter === 'active' && u.status === true)
+            || (filter === 'inactive' && u.status === false)
+            || (filter === 'admin' && u.role === 'admin')
+            || (filter === 'user' && u.role === 'user');
         return matchQ && matchF;
     });
 
@@ -258,15 +243,18 @@ const UsersTab = () => {
     const paged = filtered.slice((page - 1) * PER, page * PER);
 
     const saveEdit = async () => {
+        const targetStatus = editForm.status === 'true' || editForm.status === true;
         const { error } = await supabase.from('profiles').update({
-            first_name: editForm.first_name, last_name: editForm.last_name,
-            payment_status: editForm.payment_status, role: editForm.role,
-            subscription_end_date: editForm.subscription_end_date || null,
+            full_name: editForm.full_name,
+            role: editForm.role,
+            status: targetStatus,
+            country: editForm.country,
+            updated_at: new Date().toISOString()
         }).eq('id', editUser.id);
         if (error) { showToast('Update failed', 'error'); return; }
-        setUsers(p => p.map(u => u.id === editUser.id ? { ...u, ...editForm } : u));
+        setUsers(p => p.map(u => u.id === editUser.id ? { ...u, ...editForm, status: targetStatus } : u));
         setEditUser(null);
-        showToast('User updated');
+        showToast('User updated successfully');
     };
 
     const doDelete = async () => {
@@ -274,10 +262,10 @@ const UsersTab = () => {
         if (error) { showToast('Delete failed', 'error'); return; }
         setUsers(p => p.filter(u => u.id !== delUser.id));
         setDelUser(null);
-        showToast('User deleted');
+        showToast('User deleted successfully');
     };
 
-    const paidCount = users.filter(u => u.role !== 'admin' && ['completed', 'paid', 'active'].includes(u.payment_status)).length;
+    const activeCount = users.filter(u => u.status === true).length;
     const adminCount = users.filter(u => u.role === 'admin').length;
 
     return (
@@ -287,9 +275,9 @@ const UsersTab = () => {
             {/* Summary */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 20 }}>
                 {[
-                    { label: 'Total Users', val: users.length, bg: '#dbeafe', col: '#1d4ed8' },
-                    { label: 'Paid', val: paidCount, bg: '#d1fae5', col: '#059669' },
-                    { label: 'Pending', val: users.filter(u => u.role !== 'admin' && u.payment_status === 'pending').length, bg: '#e9f1ff', col: '#2C76FF' },
+                    { label: 'Total Members', val: users.length, bg: '#dbeafe', col: '#1d4ed8' },
+                    { label: 'Active', val: activeCount, bg: '#d1fae5', col: '#059669' },
+                    { label: 'Suspended', val: users.length - activeCount, bg: '#fee2e2', col: '#dc2626' },
                     { label: 'Admins', val: adminCount, bg: '#ede9fe', col: '#7c3aed' },
                 ].map(({ label, val, bg, col }) => (
                     <div key={label} style={{ background: bg, borderRadius: 12, padding: '14px 18px' }}>
@@ -305,13 +293,13 @@ const UsersTab = () => {
                 <div style={{ padding: '14px 18px', borderBottom: '1px solid #f0f0f0', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                     <div style={{ position: 'relative', flex: '1 1 200px', maxWidth: 280 }}>
                         <Search size={14} color="#aaa" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }} />
-                        <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name or email…" style={{ ...S.input, paddingLeft: 32 }} />
+                        <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name, email or country…" style={{ ...S.input, paddingLeft: 32 }} />
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>
-                        {['all', 'completed', 'pending', 'admin'].map(f => (
+                        {['all', 'active', 'inactive', 'admin'].map(f => (
                             <button key={f} onClick={() => { setFilter(f); setPage(1); }}
                                 style={{ padding: '7px 13px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', background: filter === f ? '#29FE29' : '#f0f0f0', color: filter === f ? '#fff' : '#555', textTransform: 'capitalize' }}>
-                                {f === 'all' ? 'All' : f}
+                                {f}
                             </button>
                         ))}
                     </div>
@@ -325,7 +313,7 @@ const UsersTab = () => {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr>
-                                {['User', 'Mobile', 'Payment', 'Role', 'Joined', 'Sub End', 'Actions'].map(h => (
+                                {['User', 'Country', 'Status', 'Role', 'Registered', 'Last Updated', 'Actions'].map(h => (
                                     <th key={h} style={S.th}>{h}</th>
                                 ))}
                             </tr>
@@ -341,18 +329,18 @@ const UsersTab = () => {
                                 <tr key={u.id} onMouseEnter={e => e.currentTarget.style.background = '#fafafa'} onMouseLeave={e => e.currentTarget.style.background = ''}>
                                     <td style={S.td}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                            <Avatar name={`${u.first_name} ${u.last_name}`} size={30} />
+                                            <Avatar name={u.full_name || u.email || 'U N'} size={30} />
                                             <div>
-                                                <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: '#1a1a1a' }}>{u.first_name} {u.last_name}</p>
+                                                <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: '#1a1a1a' }}>{u.full_name || 'Anonymous Member'}</p>
                                                 <p style={{ margin: 0, fontSize: 11, color: '#999', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td style={{ ...S.td, fontSize: 12, color: '#777' }}>{u.country_code} {u.mobile_number}</td>
-                                    <td style={S.td}><span style={S.badge(u.payment_status)}>{u.payment_status || 'pending'}</span></td>
+                                    <td style={{ ...S.td, fontSize: 12, color: '#777' }}>{u.country || '—'}</td>
+                                    <td style={S.td}><span style={S.badge(u.status ? 'active' : 'cancelled')}>{u.status ? 'Active' : 'Suspended'}</span></td>
                                     <td style={S.td}><span style={S.badge(u.role || 'user')}>{u.role || 'user'}</span></td>
                                     <td style={{ ...S.td, fontSize: 12, color: '#888', whiteSpace: 'nowrap' }}>{fmtDate(u.created_at)}</td>
-                                    <td style={{ ...S.td, fontSize: 12, color: '#888', whiteSpace: 'nowrap' }}>{fmtDate(u.subscription_end_date)}</td>
+                                    <td style={{ ...S.td, fontSize: 12, color: '#888', whiteSpace: 'nowrap' }}>{fmtDate(u.updated_at)}</td>
                                     <td style={{ ...S.td, textAlign: 'center' }}>
                                         <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
                                             <button onClick={() => { setEditUser(u); setEditForm({ ...u }); }} style={{ padding: 6, borderRadius: 7, border: 'none', background: '#f0f0f0', cursor: 'pointer' }} title="Edit"><Edit3 size={13} color="#555" /></button>
@@ -383,21 +371,20 @@ const UsersTab = () => {
                     <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 460, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
                         <div style={{ padding: '18px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <Avatar name={`${editUser.first_name} ${editUser.last_name}`} size={38} />
+                                <Avatar name={editUser.full_name || 'U N'} size={38} />
                                 <div><p style={{ margin: 0, fontWeight: 800, color: '#1a1a1a', fontSize: 14 }}>Edit User</p><p style={{ margin: 0, fontSize: 12, color: '#999' }}>{editUser.email}</p></div>
                             </div>
                             <button onClick={() => setEditUser(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={18} color="#aaa" /></button>
                         </div>
                         <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                                {[['First Name', 'first_name'], ['Last Name', 'last_name']].map(([label, key]) => (
-                                    <div key={key}><label style={{ fontSize: 11, fontWeight: 700, color: '#888', display: 'block', marginBottom: 4 }}>{label}</label>
-                                        <input value={editForm[key] || ''} onChange={e => setEditForm(f => ({ ...f, [key]: e.target.value }))} style={S.input} /></div>
-                                ))}
+                            <div>
+                                <label style={{ fontSize: 11, fontWeight: 700, color: '#888', display: 'block', marginBottom: 4 }}>Full Name</label>
+                                <input value={editForm.full_name || ''} onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))} style={S.input} />
                             </div>
-                            <div><label style={{ fontSize: 11, fontWeight: 700, color: '#888', display: 'block', marginBottom: 4 }}>Payment Status</label>
-                                <select value={editForm.payment_status || 'pending'} onChange={e => setEditForm(f => ({ ...f, payment_status: e.target.value }))} style={S.select}>
-                                    <option value="pending">Pending</option><option value="completed">Completed</option><option value="failed">Failed</option>
+                            <div><label style={{ fontSize: 11, fontWeight: 700, color: '#888', display: 'block', marginBottom: 4 }}>Account Status</label>
+                                <select value={editForm.status !== undefined ? String(editForm.status) : 'true'} onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))} style={S.select}>
+                                    <option value="true">Active</option>
+                                    <option value="false">Suspended</option>
                                 </select>
                             </div>
                             <div><label style={{ fontSize: 11, fontWeight: 700, color: '#888', display: 'block', marginBottom: 4 }}>Role</label>
@@ -405,8 +392,9 @@ const UsersTab = () => {
                                     <option value="user">User</option><option value="admin">Admin</option>
                                 </select>
                             </div>
-                            <div><label style={{ fontSize: 11, fontWeight: 700, color: '#888', display: 'block', marginBottom: 4 }}>Subscription End Date</label>
-                                <input type="date" value={editForm.subscription_end_date ? editForm.subscription_end_date.split('T')[0] : ''} onChange={e => setEditForm(f => ({ ...f, subscription_end_date: e.target.value }))} style={S.input} />
+                            <div>
+                                <label style={{ fontSize: 11, fontWeight: 700, color: '#888', display: 'block', marginBottom: 4 }}>Country</label>
+                                <input value={editForm.country || ''} onChange={e => setEditForm(f => ({ ...f, country: e.target.value }))} style={S.input} />
                             </div>
                         </div>
                         <div style={{ padding: '0 20px 18px', display: 'flex', gap: 10 }}>
@@ -423,7 +411,7 @@ const UsersTab = () => {
                     <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 360, padding: 24, textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
                         <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Trash2 size={22} color="#dc2626" /></div>
                         <p style={{ fontWeight: 900, fontSize: 16, margin: '0 0 6px', color: '#1a1a1a' }}>Delete User?</p>
-                        <p style={{ fontSize: 13, color: '#666', margin: '0 0 20px' }}><strong>{delUser.first_name} {delUser.last_name}</strong> ({delUser.email}) will be permanently removed.</p>
+                        <p style={{ fontSize: 13, color: '#666', margin: '0 0 20px' }}><strong>{delUser.full_name || 'Anonymous Member'}</strong> ({delUser.email}) will be permanently removed.</p>
                         <div style={{ display: 'flex', gap: 10 }}>
                             <button onClick={() => setDelUser(null)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1.5px solid #e0e0e0', background: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>Cancel</button>
                             <button onClick={doDelete} style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>Delete</button>
@@ -432,6 +420,81 @@ const UsersTab = () => {
                 </div>
             )}
             <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        </div>
+    );
+};
+
+// ── Visitors Tab ─────────────────────────────────────────────────────────────
+const VisitorsTab = () => {
+    const [profiles, setProfiles] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        (async () => {
+            setLoading(true);
+            try {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .order('updated_at', { ascending: false });
+                setProfiles(data || []);
+            } catch (e) { console.error(e); }
+            setLoading(false);
+        })();
+    }, []);
+
+    return (
+        <div>
+            <div style={{ ...S.card, overflow: 'hidden' }}>
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0' }}>
+                    <span style={{ fontWeight: 800, color: '#1e2d4a', fontSize: 14 }}>Recently Active Members</span>
+                    <p style={{ margin: '4px 0 0', fontSize: 11, color: '#999' }}>Real-time updates of profiles modified or created in your database</p>
+                </div>
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead>
+                            <tr>{['Member', 'Role', 'Status', 'Location', 'Last Updated'].map(h => <th key={h} style={S.th}>{h}</th>)}</tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan={5} style={{ ...S.td, textAlign: 'center', padding: '50px 0', color: '#aaa' }}>Loading members…</td></tr>
+                            ) : profiles.length === 0 ? (
+                                <tr><td colSpan={5} style={{ ...S.td, textAlign: 'center', padding: '50px 0', color: '#aaa' }}>No members registered yet</td></tr>
+                            ) : profiles.map((p, i) => (
+                                <tr key={i} onMouseEnter={e => e.currentTarget.style.background = '#fafafa'} onMouseLeave={e => e.currentTarget.style.background = ''}>
+                                    <td style={S.td}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                            <Avatar name={p.full_name || 'A'} size={28} />
+                                            <div>
+                                                <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: '#1a1a1a' }}>
+                                                    {p.full_name || 'Anonymous Member'}
+                                                </p>
+                                                <p style={{ margin: 0, fontSize: 10, color: '#aaa' }}>{p.email}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style={S.td}>
+                                        <span style={S.badge(p.role || 'user')}>
+                                            {p.role || 'user'}
+                                        </span>
+                                    </td>
+                                    <td style={S.td}>
+                                        <span style={S.badge(p.status ? 'active' : 'cancelled')}>
+                                            {p.status ? 'Active' : 'Suspended'}
+                                        </span>
+                                    </td>
+                                    <td style={S.td}>
+                                        <span style={S.badge(p.country?.toLowerCase().includes('united states') ? 'india' : 'international')}>
+                                            {p.country || 'Unknown'}
+                                        </span>
+                                    </td>
+                                    <td style={{ ...S.td, fontSize: 12, color: '#888', whiteSpace: 'nowrap' }}>{fmtDT(p.updated_at || p.created_at)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 };
@@ -445,64 +508,63 @@ const PaymentsTab = () => {
     useEffect(() => {
         (async () => {
             setLoading(true);
-            const { data } = await supabase.from('profiles').select('id,email,first_name,last_name,payment_status,created_at,subscription_end_date,transaction_id,order_id,promo_code').order('created_at', { ascending: false });
+            const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
             setProfiles(data || []);
             setLoading(false);
         })();
     }, []);
 
-    const paid = profiles.filter(p => p.role !== 'admin' && ['completed', 'paid', 'active'].includes(p.payment_status));
+    const activeCount = profiles.filter(p => p.status === true).length;
     const filtered = profiles.filter(p => {
         const q = search.toLowerCase();
-        return !q || p.email?.toLowerCase().includes(q) || p.first_name?.toLowerCase().includes(q) || p.last_name?.toLowerCase().includes(q);
+        return !q || p.email?.toLowerCase().includes(q) || p.full_name?.toLowerCase().includes(q) || p.country?.toLowerCase().includes(q);
     });
 
     return (
         <div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 20 }}>
-                <StatCard icon={DollarSign} label="Est. Revenue" value={fmt$(paid.length * 39.99)} sub={`${paid.length} paid users`} iconBg="#d1fae5" iconColor="#059669" />
-                <StatCard icon={CheckCircle} label="Completed Payments" value={paid.length} sub="Active" iconBg="#dbeafe" iconColor="#1d4ed8" />
-                <StatCard icon={Clock} label="Pending Payments" value={profiles.filter(p => p.payment_status === 'pending').length} sub="Awaiting" iconBg="#e9f1ff" iconColor="#2C76FF" />
+                <StatCard icon={Shield} label="Granted Access" value={activeCount} sub="Active accounts" iconBg="#d1fae5" iconColor="#059669" />
+                <StatCard icon={XCircle} label="Revoked Access" value={profiles.length - activeCount} sub="Suspended accounts" iconBg="#fee2e2" iconColor="#dc2626" />
+                <StatCard icon={Users} label="Total Members" value={profiles.length} sub="Profiles database" iconBg="#e9f1ff" iconColor="#2C76FF" />
             </div>
 
             <div style={{ ...S.card, overflow: 'hidden' }}>
                 <div style={{ padding: '14px 18px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ position: 'relative', flex: '1 1 200px', maxWidth: 280 }}>
                         <Search size={14} color="#aaa" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }} />
-                        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search user…" style={{ ...S.input, paddingLeft: 32 }} />
+                        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search member…" style={{ ...S.input, paddingLeft: 32 }} />
                     </div>
-                    <span style={{ marginLeft: 'auto', fontSize: 12, color: '#aaa' }}>{filtered.length} records</span>
+                    <span style={{ marginLeft: 'auto', fontSize: 12, color: '#aaa' }}>{filtered.length} profiles</span>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr>{['User', 'Status', 'Transaction ID', 'Order ID', 'Promo', 'Joined', 'Sub End'].map(h => <th key={h} style={S.th}>{h}</th>)}</tr>
+                            <tr>{['Member', 'Status', 'Role', 'Country', 'Registered', 'Last Updated'].map(h => <th key={h} style={S.th}>{h}</th>)}</tr>
                         </thead>
                         <tbody>
-                            {loading ? <tr><td colSpan={7} style={{ ...S.td, textAlign: 'center', padding: '50px 0', color: '#aaa' }}>Loading…</td></tr>
+                            {loading ? <tr><td colSpan={6} style={{ ...S.td, textAlign: 'center', padding: '50px 0', color: '#aaa' }}>Loading…</td></tr>
                                 : filtered.map(p => (
                                     <tr key={p.id} onMouseEnter={e => e.currentTarget.style.background = '#fafafa'} onMouseLeave={e => e.currentTarget.style.background = ''}>
                                         <td style={S.td}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                                                <Avatar name={`${p.first_name || 'U'} ${p.last_name || 'N'}`} size={28} />
+                                                <Avatar name={p.full_name || 'U N'} size={28} />
                                                 <div>
-                                                    <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: p.payment_status === 'failed' ? '#dc2626' : '#1a1a1a' }}>
-                                                        {p.first_name} {p.last_name}
+                                                    <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: !p.status ? '#dc2626' : '#1a1a1a' }}>
+                                                        {p.full_name || 'Anonymous Member'}
                                                     </p>
                                                     <p style={{ margin: 0, fontSize: 11, color: '#999' }}>{p.email}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td style={S.td}>
-                                            <span style={S.badge(p.payment_status || 'pending')}>
-                                                {p.payment_status || 'pending'}
+                                            <span style={S.badge(p.status ? 'active' : 'cancelled')}>
+                                                {p.status ? 'Active' : 'Suspended'}
                                             </span>
                                         </td>
-                                        <td style={{ ...S.td, fontSize: 11, fontFamily: 'monospace', color: '#777' }}>{p.transaction_id || '—'}</td>
-                                        <td style={{ ...S.td, fontSize: 11, fontFamily: 'monospace', color: '#777' }}>{p.order_id || '—'}</td>
-                                        <td style={{ ...S.td, fontSize: 12, color: '#777' }}>{p.promo_code || '—'}</td>
+                                        <td style={S.td}><span style={S.badge(p.role || 'user')}>{p.role || 'user'}</span></td>
+                                        <td style={{ ...S.td, fontSize: 12, color: '#777' }}>{p.country || '—'}</td>
                                         <td style={{ ...S.td, fontSize: 12, color: '#888', whiteSpace: 'nowrap' }}>{fmtDate(p.created_at)}</td>
-                                        <td style={{ ...S.td, fontSize: 12, color: '#888', whiteSpace: 'nowrap' }}>{fmtDate(p.subscription_end_date)}</td>
+                                        <td style={{ ...S.td, fontSize: 12, color: '#888', whiteSpace: 'nowrap' }}>{fmtDT(p.updated_at)}</td>
                                     </tr>
                                 ))}
                         </tbody>
@@ -521,7 +583,7 @@ const AnalyticsTab = () => {
     useEffect(() => {
         (async () => {
             setLoading(true);
-            const { data: rows } = await supabase.from('profiles').select('created_at,payment_status,role').order('created_at', { ascending: true });
+            const { data: rows } = await supabase.from('profiles').select('created_at,role,status').order('created_at', { ascending: true });
             setData(rows || []);
             setLoading(false);
         })();
@@ -537,8 +599,8 @@ const AnalyticsTab = () => {
 
     const maxC = Math.max(...months.map(m => m.count), 1);
     const total = data.length;
-    const paidC = data.filter(d => d.role !== 'admin' && ['completed', 'paid', 'active'].includes(d.payment_status)).length;
-    const pendC = data.filter(d => d.role !== 'admin' && d.payment_status === 'pending').length;
+    const activeC = data.filter(d => d.status === true).length;
+    const suspendedC = total - activeC;
     const adminC = data.filter(d => d.role === 'admin').length;
 
     return (
@@ -552,7 +614,7 @@ const AnalyticsTab = () => {
                         <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                             <span style={{ fontSize: 11, fontWeight: 700, color: '#555' }}>{m.count}</span>
                             <div style={{ width: '100%', background: '#f0f0f0', borderRadius: 6, height: 80, display: 'flex', alignItems: 'flex-end', overflow: 'hidden' }}>
-                                <div style={{ width: '100%', background: 'linear-gradient(to top, #29FE29, #6366f1)', borderRadius: 6, height: `${(m.count / maxC) * 100}%`, minHeight: m.count > 0 ? 4 : 0, transition: 'height 0.6s' }} />
+                                <div style={{ width: '100%', background: 'linear-gradient(to top, #29FE29, #6366f1)', borderRadius: 6, height: `${(m.count / maxC) * 80}%`, minHeight: m.count > 0 ? 4 : 0, transition: 'height 0.6s' }} />
                             </div>
                             <span style={{ fontSize: 10, color: '#aaa', fontWeight: 600 }}>{m.label}</span>
                         </div>
@@ -562,21 +624,25 @@ const AnalyticsTab = () => {
 
             {/* Pie chart */}
             <div style={{ ...S.card, padding: 20 }}>
-                <p style={{ fontWeight: 800, color: '#1e2d4a', margin: '0 0 4px', fontSize: 14 }}>Payment Distribution</p>
+                <p style={{ fontWeight: 800, color: '#1e2d4a', margin: '0 0 4px', fontSize: 14 }}>Account Distribution</p>
                 <p style={{ fontSize: 11, color: '#aaa', margin: '0 0 20px' }}>All-time breakdown</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
                     <svg width={100} height={100} viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', flexShrink: 0 }}>
                         <circle cx={50} cy={50} r={38} fill="none" stroke="#f0f0f0" strokeWidth={10} />
-                        {total > 0 && <circle cx={50} cy={50} r={38} fill="none" stroke="#10b981" strokeWidth={10} strokeDasharray={`${(paidC / total) * 238.76} 238.76`} />}
-                        {total > 0 && <circle cx={50} cy={50} r={38} fill="none" stroke="#2C76FF" strokeWidth={10} strokeDasharray={`${(pendC / total) * 238.76} 238.76`} strokeDashoffset={`-${(paidC / total) * 238.76}`} />}
+                        {total > 0 && <circle cx={50} cy={50} r={38} fill="none" stroke="#10b981" strokeWidth={10} strokeDasharray={`${(activeC / total) * 238.76} 238.76`} />}
+                        {total > 0 && <circle cx={50} cy={50} r={38} fill="none" stroke="#dc2626" strokeWidth={10} strokeDasharray={`${(suspendedC / total) * 238.76} 238.76`} strokeDashoffset={`-${(activeC / total) * 238.76}`} />}
                     </svg>
                     <div>
                         <p style={{ margin: 0, fontSize: 22, fontWeight: 900, color: '#1e2d4a' }}>{total}</p>
-                        <p style={{ margin: '2px 0 12px', fontSize: 11, color: '#aaa' }}>Total users</p>
-                        {[['Paid', paidC, '#10b981'], ['Pending', pendC, '#2C76FF'], ['Admins', adminC, '#8b5cf6']].map(([label, count, col]) => (
+                        <p style={{ margin: '2px 0 12px', fontSize: 11, color: '#aaa' }}>Total profiles</p>
+                        {[
+                            { label: 'Active', count: activeC, col: '#10b981' },
+                            { label: 'Suspended', count: suspendedC, col: '#dc2626' },
+                            { label: 'Admins', count: adminC, col: '#8b5cf6' }
+                        ].map(({ label, count, col }) => (
                             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: col, flexShrink: 0 }} />
-                                <span style={{ fontSize: 12, color: '#555', width: 52 }}>{label}</span>
+                                <span style={{ fontSize: 12, color: '#555', width: 68 }}>{label}</span>
                                 <span style={{ fontWeight: 800, fontSize: 13, color: '#1a1a1a' }}>{count}</span>
                                 <span style={{ fontSize: 11, color: '#aaa' }}>({total > 0 ? ((count / total) * 100).toFixed(1) : 0}%)</span>
                             </div>
@@ -585,95 +651,6 @@ const AnalyticsTab = () => {
                 </div>
             </div>
             <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-        </div>
-    );
-};
-
-// ── Visitors Tab ─────────────────────────────────────────────────────────────
-const VisitorsTab = () => {
-    const [visitors, setVisitors] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        (async () => {
-            setLoading(true);
-            try {
-                // Fetch site visits
-                const { data } = await supabase
-                    .from('site_visits')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                // Fetch admin emails to filter them out
-                const { data: admins } = await supabase.from('profiles').select('email').eq('role', 'admin');
-                const adminEmails = new Set(admins?.map(a => a.email) || []);
-
-                const uniqueBySession = [];
-                const seen = new Set();
-                (data || []).forEach(v => {
-                    // Filter out ADMINS, admin pages, and ensure uniqueness
-                    if (!seen.has(v.session_id) && !adminEmails.has(v.user_email) && !v.path.startsWith('/admin')) {
-                        seen.add(v.session_id);
-                        uniqueBySession.push(v);
-                    }
-                });
-                setVisitors(uniqueBySession);
-            } catch (e) { console.error(e); }
-            setLoading(false);
-        })();
-    }, []);
-
-    return (
-        <div>
-            <div style={{ ...S.card, overflow: 'hidden' }}>
-                <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ fontWeight: 800, color: '#1e2d4a', fontSize: 14 }}>Unique Visitor Logs</span>
-                    <p style={{ margin: '4px 0 0', fontSize: 11, color: '#999' }}>Real-time list of people browsing your site</p>
-                </div>
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr>{['Visitor', 'Status', 'Location', 'Last Path', 'Last Seen'].map(h => <th key={h} style={S.th}>{h}</th>)}</tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr><td colSpan={5} style={{ ...S.td, textAlign: 'center', padding: '50px 0', color: '#aaa' }}>Loading visitors…</td></tr>
-                            ) : visitors.length === 0 ? (
-                                <tr><td colSpan={5} style={{ ...S.td, textAlign: 'center', padding: '50px 0', color: '#aaa' }}>No visitors tracked yet</td></tr>
-                            ) : visitors.map((v, i) => (
-                                <tr key={i} onMouseEnter={e => e.currentTarget.style.background = '#fafafa'} onMouseLeave={e => e.currentTarget.style.background = ''}>
-                                    <td style={S.td}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                            <Avatar name={v.user_email || 'A'} size={28} />
-                                            <div>
-                                                <p style={{ margin: 0, fontWeight: 700, fontSize: 13, color: v.user_email ? '#29FE29' : '#666' }}>
-                                                    {v.user_email || 'Anonymous Guest'}
-                                                </p>
-                                                <p style={{ margin: 0, fontSize: 10, color: '#aaa', fontFamily: 'monospace' }}>ID: {v.session_id.slice(0, 8)}...</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td style={S.td}>
-                                        <span style={S.badge(v.user_email ? 'user' : 'anonymous')}>
-                                            {v.user_email ? 'Logged In' : 'Anonymous'}
-                                        </span>
-                                    </td>
-                                    <td style={S.td}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                            <span style={S.badge(v.country === 'India' ? 'india' : 'international')}>
-                                                {v.country || 'Unknown'}
-                                            </span>
-                                            {v.country && v.country !== 'India' && <span style={{ fontSize: 13 }}>✈️</span>}
-                                        </div>
-                                    </td>
-                                    <td style={{ ...S.td, fontSize: 12, color: '#6366f1', fontWeight: 600 }}>{v.path}</td>
-                                    <td style={{ ...S.td, fontSize: 12, color: '#888', whiteSpace: 'nowrap' }}>{fmtDT(v.created_at)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     );
 };
@@ -709,11 +686,11 @@ const AdminDashboard = () => {
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'users', label: 'User Management', icon: Users },
         { id: 'visitors', label: 'Visitor Logs', icon: Activity },
-        { id: 'payments', label: 'Payments', icon: CreditCard },
+        { id: 'payments', label: 'Account Access', icon: Shield },
         { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     ];
 
-    const titles = { overview: 'Dashboard Overview', users: 'User Management', visitors: 'Visitor Logs', payments: 'Payments', analytics: 'Analytics' };
+    const titles = { overview: 'Dashboard Overview', users: 'User Management', visitors: 'Visitor Logs', payments: 'Account Access', analytics: 'Analytics' };
 
     const handleNavClick = (id) => {
         setActiveTab(id);
@@ -742,11 +719,11 @@ const AdminDashboard = () => {
                 {/* Logo */}
                 <div style={S.logo}>
                     <div style={{ width: 36, height: 36, background: '#29FE29', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Shield size={16} color="#2C76FF" />
+                        <Shield size={16} color="#fff" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ margin: 0, fontWeight: 900, color: '#1e2d4a', fontSize: 13, lineHeight: 1.2 }}>Admin</p>
-                        <p style={{ margin: 0, fontSize: 10, color: '#aaa' }}>WageTrail Console</p>
+                        <p style={{ margin: 0, fontSize: 10, color: '#aaa' }}>Career Partner Console</p>
                     </div>
                     {/* Close button on mobile */}
                     {isMobile() && (
@@ -764,7 +741,7 @@ const AdminDashboard = () => {
                             <button key={id} onClick={() => handleNavClick(id)} style={S.navBtn(active)}
                                 onMouseEnter={e => { if (!active) e.currentTarget.style.background = '#f5f5f5'; }}
                                 onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}>
-                                <Icon size={16} color={active ? '#2C76FF' : '#888'} />
+                                <Icon size={16} color={active ? '#fff' : '#888'} />
                                 {label}
                             </button>
                         );
@@ -803,7 +780,7 @@ const AdminDashboard = () => {
                     </button>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ margin: 0, fontWeight: 900, color: '#1e2d4a', fontSize: 16, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{titles[activeTab]}</p>
-                        <p style={{ margin: 0, fontSize: 11, color: '#aaa' }}>WageTrail Admin Dashboard</p>
+                        <p style={{ margin: 0, fontSize: 11, color: '#aaa' }}>Career Partner Admin Dashboard</p>
                     </div>
                     <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#ede9fe', borderRadius: 20, padding: '4px 10px' }}>

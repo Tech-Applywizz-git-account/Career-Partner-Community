@@ -9,9 +9,9 @@ export async function fetchAllCompanies(countries, startDate = null, endDate = n
   const activeCountries = Array.isArray(countries) ? countries : (countries ? [countries] : []);
   const { data, error } = await supabase.rpc('get_companies_fast_json', {
     p_countries: activeCountries.length > 0 ? activeCountries : null,
-    p_search:  null,
+    p_search: null,
     p_start_date: startDate || null,
-    p_end_date:   endDate || null,
+    p_end_date: endDate || null,
   });
 
   if (error) {
@@ -30,9 +30,9 @@ export async function fetchAllDomains(countries, startDate = null, endDate = nul
   const activeCountries = Array.isArray(countries) ? countries : (countries ? [countries] : []);
   const { data, error } = await supabase.rpc('get_domains_fast_json', {
     p_countries: activeCountries.length > 0 ? activeCountries : null,
-    p_search:  null,
+    p_search: null,
     p_start_date: startDate || null,
-    p_end_date:   endDate || null,
+    p_end_date: endDate || null,
   });
 
   if (error) {

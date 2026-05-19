@@ -1,8 +1,9 @@
 const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
 // Initialize Supabase client
-const supabaseUrl = 'https://lcoudctoaizjmrcvgjvk.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxjb3VkY3RvYWl6am1yY3ZnanZrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDgxNzA3OCwiZXhwIjoyMDgwMzkzMDc4fQ.59n1dclA6JdMnhZ7IwT8vRJoKc1tYmGJM1dQuRX2Pu8';
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function testEmail() {

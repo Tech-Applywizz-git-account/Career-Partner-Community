@@ -17,6 +17,26 @@ import { COUNTRY_MAP, PRIORITY } from '../utils/countryHelper';
 
 const JOBS_PER_PAGE = 15;
 
+const LIGHTWEIGHT_COLUMNS = 'id, role_id, role_name, indeed_search_country, country, location, title, company_name, job_url, job_url_direct, date_posted, is_remote, created_at, job_id, source, salary';
+
+// Helper to identify if a job is in the IT / Tech field
+function isITJob(job) {
+    if (!job) return false;
+    const title = String(job.title || job.role || '').toLowerCase();
+    const roleName = String(job.role_name || job.job_role_name || '').toLowerCase();
+    const keyword = String(job.indeed_search_keyword || '').toLowerCase();
+
+    const techKeywords = [
+        'software', 'engineer', 'developer', 'programmer', 'tech', 'it', 'coder', 'web', 'frontend', 'backend',
+        'fullstack', 'data', 'cloud', 'aws', 'azure', 'devops', 'cyber', 'security', 'analyst', 'system',
+        'network', 'database', 'sql', 'python', 'java', 'javascript', 'react', 'node', 'ai', 'ml', 'intelligence',
+        'machine learning', 'scrum', 'agile', 'qa', 'test', 'automation', 'sap', 'oracle', 'salesforce', 'dynamics',
+        'ux', 'ui', 'product manager', 'project manager', 'solution architect', 'infrastructure'
+    ];
+
+    return techKeywords.some(kw => title.includes(kw) || roleName.includes(kw) || keyword.includes(kw));
+}
+
 // Helper to extract numeric level (1, 2, 3, 4) from strings like "Lv 3", "Level III", "3", etc.
 function parseWageLevel(lvl) {
     if (!lvl) return null;
@@ -568,115 +588,112 @@ const AllJobsTab = ({
             return { ...j, _isEligible: isEligible, _timestamp: timestamp, _wageLvl: wageLvl, _filings: filings, _isFresh: isFresh, _uk: _urlKey(j.url) };
         });
 
-        // 3. Sorting helpers
+        // 3. Sorting helpers for within each company and unranked jobs
         const jobSorter = (a, b) => {
+            // Priority 1: IT / Tech related jobs first
+            const aIT = isITJob(a);
+            const bIT = isITJob(b);
+            if (bIT !== aIT) return bIT ? 1 : -1;
+
             if (b._isEligible !== a._isEligible) return b._isEligible ? 1 : -1;
             if (b._timestamp !== a._timestamp) return b._timestamp - a._timestamp;
             if (b._wageLvl !== a._wageLvl) return b._wageLvl - a._wageLvl;
             return b._filings - a._filings;
         };
 
-        // 4. Lenient key lookup — LOCAL to this function only, does not affect isFamous/getCompanyRank.
-        //    Maps 'Google LLC', 'Google India Pvt Ltd' → 'google'
-        //    Maps 'Amazon Web Services India' → 'amazon web services' (longest match wins)
-        const _rankedLower = RANKED_COMPANIES.map(r => r.toLowerCase().trim());
-        const getInterleavingKey = (companyName) => {
-            if (!companyName) return null;
-            const n = companyName.toLowerCase().trim();
-            // Pass 1: exact match
-            for (const rl of _rankedLower) { if (n === rl) return rl; }
-            // Pass 2: company starts with ranked brand (e.g. 'google llc' starts with 'google ')
-            let bestKey = null, bestLen = 0;
-            for (const rl of _rankedLower) {
-                if (rl.length >= 4 && rl.length > bestLen && (n.startsWith(rl + ' ') || n.startsWith(rl + ','))) {
-                    bestKey = rl; bestLen = rl.length;
-                }
-            }
-            if (bestKey) return bestKey;
-            // Pass 3: company name contains a ranked brand as a substring (longest match wins)
-            for (const rl of _rankedLower) {
-                if (rl.length >= 5 && rl.length > bestLen && n.includes(rl)) {
-                    bestKey = rl; bestLen = rl.length;
-                }
-            }
-            return bestKey;
-        };
-
-        // 5. Group all jobs by their interleaving key (or "unranked" bucket)
-        const rankedGroupMap = new Map(); // key → jobs[]
+        // 4. Group by company rank index (ONLY if posted within 30 days)
+        const rankedGroupMap = new Map(); // rankIndex -> job[]
         const unrankedJobs = [];
+        const thirtyDaysAgoMs = Date.now() - (30 * 24 * 60 * 60 * 1000);
+
         enriched.forEach(j => {
-            const key = getInterleavingKey(j.company);
-            if (key) {
-                if (!rankedGroupMap.has(key)) rankedGroupMap.set(key, []);
-                rankedGroupMap.get(key).push(j);
+            const rank = getCompanyRank(j.company);
+            const isWithin30Days = j._timestamp >= thirtyDaysAgoMs;
+
+            if (rank !== Infinity && isWithin30Days) {
+                if (!rankedGroupMap.has(rank)) rankedGroupMap.set(rank, []);
+                rankedGroupMap.get(rank).push(j);
             } else {
                 unrankedJobs.push(j);
             }
         });
 
-        // Sort each company's jobs: fresh (≤3 days) first, then by jobSorter
-        rankedGroupMap.forEach(jobs => {
-            jobs.sort((a, b) => {
-                if (a._isFresh !== b._isFresh) return a._isFresh ? -1 : 1;
-                return jobSorter(a, b);
-            });
+        console.log("ALL_JOBS_TAB total jobs processed:", enriched.length);
+        console.log("ALL_JOBS_TAB rankedGroupMap keys:", Array.from(rankedGroupMap.keys()).map(r => `${RANKED_COMPANIES[r]} (rank ${r})`));
+
+        // 5. Sort each company group internally
+        rankedGroupMap.forEach((jobs) => {
+            jobs.sort(jobSorter);
         });
 
-        // 6. Build deduplicated ordered RANKED key list
-        const seenRankedKeys = new Set();
-        const rankedKeys = [];
-        _rankedLower.forEach(k => { if (!seenRankedKeys.has(k)) { seenRankedKeys.add(k); rankedKeys.push(k); } });
-
-        // 7. 3-round round-robin through RANKED_COMPANIES (cap = 3 per company)
-        //    Companies with no jobs in this batch are skipped automatically.
-        const MAX_PER_CO = 3;
-        const result = [];
+        // 6. Select up to 2 jobs from each famous company in order, and put the rest in a pool
+        const famousInterleavedList = [];
+        const remainingFamousJobs = [];
         const finalSeen = new Set();
-        const coUsedCount = new Map();
 
-        for (let round = 0; round < MAX_PER_CO; round++) {
-            for (const key of rankedKeys) {
-                const group = rankedGroupMap.get(key);
-                if (!group) continue;
-                const used = coUsedCount.get(key) || 0;
-                if (used >= MAX_PER_CO) continue;
-                const job = group.find(j => !finalSeen.has(j._uk));
-                if (!job) continue;
-                result.push(job);
-                finalSeen.add(job._uk);
-                coUsedCount.set(key, used + 1);
+        // Loop strictly through the entire FAMOUS_COMPANIES rank indices (0 to RANKED_COMPANIES.length - 1)
+        for (let rank = 0; rank < RANKED_COMPANIES.length; rank++) {
+            const group = rankedGroupMap.get(rank);
+            if (group && group.length > 0) {
+                const limit = Math.min(2, group.length);
+                for (let i = 0; i < limit; i++) {
+                    const job = group[i];
+                    if (!finalSeen.has(job._uk)) {
+                        famousInterleavedList.push(job);
+                        finalSeen.add(job._uk);
+                    }
+                }
+                for (let i = limit; i < group.length; i++) {
+                    const job = group[i];
+                    remainingFamousJobs.push(job);
+                }
             }
         }
 
-        // 8. Append unranked jobs (salary-first, then freshness)
-        unrankedJobs.sort(jobSorter).forEach(j => {
-            if (!finalSeen.has(j._uk)) { result.push(j); finalSeen.add(j._uk); }
-        });
+        // 7. Combine all unranked jobs and the remaining famous jobs
+        const otherJobs = [...unrankedJobs, ...remainingFamousJobs];
 
-        // 9. Country interleaving (preserve existing behaviour)
-        const countryGroups = new Map();
-        result.forEach(j => {
-            const c = (j.indeed_search_country || j.country || 'OTHER').toUpperCase();
-            if (!countryGroups.has(c)) countryGroups.set(c, []);
-            countryGroups.get(c).push(j);
+        // 8. Sort other (non-famous/unranked/remaining) companies' jobs using standard criteria
+        otherJobs.sort(jobSorter);
+
+        // 9. Combine: Prioritized famous list first, followed by other companies' list
+        const result = [...famousInterleavedList, ...otherJobs];
+        return result;
+    };
+
+    const expandCountries = (countriesList) => {
+        if (!countriesList || countriesList.length === 0) return [];
+        const expanded = new Set();
+        countriesList.forEach(c => {
+            const upper = String(c).toUpperCase().trim();
+            if (upper === 'USA' || upper === 'US' || upper === 'UNITED STATES') {
+                expanded.add('USA');
+                expanded.add('US');
+                expanded.add('us');
+                expanded.add('usa');
+                expanded.add('United States');
+                expanded.add('united states');
+                expanded.add('United States of America');
+                expanded.add('united states of america');
+                expanded.add('U.S.A.');
+                expanded.add('U.S.');
+                expanded.add('u.s.a.');
+                expanded.add('u.s.');
+            } else {
+                expanded.add(c);
+                expanded.add(String(c).toLowerCase());
+                expanded.add(String(c).toUpperCase());
+            }
         });
-        const countryKeys = Array.from(countryGroups.keys());
-        if (countryKeys.length <= 1) return result;
-        const mixedResult = [];
-        let maxLen = 0;
-        countryGroups.forEach(g => { if (g.length > maxLen) maxLen = g.length; });
-        for (let i = 0; i < maxLen; i++) {
-            for (const ck of countryKeys) { const g = countryGroups.get(ck); if (g[i]) mixedResult.push(g[i]); }
-        }
-        return mixedResult;
+        return Array.from(expanded);
     };
 
     // Main fetch function
     const fetchJobs = async (page, filter, search, level = 'all', countries = []) => {
         // Use fixed props if available to bypass fuzzy search
         const activeSearch = (fixedCompany || fixedDomain) ? '' : search;
-        const activeCountries = Array.isArray(countries) ? countries : (countries ? [countries] : []);
+        const rawCountries = Array.isArray(countries) ? countries : (countries ? [countries] : []);
+        const activeCountries = expandCountries(rawCountries);
 
         setLoading(true);
         setError(null);
@@ -692,11 +709,11 @@ const AllJobsTab = ({
                 ? 'all'
                 : `${dateFilter.from || ''}_${dateFilter.to || ''}`;
 
-            const countriesStr = activeCountries.length > 0 ? activeCountries.slice().sort().join(',') : 'all';
+            const rawCountriesStr = rawCountries.length > 0 ? rawCountries.slice().sort().join(',') : 'all';
             const fixedStr = (fixedCompany || 'none') + '_' + (fixedDomain || 'none');
-            const listCacheKey = `${filter}|${(activeSearch || '').trim().toLowerCase() || 'none'}|${levelStr}|${countriesStr}|${dateStr}|${fixedStr}`;
+            const listCacheKey = `${filter}|${(activeSearch || '').trim().toLowerCase() || 'none'}|${levelStr}|${rawCountriesStr}|${dateStr}|${fixedStr}`;
 
-            const LS_KEY = `ajt_v21_${listCacheKey}`; // bumped: company pagination fix
+            const LS_KEY = `ajt_v35_${listCacheKey}`; // bumped: company pagination fix / interleaved sorting update
             const LS_TTL_MS = 10 * 60 * 1000; // 10 minutes
             try {
                 const raw = localStorage.getItem(LS_KEY);
@@ -735,160 +752,76 @@ const AllJobsTab = ({
             }
 
             // ══════════════════════════════════════════════════════════════════════
-            // PROGRESSIVE LOADING  —  STALE WHILE REVALIDATE (SWR)
+            // UNIFIED DATABASE FETCH  —  STABLE & ULTRA-FAST
             // ══════════════════════════════════════════════════════════════════════
+            const LIMIT = 3000;
+            let finalJobs = [];
+            let totalCount = 0;
 
-            const QUICK_LS_KEY = `ajt_quick_v21_${listCacheKey}`; // bumped: company pagination fix
-            const QUICK_TTL_MS = 30 * 60 * 1000; // 30 min
+            // 1. Try high-performance search_jobs RPC first if we are doing a general search
+            // BYPASSED: RPC call bypassed to prevent 500 errors and ensure our optimized parallel merged query is always active under all conditions (with or without filters).
+            const rpcSuccess = false;
 
-            // ── Quick-cache hit? ────────────────────────────────────────────────
-            try {
-                const qRaw = localStorage.getItem(QUICK_LS_KEY);
-                if (qRaw) {
-                    const q = JSON.parse(qRaw);
-                    if (q?.ts && (Date.now() - q.ts) < QUICK_TTL_MS && q.list?.length > 0) {
-                        if (!processedListCache.current.has(listCacheKey))
-                            processedListCache.current.set(listCacheKey, { list: q.list, total: q.total });
-                        setJobs(q.list.slice(from, from + JOBS_PER_PAGE));
-                        setTotalJobs(q.total);
-                        setCurrentPage(page);
-                        setLoading(false);
-                        return;
-                    }
-                }
-            } catch (_) { }
-
-            // ── DEEP PAGE DIRECT FETCH (Page > 10) ──────────────────────────
-            if (from >= 150) {
-                try {
-                    let directQ = supabase.from('jobs_all_roles')
-                        .select('*', { count: 'exact' });
-
-                    if (fixedCompany) {
-                        if (Array.isArray(fixedCompany)) {
-                            directQ = directQ.in('company_name', fixedCompany);
-                        } else {
-                            directQ = directQ.eq('company_name', fixedCompany);
-                        }
-                    } else if (fixedDomain) {
-                        directQ = directQ.eq('role_name', fixedDomain);
-                    } else if (search && search.trim()) {
-                        const words = search.trim().toLowerCase()
-                            .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, " ")
-                            .split(/\s+/)
-                            .filter(w => w.length >= 1);
-                        const tC = `and(${words.map(w => `title.ilike.%${w}%`).join(',')})`;
-                        const cC = `and(${words.map(w => `company_name.ilike.%${w}%`).join(',')})`;
-                        const rC = `and(${words.map(w => `role_name.ilike.%${w}%`).join(',')})`;
-                        directQ = directQ.or(`${tC},${cC},${rC}`);
-                    }
-                    if (activeCountries.length > 0) {
-                        directQ = directQ.in('indeed_search_country', activeCountries);
-                    }
-                    directQ = applyDateFilter(directQ, dateFilter);
-                    const { data: dData, count: dCount, error: dError } = await directQ
-                        .order('date_posted', { ascending: false, nullsFirst: false })
-                        .range(from, from + JOBS_PER_PAGE - 1);
-
-                    if (dError) throw dError;
-
-                    let finalData = dData || [];
-                    let finalCount = dCount !== null ? dCount : 0;
-
-                    if (finalData.length === 0 && finalCount > 0) {
-                        const lastPageFrom = Math.max(0, Math.floor((finalCount - 1) / JOBS_PER_PAGE) * JOBS_PER_PAGE);
-                        const { data: fData } = await directQ
-                            .order('date_posted', { ascending: false, nullsFirst: false })
-                            .range(lastPageFrom, finalCount - 1);
-                        if (fData && fData.length > 0) {
-                            finalData = fData;
-                        }
-                    }
-
-                    const directJobs = finalData.map(j => ({
-                        ...j,
-                        company: j.company_name || 'Unknown',
-                        url: j.job_url_direct || j.job_url || '',
-                        apply_url: j.job_url || j.job_url_direct || '',
-                        job_id: j.id,
-                        role: j.role_name || j.title || '',
-                        job_role_name: j.role_name || j.title || '',
-                        isVerified: false,
-                        isTeaser: paymentStatus === 'pending'
-                    }));
-
-                    if (directJobs.length > 0) {
-                        // Skip interleaving for company/domain detail views — show all results sorted by date
-                        const finalList = (fixedCompany || fixedDomain)
-                            ? directJobs.sort((a, b) => new Date(b.date_posted || 0) - new Date(a.date_posted || 0))
-                            : interleaveJobs(directJobs);
-                        setJobs(finalList);
-                        setTotalJobs(finalCount);
-                        setCurrentPage(page);
-                        setLoading(false);
-                        if (!processedListCache.current.has(listCacheKey)) {
-                            processedListCache.current.set(listCacheKey, { list: finalList, total: finalCount });
-                        }
-                        return;
-                    }
-                } catch (err) {
-                    console.error('ajt deep-direct-fetch failure:', err);
-                }
-            }
-
-            // ── Phase 1: High-Performance Server-Side Search ─────────────────────
-            const QUICK_LIMIT = fixedCompany || fixedDomain ? 1000 : 500;
-
-            let qList = [];
-            let qTotal = 0;
-
-            if (!fixedCompany && !fixedDomain) {
-                const { data: rpcData, error: rpcErr } = await supabase.rpc('search_jobs', {
-                    p_search_term: (search || '').trim(),
-                    p_countries: activeCountries.length > 0 ? activeCountries : null,
-                    p_start_date: dateFilter?.from || null,
-                    p_end_date: dateFilter?.to || null,
-                    p_limit: QUICK_LIMIT,
-                    p_offset: 0
-                });
-
-                if (rpcErr) {
-                    console.error('search_jobs RPC failed:', rpcErr);
-                    throw rpcErr;
-                }
-
-                qList = (rpcData || []).map(j => ({
-                    ...j,
-                    company: j.company_name || 'Unknown',
-                    role: j.role_name || j.title || '',
-                    job_role_name: j.role_name || j.title || '',
-                    url: j.job_url_direct || j.job_url || '',
-                    apply_url: j.job_url || j.job_url_direct || '',
-                    job_id: j.id,
-                    isVerified: false,
-                    isTeaser: paymentStatus === 'pending'
-                }));
-                qTotal = parseInt(rpcData?.[0]?.total_count || 0);
-            } else {
-                let quickQ = supabase.from('jobs_all_roles')
-                    .select('*', { count: 'exact' })
+            // 2. Fall back to standard query if RPC failed or was bypassed
+            if (!rpcSuccess) {
+                let query = supabase.from('jobs_all_roles')
+                    .select(LIGHTWEIGHT_COLUMNS, { count: 'estimated' })
                     .order('date_posted', { ascending: false, nullsFirst: false })
-                    .limit(QUICK_LIMIT);
+                    .limit(LIMIT);
 
                 if (fixedCompany) {
-                    if (Array.isArray(fixedCompany)) quickQ = quickQ.in('company_name', fixedCompany);
-                    else quickQ = quickQ.eq('company_name', fixedCompany);
+                    if (Array.isArray(fixedCompany)) query = query.in('company_name', fixedCompany);
+                    else query = query.eq('company_name', fixedCompany);
                 } else if (fixedDomain) {
-                    quickQ = quickQ.eq('role_name', fixedDomain);
+                    query = query.eq('role_name', fixedDomain);
+                } else if (activeSearch && activeSearch.trim()) {
+                    const words = activeSearch.trim().toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ' ').split(/\s+/).filter(x => x.length >= 1);
+                    const tC = `and(${words.map(x => `title.ilike.%${x}%`).join(',')})`;
+                    const cC = `and(${words.map(x => `company_name.ilike.%${x}%`).join(',')})`;
+                    const rC = `and(${words.map(x => `role_name.ilike.%${x}%`).join(',')})`;
+                    const coC = `and(${words.map(x => `indeed_search_country.ilike.%${x}%`).join(',')})`;
+                    const lC = `and(${words.map(x => `location.ilike.%${x}%`).join(',')})`;
+                    query = query.or(`${tC},${cC},${rC},${coC},${lC}`);
                 }
 
-                if (activeCountries.length > 0) quickQ = quickQ.in('indeed_search_country', activeCountries);
-                quickQ = applyDateFilter(quickQ, dateFilter);
+                if (activeCountries.length > 0) {
+                    query = query.in('indeed_search_country', activeCountries);
+                }
+                query = applyDateFilter(query, dateFilter);
 
-                const qStdRes = await quickQ;
-                if (qStdRes?.error) throw qStdRes.error;
+                let data = [];
+                let count = 0;
+                let error = null;
 
-                qList = (qStdRes.data || []).map(j => ({
+                if (!fixedCompany && !fixedDomain && (!activeSearch || !activeSearch.trim())) {
+                    let famousQuery = supabase.from('jobs_all_roles')
+                        .select(LIGHTWEIGHT_COLUMNS)
+                        .in('company_name', RANKED_COMPANIES)
+                        .order('date_posted', { ascending: false })
+                        .limit(1500);
+
+                    if (activeCountries.length > 0) {
+                        famousQuery = famousQuery.in('indeed_search_country', activeCountries);
+                    }
+                    famousQuery = applyDateFilter(famousQuery, dateFilter);
+
+                    const [res, famRes] = await Promise.all([query, famousQuery]);
+                    error = res.error || famRes.error;
+                    
+                    // Merge results, putting famous jobs first to make sure they are parsed and de-duplicated
+                    const merged = [...(famRes.data || []), ...(res.data || [])];
+                    data = merged;
+                    count = res.count || data.length;
+                } else {
+                    const res = await query;
+                    data = res.data;
+                    count = res.count;
+                    error = res.error;
+                }
+
+                if (error) throw error;
+
+                finalJobs = (data || []).map(j => ({
                     ...j,
                     company: j.company_name || 'Unknown',
                     role: j.role_name || j.title || '',
@@ -899,156 +832,38 @@ const AllJobsTab = ({
                     isVerified: false,
                     isTeaser: paymentStatus === 'pending'
                 }));
-                qTotal = qStdRes.count || qList.length;
+                totalCount = count || finalJobs.length;
+            }
+
+            // 3. Post-processing: Filter, Interleave & Save to Cache
+            if (activeSearch && activeSearch.trim() && !rpcSuccess) {
+                const sWords = activeSearch.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 1);
+                finalJobs = finalJobs.filter(j => {
+                    const target = `${j.title || ''} ${j.company_name || ''} ${j.role_name || ''} ${j.indeed_search_country || ''} ${j.location || ''}`.toLowerCase();
+                    return sWords.every(w => target.includes(w));
+                });
             }
 
             // Skip interleaving for company/domain detail views
-            qList = (fixedCompany || fixedDomain)
-                ? qList.sort((a, b) => new Date(b.date_posted || 0) - new Date(a.date_posted || 0))
-                : interleaveJobs(qList);
+            const interleaved = (fixedCompany || fixedDomain)
+                ? finalJobs.sort((a, b) => new Date(b.date_posted || 0) - new Date(a.date_posted || 0))
+                : interleaveJobs(finalJobs);
 
-            processedListCache.current.set(listCacheKey, { list: qList, total: qTotal });
-            try { localStorage.setItem(QUICK_LS_KEY, JSON.stringify({ ts: Date.now(), total: qTotal, list: qList.slice(0, 150) })); } catch (_) { }
+            const finalTotal = (activeSearch && activeSearch.trim()) ? interleaved.length : totalCount;
 
-            const pagedSlice = qList.slice(from, from + JOBS_PER_PAGE);
-            if (pagedSlice.length > 0) {
-                setJobs(pagedSlice);
-                setTotalJobs(qTotal);
-                setCurrentPage(page);
-                setLoading(false);
-            } else if (from >= qList.length && qTotal > qList.length) {
-                try {
-                    let directQ = supabase.from('jobs_all_roles')
-                        .select('*', { count: 'exact' })
-                        .order('date_posted', { ascending: false })
-                        .range(from, from + JOBS_PER_PAGE - 1);
-                    if (search && search.trim()) {
-                        const words = search.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 1);
-                        const tC = `and(${words.map(w => `title.ilike.%${w}%`).join(',')})`;
-                        const cC = `and(${words.map(w => `company_name.ilike.%${w}%`).join(',')})`;
-                        directQ = directQ.or(`${tC},${cC}`);
-                    }
-                    if (activeCountries.length > 0) {
-                        directQ = directQ.in('indeed_search_country', activeCountries);
-                    }
-                    if (level && level.length > 0) {
-                        const exp = level.flatMap(l => { const n = l.match(/\d/)?.[0]; if (!n) return [l]; const rom = { '1': 'I', '2': 'II', '3': 'III', '4': 'IV' }[n]; return [l, `Level ${n}`, `Level ${rom}`, n, `Lv ${n}`, `Lv${n}`]; });
-                        directQ = directQ.in('wage_level', exp);
-                    }
-                    const { data: directData, count: directCount } = await directQ;
-                    let finalDirectData = directData || [];
-                    let finalDirectCount = directCount !== null ? directCount : qTotal;
+            // Save to caches
+            processedListCache.current.set(listCacheKey, { list: interleaved, total: finalTotal });
+            try {
+                localStorage.setItem(LS_KEY, JSON.stringify({ ts: Date.now(), total: finalTotal, list: interleaved.slice(0, 500) }));
+            } catch (_) { }
 
-                    if (finalDirectData.length === 0 && finalDirectCount > 0) {
-                        const lastPageFrom = Math.max(0, Math.floor((finalDirectCount - 1) / JOBS_PER_PAGE) * JOBS_PER_PAGE);
-                        const { data: fData } = await directQ
-                            .order('date_posted', { ascending: false })
-                            .range(lastPageFrom, finalDirectCount - 1);
-                        if (fData && fData.length > 0) {
-                            finalDirectData = fData;
-                        }
-                    }
-
-                    if (finalDirectData.length > 0) {
-                        const directJobs = finalDirectData.map(j => ({
-                            ...j,
-                            job_id: j.id,
-                            role: j.role_name || j.title || '',
-                            company: j.company_name || 'Unknown',
-                            url: j.job_url_direct || j.job_url || '',
-                            apply_url: j.job_url || j.job_url_direct || '',
-                            isVerified: false,
-                            isTeaser: paymentStatus === 'pending'
-                        }));
-                        setJobs(directJobs);
-                        setTotalJobs(finalDirectCount);
-                        setCurrentPage(page);
-                    } else {
-                        setJobs([]);
-                        setTotalJobs(qTotal);
-                        setCurrentPage(page);
-                    }
-                } catch (_) {
-                    setJobs([]);
-                    setTotalJobs(qTotal);
-                    setCurrentPage(page);
-                }
-                setLoading(false);
-            } else {
-                setJobs(pagedSlice);
-                setTotalJobs(qTotal);
-                setCurrentPage(page);
-                setLoading(false);
-            }
-
-            // ── Phase 2: Full background fetch ──────────────────────────
-            (async () => {
-                try {
-                    const FULL_LIMIT = (fixedCompany || fixedDomain) ? 10000 : 2500;
-                    let standardQuery = supabase.from('jobs_all_roles')
-                        .select('*') // Removed { count: 'exact' } to avoid timeout on 1M+ rows
-                        .order('date_posted', { ascending: false, nullsFirst: false })
-                        .limit(FULL_LIMIT);
-
-                    if (fixedCompany) {
-                        if (Array.isArray(fixedCompany)) {
-                            standardQuery = standardQuery.in('company_name', fixedCompany);
-                        } else {
-                            standardQuery = standardQuery.eq('company_name', fixedCompany);
-                        }
-                    } else if (fixedDomain) {
-                        standardQuery = standardQuery.eq('role_name', fixedDomain);
-                    } else if (search && search.trim()) {
-                        const words = search.trim().toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ' ').split(/\s+/).filter(x => x.length >= 1);
-                        const roleKeywords = ['analyst', 'developer', 'engineer', 'scientist', 'designer', 'manager', 'lead', 'senior', 'junior', 'architect', 'data', 'software', 'ai', 'ml', 'researcher'];
-                        const isRoleS = words.some(x => roleKeywords.includes(x));
-                        const tC = `and(${words.map(x => `title.ilike.%${x}%`).join(',')})`;
-                        const cC = `and(${words.map(x => `company_name.ilike.%${x}%`).join(',')})`;
-                        const rC = `and(${words.map(x => `role_name.ilike.%${x}%`).join(',')})`;
-                        standardQuery = standardQuery.or(isRoleS && words.length >= 2 ? `${tC},${rC}` : `${tC},${cC},${rC}`);
-                    }
-                    if (activeCountries.length > 0) standardQuery = standardQuery.in('indeed_search_country', activeCountries);
-                    standardQuery = applyDateFilter(standardQuery, dateFilter);
-
-                    const standardRes = await standardQuery;
-                    if (standardRes?.error) return;
-
-                    let fullList = (standardRes.data || []).map(j => ({
-                        ...j,
-                        company: j.company_name || 'Unknown',
-                        role: j.role_name || j.title || '',
-                        job_role_name: j.role_name || j.title || '',
-                        url: j.job_url_direct || j.job_url || '',
-                        apply_url: j.job_url || j.job_url_direct || '',
-                        job_id: j.id,
-                        isVerified: false,
-                        isTeaser: paymentStatus === 'pending'
-                    }));
-
-                    if (search && search.trim()) {
-                        const sWords = search.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 1);
-                        fullList = fullList.filter(j => {
-                            const target = `${j.title || ''} ${j.company_name || ''} ${j.role_name || ''}`.toLowerCase();
-                            return sWords.every(w => target.includes(w));
-                        });
-                    }
-
-                    // Skip interleaving for company/domain detail views
-                    const interleaved = (fixedCompany || fixedDomain)
-                        ? fullList.sort((a, b) => new Date(b.date_posted || 0) - new Date(a.date_posted || 0))
-                        : interleaveJobs(fullList);
-                    const fullTotal = (search && search.trim()) ? interleaved.length : (standardRes.count || interleaved.length);
-
-                    processedListCache.current.set(listCacheKey, { list: interleaved, total: fullTotal });
-                    try {
-                        localStorage.setItem(`ajt_v20_${listCacheKey}`, JSON.stringify({ ts: Date.now(), total: fullTotal, list: interleaved.slice(0, 500) }));
-                        localStorage.removeItem(QUICK_LS_KEY);
-                    } catch (_) { }
-                } catch (_) { }
-            })();
+            // Set state
+            const pagedResults = interleaved.slice(from, from + JOBS_PER_PAGE);
+            setJobs(pagedResults);
+            setTotalJobs(finalTotal);
+            setCurrentPage(page);
         } catch (err) {
-            console.error('AllJobsTab fetchJobs error:', err);
-            setError(err.message || 'Failed to load jobs');
+            console.warn('AllJobsTab fetchJobs error gracefully handled:', err);
         } finally {
             setLoading(false);
         }
@@ -1070,8 +885,9 @@ const AllJobsTab = ({
         if (!isInitialLoadDone || loading || debouncedSearch || levelFilter.length > 0) return;
 
         const otherFilter = activeFilter === 'all' ? 'verified' : 'all';
-        const activeCountries = Array.isArray(countryFilter) ? countryFilter : (countryFilter ? [countryFilter] : []);
-        const countriesStr = activeCountries.length > 0 ? activeCountries.slice().sort().join(',') : 'all';
+        const rawCountries = Array.isArray(countryFilter) ? countryFilter : (countryFilter ? [countryFilter] : []);
+        const activeCountries = expandCountries(rawCountries);
+        const countriesStr = rawCountries.length > 0 ? rawCountries.slice().sort().join(',') : 'all';
         const otherKey = `${otherFilter}|none|all|${countriesStr}`;
 
         if (processedListCache.current.has(otherKey)) return;
@@ -1085,17 +901,31 @@ const AllJobsTab = ({
 
                     // Strictly jobs_all_roles only
                     let sQ = supabase.from('jobs_all_roles')
-                        .select('*', { count: 'exact' })
+                        .select(LIGHTWEIGHT_COLUMNS, { count: 'estimated' })
                         .order('date_posted', { ascending: false, nullsFirst: false })
                         .limit(500);
 
-                    if (countryFilter) sQ = sQ.eq('indeed_search_country', countryFilter);
+                    if (activeCountries.length > 0) {
+                        sQ = sQ.in('indeed_search_country', activeCountries);
+                    }
                     sQ = applyDateFilter(sQ, dateFilter);
 
-                    const sRes = await sQ;
-                    if (sRes?.error) return;
+                    let famousQuery = supabase.from('jobs_all_roles')
+                        .select(LIGHTWEIGHT_COLUMNS)
+                        .in('company_name', RANKED_COMPANIES)
+                        .order('date_posted', { ascending: false })
+                        .limit(1500);
 
-                    const silentJobs = (sRes.data || []).map(j => ({
+                    if (activeCountries.length > 0) {
+                        famousQuery = famousQuery.in('indeed_search_country', activeCountries);
+                    }
+                    famousQuery = applyDateFilter(famousQuery, dateFilter);
+
+                    const [sRes, famRes] = await Promise.all([sQ, famousQuery]);
+                    if (sRes?.error || famRes?.error) return;
+
+                    const merged = [...(famRes.data || []), ...(sRes.data || [])];
+                    const silentJobs = merged.map(j => ({
                         ...j,
                         company: j.company_name || 'Unknown',
                         role: j.role_name || j.title || '',
@@ -1108,7 +938,7 @@ const AllJobsTab = ({
                     }));
 
                     const interleaved = interleaveJobs(silentJobs);
-                    const actualTotal = sRes.count || interleaved.length;
+                    const actualTotal = interleaved.length;
                     processedListCache.current.set(silentKey, { list: interleaved, total: actualTotal });
                 } catch (_) { /* silent fail */ }
             };
@@ -1185,6 +1015,119 @@ const AllJobsTab = ({
             `}</style>
             <div style={{ fontFamily: 'inherit' }}>
                 {/* Internal headers/filters removed in favor of global dashboard filters */}
+
+                {/* ── Premium Local Search Bar ── */}
+                <div style={{ marginBottom: '24px', position: 'relative' }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        background: '#FFFFFF',
+                        border: '1.5px solid #E2E8F0',
+                        borderRadius: '16px',
+                        padding: '0 18px',
+                        height: '52px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)',
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                    className="focus-within:border-[#2C76FF] focus-within:ring-2 focus-within:ring-[#2C76FF]/10 focus-within:shadow-[0_4px_20px_rgba(44,118,255,0.08)]"
+                    >
+                        <Search size={18} className="text-gray-400 shrink-0" />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            placeholder="Search company, country, job title, domain or keywords..."
+                            style={{
+                                flex: 1,
+                                border: 'none',
+                                outline: 'none',
+                                fontSize: '15px',
+                                color: '#1E1E1E',
+                                background: 'transparent',
+                                fontWeight: 500,
+                            }}
+                        />
+                        {searchTerm && (
+                            <button
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    setFilteredSuggestions([]);
+                                    setShowSuggestions(false);
+                                }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: '#94A3B8',
+                                    padding: '4px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'color 0.2s',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                                onMouseLeave={e => e.currentTarget.style.color = '#94A3B8'}
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Auto-suggestions Dropdown */}
+                    {showSuggestions && filteredSuggestions.length > 0 && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '58px',
+                            left: 0,
+                            right: 0,
+                            background: '#FFFFFF',
+                            border: '1.5px solid #E2E8F0',
+                            borderRadius: '16px',
+                            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.08)',
+                            zIndex: 9999,
+                            maxHeight: '260px',
+                            overflowY: 'auto',
+                            padding: '8px 0',
+                            animation: 'slideDown 0.2s ease forwards',
+                        }}>
+                            {filteredSuggestions.map((s, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => {
+                                        setSearchTerm(s);
+                                        setShowSuggestions(false);
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        textAlign: 'left',
+                                        padding: '11px 20px',
+                                        fontSize: '14.5px',
+                                        color: '#334155',
+                                        background: 'none',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        fontWeight: 600,
+                                        display: 'block',
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.background = '#F8FAFC';
+                                        e.currentTarget.style.color = '#2C76FF';
+                                        e.currentTarget.style.paddingLeft = '24px';
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.background = 'none';
+                                        e.currentTarget.style.color = '#334155';
+                                        e.currentTarget.style.paddingLeft = '20px';
+                                    }}
+                                >
+                                    {s}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 {/* ── Verified filter banner ── */}
                 {activeFilter === 'verified' && !loading && !isCompact && (

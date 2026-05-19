@@ -50,7 +50,7 @@ const AdminOverview = () => {
             // 4. Fetch Recent Activity (New Users)
             const { data: newUsers } = await supabase
                 .from('profiles')
-                .select('email, created_at, first_name')
+                .select('email, created_at, full_name')
                 .order('created_at', { ascending: false })
                 .limit(5);
 

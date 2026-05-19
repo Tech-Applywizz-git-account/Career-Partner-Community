@@ -56,17 +56,18 @@ export default function AdminControls() {
   };
 
   const updateUserStatus = async (userId, newStatus) => {
+    const isGranted = newStatus === 'completed' || newStatus === 'active' || newStatus === true;
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ payment_status: newStatus })
+        .update({ status: isGranted, updated_at: new Date().toISOString() })
         .eq('id', userId);
 
       if (error) throw error;
 
       // Update local state
       setUsers(users.map(u =>
-        u.id === userId ? { ...u, payment_status: newStatus } : u
+        u.id === userId ? { ...u, status: isGranted } : u
       ));
       showToast('User status updated', 'success');
     } catch (error) {
@@ -79,7 +80,7 @@ export default function AdminControls() {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ role: newRole })
+        .update({ role: newRole, updated_at: new Date().toISOString() })
         .eq('id', userId);
 
       if (error) throw error;
@@ -96,11 +97,6 @@ export default function AdminControls() {
   };
 
   const deleteUser = async () => {
-    // Note: Deleting from auth.users requires Service Role Key from backend
-    // For now we can only delete from profiles if RLS allows, 
-    // but ideally we should call a backend function.
-    // We'll try to delete from profiles.
-
     try {
       const { error } = await supabase
         .from('profiles')
@@ -127,14 +123,14 @@ export default function AdminControls() {
   const filtered = users.filter(
     (u) =>
       u.email?.toLowerCase().includes(search.toLowerCase()) ||
-      u.first_name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.last_name?.toLowerCase().includes(search.toLowerCase())
+      u.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      u.country?.toLowerCase().includes(search.toLowerCase())
   );
 
   const pageStart = (currentPage - 1) * rowsPerPage;
   const paginatedUsers = filtered.slice(pageStart, pageStart + rowsPerPage);
 
-  const paidCount = users.filter(u => u.payment_status === 'completed' || u.has_paid === true).length;
+  const paidCount = users.filter(u => u.status === true).length;
   const unpaidCount = users.length - paidCount;
 
   return (
@@ -153,7 +149,7 @@ export default function AdminControls() {
 
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-gray-500 text-sm font-medium">Paid Users</p>
+            <p className="text-gray-500 text-sm font-medium">Active Users</p>
             <h3 className="text-3xl font-bold text-green-600 mt-1">{paidCount}</h3>
           </div>
           <div className="p-3 bg-green-50 rounded-lg">
@@ -163,7 +159,7 @@ export default function AdminControls() {
 
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-gray-500 text-sm font-medium">Pending Users</p>
+            <p className="text-gray-500 text-sm font-medium">Suspended Users</p>
             <h3 className="text-3xl font-bold text-orange-600 mt-1">{unpaidCount}</h3>
           </div>
           <div className="p-3 bg-orange-50 rounded-lg">
@@ -204,9 +200,9 @@ export default function AdminControls() {
             <thead className="bg-gray-100 text-gray-600 font-medium border-b">
               <tr>
                 <th className="px-6 py-4">User Details</th>
-                <th className="px-6 py-4">Payment Status</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Country</th>
                 <th className="px-6 py-4 text-right">Joined</th>
-                <th className="px-6 py-4 text-right">End Date</th>
                 <th className="px-6 py-4 text-center">Actions</th>
               </tr>
             </thead>
@@ -227,37 +223,30 @@ export default function AdminControls() {
               ) : (
                 paginatedUsers.map((u) => {
                   const joinedDate = new Date(u.created_at);
-                  const endDate = new Date(joinedDate);
-                  endDate.setMonth(endDate.getMonth() + 1);
 
                   return (
                     <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-medium text-gray-900">
-                          {u.first_name} {u.last_name}
+                          {u.full_name || 'Anonymous User'}
                         </div>
                         <div className="text-gray-500 text-xs mt-0.5">{u.email}</div>
-                        {u.mobile_number && (
-                          <div className="text-gray-400 text-xs mt-0.5">
-                            {u.country_code} {u.mobile_number}
-                          </div>
-                        )}
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-full ${u.payment_status === 'completed' || u.has_paid
+                          className={`inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-full ${u.status === true
                             ? 'bg-green-100 text-green-700'
                             : 'bg-yellow-100 text-yellow-700'
                             }`}
                         >
-                          {u.payment_status === 'completed' || u.has_paid ? 'Completed' : 'Pending'}
+                          {u.status === true ? 'Active' : 'Suspended'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right text-gray-500 whitespace-nowrap">
-                        {joinedDate.toLocaleDateString()}
+                        {u.country || '—'}
                       </td>
                       <td className="px-6 py-4 text-right text-gray-500 whitespace-nowrap">
-                        {endDate.toLocaleDateString()}
+                        {joinedDate.toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <button

@@ -15,91 +15,117 @@ export const FAMOUS_COMPANIES = [
     'Dropbox', 'Coinbase', 'Robinhood', 'Wayfair', 'Zillow', 'Expedia'
 ];
 
-// Core brands that should ONLY match exactly to avoid sub-brand pollution (e.g. Amazon Filters)
 export const STRICT_FAMOUS = [
-    'Google', 'Microsoft', 'Amazon', 'Meta', 'Facebook', 'Apple', 'Netflix', 
-    'Tesla', 'NVIDIA', 'Adobe', 'Oracle', 'Salesforce', 'Intel', 'IBM', 'Cisco', 'Uber',
-    'Amazon Web Services', 'AWS', 'PwC', 'Deloitte', 'Accenture', 'Infosys'
+    ...FAMOUS_COMPANIES,
+    'Amazon Web Services', 'AWS', 'PwC', 'Deloitte', 'Accenture', 'Infosys',
+    'EY', 'TCS', 'Ernst & Young', 'Tata Consultancy Services', 'PricewaterhouseCoopers', 'KPMG US'
 ];
 
-// USER PRIORITY LIST (Ranked)
-export const RANKED_COMPANIES = [
-    // --- PAGE 1 (Indices 0-11) ---
-    'Google', 'Microsoft', 'Amazon', 'Amazon Web Services', 'Meta', 'Facebook', 'Apple', 'Netflix',
-    'Deloitte', 'PwC', 'Accenture', 'Infosys',
-    
-    // --- PAGE 2 (Indices 12-23) ---
-    'Tesla', 'NVIDIA', 'Adobe', 'Oracle', 'Salesforce', 'Intel', 'IBM', 'Cisco', 'Uber',
-    'Airbnb', 'Twitter', 'LinkedIn',
-    
-    // --- REST ---
-    'JPMorgan Chase', 'Goldman Sachs', 'Walmart', 'Ernst and Young (EY)', 'Capgemini', 'HCL America Inc.', 'Amazon Web Services (AWS)', 'JP Morgan Chase', 'Ernst and Young US', 'Deloitte UK', 'PwC UK', 'Google UK', 'Amazon UK', 'KPMG UK', 'Accenture UK', 'Capgemini UK', 'BAE Systems', 'Siemens', 'SAP', 'Bloomberg', 'PayPal', 'NetApp', 'Workday', 'VMware', 'Atlassian', 'Square', 'Stripe', 'Spotify', 'Wayfair', 'Ebay', 'Twilio', 'Snap Inc.', 'Pinterest', 'Dropbox', 'Box', 'Zendesk', 'Okta', 'ServiceNow', 'DocuSign', 'Autodesk', 'Intuit', 'Expedia', 'Booking Holdings', 'Fidelity Investments', 'Bank of America', 'Wells Fargo', 'Morgan Stanley', 'HSBC', 'Barclays', 'UBS', 'Credit Suisse', 'BlackRock', 'State Street', 'AIG', 'MetLife', 'Prudential', 'Cigna', 'Anthem', 'UnitedHealth Group', 'CVS Health', 'Express Scripts', 'McKesson', 'Cardinal Health', 'AmerisourceBergen', 'Johnson & Johnson', 'Pfizer', 'Merck', 'AbbVie', 'Abbott', 'Bristol Myers Squibb', 'Eli Lilly', 'Amgen', 'Gilead Sciences', 'Biogen', 'Regeneron', 'Moderna', 'Novartis', 'Roche', 'Genentech', 'Bayer', 'GlaxoSmithKline (GSK)', 'AstraZeneca', 'Sanofi', 'Takeda', 'Boston Consulting Group (BCG)', 'McKinsey & Company', 'Bain & Company', 'Booz Allen Hamilton', 'L.E.K. Consulting', 'Oliver Wyman', 'Roland Berger', 'A.T. Kearney', 'ZS Associates', 'Hurricane Capital', 'Two Sigma', 'Citadel', 'D.E. Shaw', 'Renaissance Technologies', 'Bridgewater Associates', 'Point72', 'Millennium Management', 'Hudson River Trading', 'Virtu Financial', 'Jump Trading', 'IMC Trading', 'Optiver', 'Akuna Capital', 'Belvedere Trading', 'DRW', 'Susquehanna International Group', 'SIG Susquehanna', 'Wolverine Trading', 'XTX Markets', 'Flow Traders', 'Mavenir', 'Ciena', 'Juniper Networks', 'Arista Networks', 'F5 Networks', 'Pure Storage', 'Nutanix', 'Cohesity', 'Rubrik', 'Veeam', 'Commvault', 'Dell Technologies', 'Hewlett Packard Enterprise', 'Cray Inc.', 'NEC Corporation', 'Fujitsu', 'Hitachi', 'Lenovo', 'Qualcomm', 'Broadcom', 'Texas Instruments', 'Micron Technology', 'Western Digital', 'Seagate Technology', 'Lam Research', 'Applied Materials', 'KLA Corporation', 'ASML', 'Tokyo Electron', 'Infineon Technologies', 'Analog Devices', 'Microchip Technology', 'ON Semiconductor', 'NXP Semiconductors', 'Renesas Electronics', 'Skyworks Solutions', 'Qorvo', 'Synopsys', 'Cadence Design Systems', 'Mentor Graphics', 'Arm Holdings', 'Imagination Technologies', 'Ceva Inc.', 'Rambus', 'Allegro MicroSystems', 'Melexis', 'Elmos Semiconductor', 'ams AG', 'STMicroelectronics', 'Marvell Technology', 'Maxim Integrated', 'Xilinx', 'Altera', 'Lattice Semiconductor', 'QuickLogic', 'eSilicon', 'Achronix', 'Flex Logix', 'Groq', 'Cerebras Systems', 'SambaNova Systems', 'Graphcore', 'Habana Labs', 'Mythic', 'Untether AI', 'Tenstorrent', 'Esperanto Technologies', 'SiFive', 'RISC-V International', 'Andes Technology', 'Codasip', 'Siemens EDA', 'Keysight Technologies', 'Rohde & Schwarz', 'Anritsu', 'Viavi Solutions', 'EXFO', 'Spirent Communications', 'Calnex Solutions', 'PacketLight Networks', 'Infinera', 'Huawei', 'Nokia', 'Ericsson', 'Samsung', 'ZTE', 'CommScope', 'Corning', 'Prysmian Group', 'Sterlite Technologies', 'Furukawa Electric', 'Sumitomo Electric', 'Fujikura', 'LS Cable & System', 'Nexans', 'Belden', 'Molex', 'Amphenol', 'TE Connectivity', 'Samtec', 'Hirose Electric', 'JAE', 'JST', 'Yazaki', 'Sumitomo Wiring Systems', 'Leoni AG', 'Berk-Tek', 'Leviton', 'Panduit', 'Siemon', 'Black & Veatch', 'Bechtel', 'Fluor', 'Jacobs Engineering', 'AECOM', 'CH2M Hill', 'MWH Global', 'Stantec', 'Tetra Tech', 'Arcadis', 'WSP Global', 'Ramboll', 'Arup', 'Atkins', 'SNC-Lavalin', 'Amec Foster Wheeler', 'Wood plc', 'KBR', 'TechnipFMC', 'McDermott International', 'Saipem', 'Subsea 7', 'Petrofac', 'WorleyParsons', 'John Wood Group', 'SBM Offshore', 'MODEC', 'Keppel Corporation', 'Sembcorp Marine', 'Hyundai Heavy Industries', 'Samsung Heavy Industries', 'Daewoo Shipbuilding', 'Mitsubishi Heavy Industries', 'Impex', 'Mitsui', 'Sumitomo Corporation', 'Marubeni Corporation', 'Itochu Corporation', 'Toyota Tsusho', 'Sojitz Corporation', 'Nissho Iwai', 'Nichimen Corporation', 'Tomen Corporation', 'Kanematsu Corporation', 'C. Itoh & Co.', 'Samsung C&T', 'Hyundai Engineering & Construction', 'Daewoo E&C', 'GS Engineering & Construction', 'POSCO E&C', 'Lotte Engineering & Construction', 'SK E&C', 'DL E&C', 'Taeyoung E&C', 'Halla Group', 'Kolon Global Corporation', 'Kumho Industrial', 'Hanwha Corporation', 'Doosan E&C', 'Daelim Industrial', 'Ssangyong Engineering & Construction', 'KCC Corporation', 'Hyosung Corporation', 'OCI Company', 'Kumho Petrochemical', 'Hanwha Chemical', 'Lotte Chemical', 'Samsung SDI', 'LG Chem', 'SK Innovation', 'S-Oil', 'GS Caltex', 'Hyundai Oilbank', 'Kukdo Chemical', 'Kumho P&B', 'KPX Chemical', 'Aekyung Chemical', 'BASF', 'Covestro', 'Evonik', 'Lanxess', 'Wacker Chemie', 'Merck KGaA', 'Symrise', 'Altana', 'Brenntag', 'Fresenius', 'Beiersdorf', 'Henkel', 'Boehringer Ingelheim', 'Carl Zeiss', 'Deutsche Bank', 'Allianz', 'Munich Re', 'Daimler', 'BMW', 'Volkswagen', 'Audi', 'Porsche', 'Bosch', 'Continental', 'Adidas', 'Puma', 'Lufthansa', 'Siemens Healthineers', 'Fresenius Medical Care', 'Deutsche Telekom', 'Deutsche Post DHL', 'RWE', 'E.ON', 'EnBW', 'Uniper', 'Thyssenkrupp', 'Linde', 'HeidelbergCement', 'Mercedes-Benz', 'Bayerische Motoren Werke', 'Volkswagen Group', 'National Health Service (NHS)', 'TPP', 'Monzo', 'Revolut', 'Nu Quantum', 'Cleveland Clinic', 'Mayo Clinic', 'Johns Hopkins Hospital', 'Mass General Brigham', 'UCSF Health', 'Stanford Health Care', 'UCLA Health', 'Cedars-Sinai Medical Center', 'NYU Langone Health', 'Mount Sinai Health System', 'Northwell Health', 'Houston Methodist', 'MD Anderson Cancer Center', 'Dana-Farber Cancer Institute', 'City of Hope', 'Memorial Sloan Kettering', 'Children‘s Hospital of Philadelphia', 'Boston Children’s Hospital', 'Cincinnati Children\'s Hospital', 'Texas Children‘s Hospital', 'Seattle Children‘s Hospital', 'Children’s Hospital Los Angeles', 'Ann & Robert H. Lurie Children\'s Hospital of Chicago', 'Nationwide Children\'s Hospital', 'Children\'s National Hospital', 'Children\'s Hospital Colorado', 'Children\'s Hospital of Pittsburgh of UPMC', 'St. Jude Children\'s Research Hospital', 'Fred Hutchinson Cancer Center', 'Moffitt Cancer Center', 'Roswell Park Comprehensive Cancer Center', 'Fox Chase Cancer Center', 'Ohio State University Comprehensive Cancer Center', 'University of Michigan Rogel Cancer Center', 'UW Carbone Cancer Center', 'Yale Cancer Center', 'Duke Cancer Institute', 'Vanderbilt-Ingram Cancer Center', 'UNC Lineberger Comprehensive Cancer Center', 'University of Virginia Cancer Center', 'UVA Health', 'VCU Massey Cancer Center', 'Massey Cancer Center', 'Huntsman Cancer Institute', 'University of Utah Health', 'Intermountain Healthcare', 'Banner Health'
-];
+export const RANKED_COMPANIES = FAMOUS_COMPANIES;
 
-/**
- * Checks if a company name matches any in the famous list.
- * Case-insensitive "contains" matching.
- */
-export const isFamous = (name) => {
-    if (!name) return false;
-    const n = name.toLowerCase().trim();
-    
-    // 1. Check strict list first (Exact match only)
-    const isStrict = STRICT_FAMOUS.some(f => {
-        const famousLower = f.toLowerCase();
-        return n === famousLower || n === famousLower + '.com' || n === 'the ' + famousLower;
-    });
-    if (isStrict) return true;
+// ─────────────────────────────────────────────────────────────────────────────
+// PRECOMPUTED LOOKUP STRUCTURES — built ONCE when module loads, never again.
+// Replaces the O(n²) loop + new RegExp() pattern that ran 116K times.
+// ─────────────────────────────────────────────────────────────────────────────
 
-    // 2. Check general list (Includes partial matches, but exclude strict prefixes to avoid pollution)
-    const isCorePrefix = STRICT_FAMOUS.some(f => {
-        const famousLower = f.toLowerCase();
-        // Allow short names like PwC (3 chars) but avoid 2-char false positives
-        return famousLower.length >= 3 && n.includes(famousLower) && n !== famousLower;
-    });
-    
-    // If it's a sub-brand of a strict company (like "Amazon Pharmacy"), it's NOT "famous" 
-    // unless it's explicitly in the list or has high volume naturally.
-    if (isCorePrefix) return false;
+// Reusable regexes for cleanName — compiled once
+const _SUFFIX_RE = /\b(llc|inc|corp|corporation|co|company|ltd|limited|tech|technologies|systems|services|platforms|solutions|group|us|usa|uk)\b/gi;
+const _PUNCT_RE  = /[.,/#!$%^&*;:{}=\-_`~()]/g;
+const _SPACE_RE  = /\s+/g;
 
-    return FAMOUS_COMPANIES.some(f => {
-        const famousLower = f.toLowerCase();
-        if (famousLower.length <= 3) {
-            const regex = new RegExp(`\\b${famousLower}\\b`, 'i');
-            return regex.test(n);
+const _cleanName = (str) =>
+    str.toLowerCase()
+        .replace(_SUFFIX_RE, '')
+        .replace(_PUNCT_RE, ' ')
+        .replace(_SPACE_RE, ' ')
+        .trim();
+
+const _STRICT_SET = new Set(STRICT_FAMOUS.map(sf => sf.toLowerCase().trim()));
+
+// Map: exact lowercase name → rank index  (O(1) lookup)
+const _EXACT_RANK_MAP = new Map();
+RANKED_COMPANIES.forEach((f, idx) => {
+    const key = f.toLowerCase().trim();
+    if (!_EXACT_RANK_MAP.has(key)) _EXACT_RANK_MAP.set(key, idx);
+});
+
+// Map: cleaned lowercase name → rank index  (O(1) lookup)
+const _CLEAN_RANK_MAP = new Map();
+RANKED_COMPANIES.forEach((f, idx) => {
+    const key = _cleanName(f);
+    if (key && !_CLEAN_RANK_MAP.has(key)) _CLEAN_RANK_MAP.set(key, idx);
+});
+
+// Prebuilt regex entries for non-strict famous (word-boundary "contains" check)
+// These RegExps are compiled ONCE at module load — never inside a loop.
+const _REGEX_ENTRIES = [];
+RANKED_COMPANIES.forEach((f, idx) => {
+    const lf = f.toLowerCase().trim();
+    if (!_STRICT_SET.has(lf)) {
+        const cf = _cleanName(f);
+        if (cf) {
+            const escaped = cf.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            _REGEX_ENTRIES.push({ re: new RegExp(`\\b${escaped}\\b`, 'i'), rank: idx });
         }
-        return n.includes(famousLower);
-    });
-};
+    }
+});
+
+// Map: lowercase famous name → original-case name  (for normalizeDisplayName)
+export const FAMOUS_LOWER_MAP = new Map(
+    FAMOUS_COMPANIES.map(f => [f.toLowerCase(), f])
+);
+
+// Memoization caches to achieve maximum performance and instant speed
+const _rankCache = new Map();
+const _famousCache = new Map();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Public API — now O(1) memoized for instant speed
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Returns the rank of a company based on the priority list.
- * Lower absolute index = higher priority.
- * Returns Infinity if not found.
+ * Returns the rank (lower = more famous) of a company name.
+ * Uses memoization and precomputed Maps.
  */
 export const getCompanyRank = (name) => {
     if (!name) return Infinity;
     const n = name.toLowerCase().trim();
+    if (_rankCache.has(n)) return _rankCache.get(n);
 
-    // Exact match or partial match priority
-    let bestIndex = Infinity;
-    RANKED_COMPANIES.forEach((f, idx) => {
-        const famousLower = f.toLowerCase().trim();
-        
-        // If it's a strict brand, only allow exact match (or .com/the prefix)
-        const isStrictBrand = STRICT_FAMOUS.some(s => s.toLowerCase() === famousLower);
-        
-        if (isStrictBrand) {
-            if (n === famousLower || n === famousLower + '.com' || n === 'the ' + famousLower) {
-                if (idx < bestIndex) bestIndex = idx;
-            }
-        } else {
-            // For non-strict brands, partial matching is fine
-            if (n === famousLower || n.includes(famousLower)) {
-                if (idx < bestIndex) bestIndex = idx;
+    let res = Infinity;
+    if (_EXACT_RANK_MAP.has(n)) {
+        res = _EXACT_RANK_MAP.get(n);
+    } else {
+        const cn = _cleanName(n);
+        if (cn) {
+            if (_CLEAN_RANK_MAP.has(cn)) {
+                res = _CLEAN_RANK_MAP.get(cn);
+            } else {
+                for (const { re, rank } of _REGEX_ENTRIES) {
+                    if (rank >= res) continue; // can't improve
+                    if (re.test(cn)) {
+                        res = rank;
+                    }
+                }
             }
         }
-    });
+    }
 
-    return bestIndex;
+    _rankCache.set(name, res); // cache original input name
+    _rankCache.set(n, res);    // also cache normalized input
+    return res;
+};
+
+/**
+ * Returns true if company is famous. O(1) memoized.
+ */
+export const isFamous = (name) => {
+    if (!name) return false;
+    const n = name.toLowerCase().trim();
+    if (_famousCache.has(n)) return _famousCache.get(n);
+
+    const res = getCompanyRank(n) !== Infinity;
+    _famousCache.set(name, res); // cache original input name
+    _famousCache.set(n, res);    // also cache normalized input
+    return res;
 };
