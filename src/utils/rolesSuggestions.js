@@ -10,7 +10,7 @@ const CACHE_KEY = '_jobRolesCache_v1';
 const FALLBACK_ROLES = [
     "AI/ML Engineer", "Generative AI", "MLOps Engineer", "Data Scientist",
     "Software Engineer", "Software Developer", "Computer Science", "Full Stack",
-    "Java Full Stack", "Frontend Engineering", "Java Developer", "python developer",
+    "Java Developer", "Frontend Engineering", "python developer",
     ".Net", "DevOps", "Cloud Engineer", "Cyber security",
     "Security Engineer", "Data Engineer", "Big Data Engineer", "Data Analyst",
     "Business Intelligence Engineer", "QA Automation Engineer", "Quality Assurance Engineer",

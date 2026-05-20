@@ -49,6 +49,15 @@ function _normR(s) {
     return String(s || '').toLowerCase().replace(/[-–—]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+function mapJavaRole(role) {
+    if (!role) return role;
+    const trimmed = String(role).trim().toLowerCase();
+    if (trimmed === 'java developer' || trimmed === 'java full stack' || trimmed === 'java full stack developer') {
+        return 'Java Developer';
+    }
+    return role;
+}
+
 function _lvlKey(lv) {
     const n = parseWageLevel(lv);
     return n ? String(n) : '';
@@ -656,8 +665,20 @@ const AllJobsTab = ({
         // 8. Sort other (non-famous/unranked/remaining) companies' jobs using standard criteria
         otherJobs.sort(jobSorter);
 
-        // 9. Combine: Prioritized famous list first, followed by other companies' list
-        const result = [...famousInterleavedList, ...otherJobs];
+        // 9. Combine and filter: Ensure absolutely no company has more than 2 jobs in the entire results
+        const combined = [...famousInterleavedList, ...otherJobs];
+        const result = [];
+        const companyCounts = new Map();
+
+        combined.forEach(job => {
+            const canonicalCompany = getCanonicalCompany(job.company).toLowerCase();
+            const count = companyCounts.get(canonicalCompany) || 0;
+            if (count < 2) {
+                result.push(job);
+                companyCounts.set(canonicalCompany, count + 1);
+            }
+        });
+
         return result;
     };
 
@@ -713,34 +734,43 @@ const AllJobsTab = ({
             const fixedStr = (fixedCompany || 'none') + '_' + (fixedDomain || 'none');
             const listCacheKey = `${filter}|${(activeSearch || '').trim().toLowerCase() || 'none'}|${levelStr}|${rawCountriesStr}|${dateStr}|${fixedStr}`;
 
-            const LS_KEY = `ajt_v35_${listCacheKey}`; // bumped: company pagination fix / interleaved sorting update
+            const pageOffset = (page - 1) * JOBS_PER_PAGE;
+            // Use range offset pagination in DB if the offset is beyond 1000
+            const useRangeOffset = pageOffset >= 1000;
+            const pageCacheKey = useRangeOffset ? `${listCacheKey}|page_${page}` : listCacheKey;
+
+            const LS_KEY = `ajt_v36_${listCacheKey}`; // bumped: round-robin country mixing
             const LS_TTL_MS = 10 * 60 * 1000; // 10 minutes
-            try {
-                const raw = localStorage.getItem(LS_KEY);
-                if (raw) {
-                    const parsed = JSON.parse(raw);
-                    if (parsed && parsed.ts && (Date.now() - parsed.ts) < LS_TTL_MS && parsed.list?.length > 0) {
-                        // Warm the in-memory Map too so page changes are instant
-                        if (!processedListCache.current.has(listCacheKey)) {
-                            processedListCache.current.set(listCacheKey, { list: parsed.list, total: parsed.total });
-                        }
-                        const pagedResults = parsed.list.slice(from, from + JOBS_PER_PAGE);
-                        // If the page is beyond what's cached, fall through to DB fetch
-                        if (pagedResults.length > 0) {
-                            setJobs(pagedResults);
-                            setTotalJobs(parsed.total);
-                            setCurrentPage(page);
-                            setLoading(false);
-                            return; // ⚡ Done — served from localStorage in <50ms
+            
+            if (!useRangeOffset) {
+                try {
+                    const raw = localStorage.getItem(LS_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && parsed.ts && (Date.now() - parsed.ts) < LS_TTL_MS && parsed.list?.length > 0) {
+                            // Warm the in-memory Map too so page changes are instant
+                            if (!processedListCache.current.has(listCacheKey)) {
+                                processedListCache.current.set(listCacheKey, { list: parsed.list, total: parsed.total });
+                            }
+                            const pagedResults = parsed.list.slice(from, from + JOBS_PER_PAGE);
+                            // If the page is beyond what's cached, fall through to DB fetch
+                            if (pagedResults.length > 0) {
+                                setJobs(pagedResults);
+                                setTotalJobs(parsed.total);
+                                setCurrentPage(page);
+                                setLoading(false);
+                                return; // ⚡ Done — served from localStorage in <50ms
+                            }
                         }
                     }
-                }
-            } catch (_) { /* localStorage unavailable or corrupt — fall through to DB */ }
+                } catch (_) { /* localStorage unavailable or corrupt — fall through to DB */ }
+            }
 
             // ── FAST PATH: serve from in-memory Map cache (tab switches) ─────────
-            if (processedListCache.current.has(listCacheKey)) {
-                const cached = processedListCache.current.get(listCacheKey);
-                const pagedResults = cached.list.slice(from, from + JOBS_PER_PAGE);
+            if (processedListCache.current.has(pageCacheKey)) {
+                const cached = processedListCache.current.get(pageCacheKey);
+                const sliceFrom = useRangeOffset ? 0 : from;
+                const pagedResults = cached.list.slice(sliceFrom, sliceFrom + JOBS_PER_PAGE);
                 // If the page is beyond what's cached, fall through to DB fetch
                 if (pagedResults.length > 0) {
                     setJobs(pagedResults);
@@ -755,6 +785,8 @@ const AllJobsTab = ({
             // UNIFIED DATABASE FETCH  —  STABLE & ULTRA-FAST
             // ══════════════════════════════════════════════════════════════════════
             const LIMIT = 3000;
+            const dbStart = useRangeOffset ? pageOffset : 0;
+            const dbEnd = useRangeOffset ? (pageOffset + 500) : LIMIT;
             let finalJobs = [];
             let totalCount = 0;
 
@@ -766,14 +798,23 @@ const AllJobsTab = ({
             if (!rpcSuccess) {
                 let query = supabase.from('jobs_all_roles')
                     .select(LIGHTWEIGHT_COLUMNS, { count: 'estimated' })
-                    .order('date_posted', { ascending: false, nullsFirst: false })
-                    .limit(LIMIT);
+                    .order('date_posted', { ascending: false, nullsFirst: false });
+
+                if (useRangeOffset) {
+                    query = query.range(dbStart, dbEnd);
+                } else {
+                    query = query.limit(LIMIT);
+                }
 
                 if (fixedCompany) {
                     if (Array.isArray(fixedCompany)) query = query.in('company_name', fixedCompany);
                     else query = query.eq('company_name', fixedCompany);
                 } else if (fixedDomain) {
-                    query = query.eq('role_name', fixedDomain);
+                    if (fixedDomain === 'Java Developer') {
+                        query = query.in('role_name', ['Java Full Stack', 'Java Developer', 'Java Full Stack Developer']);
+                    } else {
+                        query = query.eq('role_name', fixedDomain);
+                    }
                 } else if (activeSearch && activeSearch.trim()) {
                     const words = activeSearch.trim().toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ' ').split(/\s+/).filter(x => x.length >= 1);
                     const tC = `and(${words.map(x => `title.ilike.%${x}%`).join(',')})`;
@@ -797,8 +838,13 @@ const AllJobsTab = ({
                     let famousQuery = supabase.from('jobs_all_roles')
                         .select(LIGHTWEIGHT_COLUMNS)
                         .in('company_name', RANKED_COMPANIES)
-                        .order('date_posted', { ascending: false })
-                        .limit(1500);
+                        .order('date_posted', { ascending: false });
+
+                    if (useRangeOffset) {
+                        famousQuery = famousQuery.range(dbStart, dbStart + 500);
+                    } else {
+                        famousQuery = famousQuery.limit(1500);
+                    }
 
                     if (activeCountries.length > 0) {
                         famousQuery = famousQuery.in('indeed_search_country', activeCountries);
@@ -807,7 +853,7 @@ const AllJobsTab = ({
 
                     const [res, famRes] = await Promise.all([query, famousQuery]);
                     error = res.error || famRes.error;
-                    
+
                     // Merge results, putting famous jobs first to make sure they are parsed and de-duplicated
                     const merged = [...(famRes.data || []), ...(res.data || [])];
                     data = merged;
@@ -824,8 +870,8 @@ const AllJobsTab = ({
                 finalJobs = (data || []).map(j => ({
                     ...j,
                     company: j.company_name || 'Unknown',
-                    role: j.role_name || j.title || '',
-                    job_role_name: j.role_name || j.title || '',
+                    role: mapJavaRole(j.role_name || j.title || ''),
+                    job_role_name: mapJavaRole(j.role_name || j.title || ''),
                     url: j.job_url_direct || j.job_url || '',
                     apply_url: j.job_url || j.job_url_direct || '',
                     job_id: j.id,
@@ -849,16 +895,63 @@ const AllJobsTab = ({
                 ? finalJobs.sort((a, b) => new Date(b.date_posted || 0) - new Date(a.date_posted || 0))
                 : interleaveJobs(finalJobs);
 
-            const finalTotal = (activeSearch && activeSearch.trim()) ? interleaved.length : totalCount;
+            // ── Round-robin mix by country when multiple countries are selected ──
+            // e.g. US selected + UK selected → US job, UK job, US job, UK job...
+            let finalInterleaved = interleaved;
+            if (!fixedCompany && !fixedDomain && rawCountries.length > 1) {
+                // Build one bucket per selected country
+                const buckets = new Map();
+                rawCountries.forEach(rc => buckets.set(rc, []));
+                const unassigned = [];
+
+                // Pre-expand each country's variants once
+                const expandedMap = new Map();
+                rawCountries.forEach(rc => {
+                    expandedMap.set(rc, new Set(expandCountries([rc]).map(s => s.toLowerCase())));
+                });
+
+                // Assign each job to the matching country bucket
+                interleaved.forEach(job => {
+                    const jc = String(job.indeed_search_country || '').trim().toLowerCase();
+                    let matched = false;
+                    for (const rc of rawCountries) {
+                        if (expandedMap.get(rc).has(jc)) {
+                            buckets.get(rc).push(job);
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (!matched) unassigned.push(job);
+                });
+
+                // Pull one job from each country in rotation until all buckets are empty
+                const roundRobin = [];
+                let hasMore = true;
+                while (hasMore) {
+                    hasMore = false;
+                    for (const [, bucket] of buckets) {
+                        if (bucket.length > 0) {
+                            roundRobin.push(bucket.shift());
+                            hasMore = true;
+                        }
+                    }
+                }
+                finalInterleaved = [...roundRobin, ...unassigned];
+            }
+
+            const finalTotal = (activeSearch && activeSearch.trim()) ? finalInterleaved.length : totalCount;
 
             // Save to caches
-            processedListCache.current.set(listCacheKey, { list: interleaved, total: finalTotal });
-            try {
-                localStorage.setItem(LS_KEY, JSON.stringify({ ts: Date.now(), total: finalTotal, list: interleaved.slice(0, 500) }));
-            } catch (_) { }
+            processedListCache.current.set(pageCacheKey, { list: finalInterleaved, total: finalTotal });
+            if (!useRangeOffset) {
+                try {
+                    localStorage.setItem(LS_KEY, JSON.stringify({ ts: Date.now(), total: finalTotal, list: finalInterleaved.slice(0, 500) }));
+                } catch (_) { }
+            }
 
             // Set state
-            const pagedResults = interleaved.slice(from, from + JOBS_PER_PAGE);
+            const sliceFrom = useRangeOffset ? 0 : from;
+            const pagedResults = finalInterleaved.slice(sliceFrom, sliceFrom + JOBS_PER_PAGE);
             setJobs(pagedResults);
             setTotalJobs(finalTotal);
             setCurrentPage(page);
@@ -928,8 +1021,8 @@ const AllJobsTab = ({
                     const silentJobs = merged.map(j => ({
                         ...j,
                         company: j.company_name || 'Unknown',
-                        role: j.role_name || j.title || '',
-                        job_role_name: j.role_name || j.title || '',
+                        role: mapJavaRole(j.role_name || j.title || ''),
+                        job_role_name: mapJavaRole(j.role_name || j.title || ''),
                         url: j.job_url_direct || j.job_url || '',
                         apply_url: j.job_url || j.job_url_direct || '',
                         job_id: j.id,
@@ -989,20 +1082,46 @@ const AllJobsTab = ({
 
     const getPageNumbers = () => {
         const pages = [];
-        if (totalPages <= 7) {
-            for (let i = 1; i <= totalPages; i++) pages.push(i);
-        } else {
-            if (currentPage <= 4) {
-                for (let i = 1; i <= 5; i++) pages.push(i);
-                pages.push('...', totalPages);
-            } else if (currentPage >= totalPages - 3) {
-                pages.push(1, '...');
-                for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
-            } else {
-                pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
-            }
+        
+        // Always include pages 1, 2, 3, 4 if they exist
+        for (let i = 1; i <= Math.min(4, totalPages); i++) {
+            pages.push(i);
         }
-        return pages;
+        
+        // Include currentPage and its neighbors (currentPage-1, currentPage+1) if they are valid (> 4 and < totalPages)
+        const neighbors = [currentPage - 1, currentPage, currentPage + 1];
+        neighbors.forEach(p => {
+            if (p > 4 && p < totalPages) {
+                pages.push(p);
+            }
+        });
+        
+        // Include requested jumps (25, 50, 100, 200, 500) if they are valid (> 4 and < totalPages)
+        const jumps = [25, 50, 100, 200, 500];
+        jumps.forEach(j => {
+            if (j > 4 && j < totalPages) {
+                pages.push(j);
+            }
+        });
+        
+        // Always include the last page if it is greater than 4
+        if (totalPages > 4) {
+            pages.push(totalPages);
+        }
+        
+        // Deduplicate and sort numerically
+        const uniqueSorted = Array.from(new Set(pages)).sort((a, b) => a - b);
+        
+        // Add '...' between non-consecutive pages
+        const result = [];
+        for (let i = 0; i < uniqueSorted.length; i++) {
+            if (i > 0 && uniqueSorted[i] - uniqueSorted[i - 1] > 1) {
+                result.push('...');
+            }
+            result.push(uniqueSorted[i]);
+        }
+        
+        return result;
     };
 
     return (
@@ -1030,7 +1149,7 @@ const AllJobsTab = ({
                         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.02)',
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
-                    className="focus-within:border-[#2C76FF] focus-within:ring-2 focus-within:ring-[#2C76FF]/10 focus-within:shadow-[0_4px_20px_rgba(44,118,255,0.08)]"
+                        className="focus-within:border-[#2C76FF] focus-within:ring-2 focus-within:ring-[#2C76FF]/10 focus-within:shadow-[0_4px_20px_rgba(44,118,255,0.08)]"
                     >
                         <Search size={18} className="text-gray-400 shrink-0" />
                         <input
@@ -1222,7 +1341,7 @@ const AllJobsTab = ({
                                             }}
                                         >
                                             <div style={{ color: '#29FE29', fontSize: '12px', fontWeight: 900, lineHeight: 1.4, textAlign: 'center' }}>
-                                                Upgrade to Unlock Your AI Match Score<br />
+                                                Upgrade to Match Your personalized Jobs<br />
                                                 <span style={{ color: '#fff', fontSize: '10px', opacity: 0.8 }}>Focus only on roles you can win</span>
                                             </div>
                                             {/* Tooltip Arrow */}

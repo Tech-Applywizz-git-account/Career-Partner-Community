@@ -710,22 +710,56 @@
 
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import {
     Search, ChevronDown, ChevronUp, Globe, Users, Briefcase,
-    BarChart3, Loader2, MapPin, DollarSign, Award, ArrowUpRight
+    BarChart3, Loader2, MapPin, DollarSign, Award, ArrowUpRight, Building,
+    ChevronLeft
 } from 'lucide-react';
+
+const STATES = [
+    "All States", "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI",
+    "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND",
+    "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA",
+    "WA", "WV", "WI", "WY"
+];
+
+const JOB_CATEGORIES = [
+    { name: "Software Developers", count: 27710 },
+    { name: "Computer Systems Engineers/Architects", count: 3094 },
+    { name: "Information Technology Project Managers", count: 3043 },
+    { name: "Software Quality Assurance Analysts and Testers", count: 2983 },
+    { name: "Data Scientists", count: 2679 },
+    { name: "Computer and Information Systems Managers", count: 2397 },
+    { name: "Computer Programmers", count: 1991 },
+    { name: "Computer Systems Analysts", count: 1809 },
+    { name: "Business Intelligence Analysts", count: 1542 },
+    { name: "Mechanical Engineers", count: 1284 },
+    { name: "Electronics Engineers, Except Computer", count: 1243 },
+    { name: "Financial and Investment Analysts", count: 1169 },
+    { name: "Database Administrators", count: 1069 },
+    { name: "Electrical Engineers", count: 1049 },
+    { name: "Medical Scientists, Except Epidemiologists", count: 1022 },
+    { name: "Accountants and Auditors", count: 918 },
+    { name: "Operations Research Analysts", count: 855 },
+    { name: "Management Analysts", count: 848 },
+    { name: "Network and Computer Systems Administrators", count: 809 },
+    { name: "Industrial Engineers", count: 751 }
+];
 
 const H1BSponsorFinder = ({ isMobile }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchType, setSearchType] = useState('company');
+    const [showLcaInfo, setShowLcaInfo] = useState(false);
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
     const [stats, setStats] = useState({
-        uniqueCompanies: 0,
-        totalLcaFilings: 0,
-        workerPositions: 0,
-        h1bSponsors: 0
+        uniqueCompanies: 18192,
+        totalLcaFilings: 81330,
+        workerPositions: 169465,
+        h1bSponsors: 18192
     });
 
     const [workState, setWorkState] = useState('All States');
@@ -736,10 +770,16 @@ const H1BSponsorFinder = ({ isMobile }) => {
     const [expandedRoles, setExpandedRoles] = useState(new Map());
     const [roleData, setRoleData] = useState({});
 
-    // Refined Palette: Blue + Yellow (Wage Trail Theme)
+    const navigate = useNavigate();
+
+    const handleBack = () => {
+        navigate('/app');
+    };
+
+    // Refined Palette: Blue + Green Theme (Aligns with brand palette)
     const COLORS = {
         primary: '#2C76FF',
-        secondary: '#2C76FF',
+        secondary: '#29FE29',
         background: '#f1f3f6',
         white: '#ffffff',
         textMain: '#1e293b',
@@ -768,25 +808,51 @@ const H1BSponsorFinder = ({ isMobile }) => {
                 query = query.eq('HQ State', workState);
             }
 
+            // Fetch up to 1000 records to process client-side (to bypass DB string comparison and alphabetical sorting issues)
+            const { data: results, error } = await query.limit(1000);
+            if (error) throw error;
+
+            // Process and sort numerically client-side
+            let processed = (results || []).map(row => {
+                return {
+                    ...row,
+                    _filingsNum: parseInt(String(row['LCA Filings'] || '0').replace(/,/g, '')) || 0,
+                    _salaryNum: parseInt(String(row['Avg Salary'] || '0').replace(/,/g, '')) || 0,
+                    _positionsNum: parseInt(String(row['Worker Positions'] || '0').replace(/,/g, '')) || 0
+                };
+            });
+
+            // Filter by minSponsorships
             if (minSponsorships > 1) {
-                query = query.gte('LCA Filings', minSponsorships);
+                processed = processed.filter(row => row._filingsNum >= minSponsorships);
             }
 
-            if (sortBy === 'filings') query = query.order('LCA Filings', { ascending: false });
-            else if (sortBy === 'salary') query = query.order('Avg Salary', { ascending: false });
-            else if (sortBy === 'workers') query = query.order('Worker Positions', { ascending: false });
+            // Sort precision
+            if (sortBy === 'filings') {
+                processed.sort((a, b) => b._filingsNum - a._filingsNum);
+            } else if (sortBy === 'salary') {
+                processed.sort((a, b) => b._salaryNum - a._salaryNum);
+            } else if (sortBy === 'workers') {
+                processed.sort((a, b) => b._positionsNum - a._positionsNum);
+            }
 
-            const { data: results, error } = await query.limit(100);
-            if (error) throw error;
-            setData(results || []);
+            // Limit to 100 for display
+            setData(processed.slice(0, 100));
 
             const { data: dbStats, error: statsError } = await supabase.rpc('get_h1b_stats');
             if (!statsError && dbStats) {
                 setStats({
-                    uniqueCompanies: dbStats.unique_companies || 0,
-                    totalLcaFilings: dbStats.total_filings || 0,
-                    workerPositions: dbStats.worker_positions || 0,
-                    h1bSponsors: dbStats.h1b_sponsors || 0
+                    uniqueCompanies: dbStats.unique_companies || 18192,
+                    totalLcaFilings: dbStats.total_filings || 81330,
+                    workerPositions: dbStats.worker_positions || 169465,
+                    h1bSponsors: dbStats.h1b_sponsors || 18192
+                });
+            } else {
+                setStats({
+                    uniqueCompanies: 18192,
+                    totalLcaFilings: 81330,
+                    workerPositions: 169465,
+                    h1bSponsors: 18192
                 });
             }
         } catch (err) {
@@ -852,26 +918,88 @@ const H1BSponsorFinder = ({ isMobile }) => {
     return (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: COLORS.background, height: '100%', overflow: 'hidden' }}>
 
+            {/* Back Button Top Bar */}
+            <div style={{
+                height: '56px',
+                background: COLORS.white,
+                borderBottom: `1.5px solid ${COLORS.border}`,
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 24px',
+                flexShrink: 0
+            }}>
+                <button
+                    onClick={handleBack}
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        border: '1.5px solid #e2e8f0',
+                        background: '#ffffff',
+                        padding: '6px 14px',
+                        borderRadius: '10px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: '#1e293b',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                        fontFamily: 'system-ui, -apple-system, sans-serif'
+                    }}
+                    onMouseEnter={e => {
+                        e.currentTarget.style.background = '#f8fafc';
+                        e.currentTarget.style.borderColor = COLORS.primary;
+                    }}
+                    onMouseLeave={e => {
+                        e.currentTarget.style.background = '#ffffff';
+                        e.currentTarget.style.borderColor = '#e2e8f0';
+                    }}
+                >
+                    <ChevronLeft size={16} strokeWidth={2.5} /> Back
+                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '20px' }}>
+                    <Globe size={18} color={COLORS.primary} strokeWidth={2.5} />
+                    <span style={{ fontSize: '15px', fontWeight: 800, color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                        H-1B Visa Sponsor Finder
+                    </span>
+                </div>
+            </div>
+
             {/* ═══════════════ HEADER ═══════════════ */}
-            <div style={{ padding: '20px 24px', background: COLORS.white, borderBottom: `1.5px solid ${COLORS.border}`, position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{
-                        padding: '10px',
-                        background: `linear-gradient(135deg, ${COLORS.primary} 0%, #1e40af 100%)`,
-                        borderRadius: '12px',
-                        boxShadow: '0 4px 12px rgba(36, 56, 94, 0.2)'
-                    }}>
-                        <Globe size={22} color="#fff" strokeWidth={2.5} />
-                    </div>
-                    <div>
-                        <h1 style={{ fontSize: '22px', fontWeight: 900, color: COLORS.primary, margin: 0, letterSpacing: '-0.5px' }}>H-1B Visa Sponsor Finder</h1>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
-                            <span style={{ fontSize: '11px', fontWeight: 800, color: '#fff', background: COLORS.secondary, padding: '1px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>OFFICIAL DATA</span>
-                            <p style={{ fontSize: '12px', color: COLORS.textMuted, margin: 0, fontWeight: 600 }}>
-                                Real-time Labor Condition Application (LCA) Database
-                            </p>
+            <div style={{ padding: '20px 24px', background: COLORS.white, borderBottom: `1.5px solid ${COLORS.border}`, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                    <span>🔍</span> H-1B Visa Sponsor Finder, by Career Partner
+                </h1>
+                <p style={{ fontSize: '13px', color: '#475569', margin: 0, fontWeight: 500, lineHeight: '1.5', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                    Find companies that have sponsored work visas — <span style={{ color: '#16a34a', fontWeight: 700 }}>most recent data available, updated as of March 2026</span> (FY2026 Q1 LCA disclosures from the U.S. Department of Labor). Use this to target employers open to H-1B, H-1B1, and E-3 sponsorship.
+                </p>
+                <div>
+                    <button
+                        onClick={() => setShowLcaInfo(!showLcaInfo)}
+                        style={{ border: 'none', background: 'none', padding: 0, color: '#2C76FF', cursor: 'pointer', fontSize: '12.5px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                    >
+                        <span>{showLcaInfo ? '▼' : '•'}</span>
+                        <span style={{ textDecoration: 'underline' }}>What is LCA data?</span>
+                    </button>
+                    {showLcaInfo && (
+                        <div style={{
+                            marginTop: '12px',
+                            padding: '16px',
+                            background: '#f8fafc',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            maxWidth: '750px',
+                            fontSize: '13px',
+                            color: '#475569',
+                            lineHeight: '1.65',
+                            fontFamily: 'system-ui, -apple-system, sans-serif'
+                        }}>
+                            Before hiring an H-1B worker, employers must file a <strong>Labor Condition Application (LCA)</strong> with the DOL and receive certification. This public dataset shows every certified LCA filing — meaning these companies have <strong>actively sponsored work visas</strong>. More filings = more experienced with sponsorship.
+                            <div style={{ marginTop: '10px' }}>
+                                <strong>Certified</strong> — Approved and active. <strong>Certified - Withdrawn</strong> — Was approved but employer later withdrew (company still sponsors).
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
@@ -884,9 +1012,9 @@ const H1BSponsorFinder = ({ isMobile }) => {
             }}>
                 {[
                     { label: 'Sponsors', value: stats.uniqueCompanies.toLocaleString(), icon: Globe, color: '#2C76FF' },
-                    { label: 'Total Filings', value: stats.totalLcaFilings.toLocaleString(), icon: Briefcase, color: '#2C76FF' },
+                    { label: 'Total Filings', value: stats.totalLcaFilings.toLocaleString(), icon: Briefcase, color: '#29FE29' },
                     { label: 'Positions', value: stats.workerPositions.toLocaleString(), icon: Users, color: '#2C76FF' },
-                    { label: 'H-1B Verified', value: stats.h1bSponsors.toLocaleString(), icon: BarChart3, color: '#2C76FF' },
+                    { label: 'H-1B Verified', value: stats.h1bSponsors.toLocaleString(), icon: BarChart3, color: '#29FE29' },
                 ].map((s, i) => (
                     <div key={i} style={{
                         background: COLORS.white,
@@ -905,17 +1033,17 @@ const H1BSponsorFinder = ({ isMobile }) => {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{
                                 width: '36px', height: '36px',
-                                background: `${s.color}15`,
+                                background: s.color === '#29FE29' ? 'rgba(41,254,41,0.15)' : `${s.color}15`,
                                 borderRadius: '10px',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center'
                             }}>
-                                <s.icon size={18} color={s.color} strokeWidth={2.5} />
+                                <s.icon size={18} color={s.color === '#29FE29' ? '#15803d' : s.color} strokeWidth={2.5} />
                             </div>
                             <div style={{ fontSize: '10px', fontWeight: 800, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>GLOBAL</div>
                         </div>
                         <div>
                             <p style={{ fontSize: '11px', color: COLORS.textMuted, fontWeight: 700, margin: '4px 0 0' }}>{s.label}</p>
-                            <p style={{ fontSize: '18px', fontWeight: 900, color: COLORS.primary, margin: 0 }}>{s.value}</p>
+                            <p style={{ fontSize: '18px', fontWeight: 950, color: COLORS.textMain, margin: 0 }}>{s.value}</p>
                         </div>
                     </div>
                 ))}
@@ -940,7 +1068,9 @@ const H1BSponsorFinder = ({ isMobile }) => {
                                             value={workState} onChange={e => setWorkState(e.target.value)}
                                             style={{ width: '100%', padding: '12px', borderRadius: '12px', border: `2px solid ${COLORS.border}`, fontSize: '13px', outline: 'none', cursor: 'pointer', fontWeight: 700, color: COLORS.primary, appearance: 'none', background: 'white' }}
                                         >
-                                            <option>All States</option><option>CA</option><option>NY</option><option>TX</option><option>WA</option>
+                                            {STATES.map(st => (
+                                                <option key={st} value={st}>{st === 'All States' ? 'All States' : st}</option>
+                                            ))}
                                         </select>
                                         <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} color={COLORS.textMuted} />
                                     </div>
@@ -990,120 +1120,203 @@ const H1BSponsorFinder = ({ isMobile }) => {
                     {/* Compact Tabs */}
                     <div style={{ borderBottom: `1.5px solid ${COLORS.border}`, padding: '0 24px', background: '#fafbfc' }}>
                         <div style={{ display: 'flex', gap: '32px' }}>
-                            {['company', 'role'].map(tab => (
-                                <button key={tab} onClick={() => setSearchType(tab)} style={{ padding: '20px 4px', fontSize: '13px', fontWeight: 900, border: 'none', borderBottom: searchType === tab ? `3px solid ${COLORS.primary}` : '3px solid transparent', color: searchType === tab ? COLORS.primary : COLORS.textMuted, background: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                                    {tab === 'company' ? 'Sponsor Directory' : 'Job Roles Analysis'}
+                            {[
+                                { id: 'company', label: 'Company Search', icon: Building },
+                                { id: 'role', label: 'Job Title Search', icon: Briefcase }
+                            ].map(tab => (
+                                <button key={tab.id} onClick={() => setSearchType(tab.id)} style={{
+                                    padding: '20px 4px', fontSize: '13px', fontWeight: 900, border: 'none',
+                                    borderBottom: searchType === tab.id ? `3px solid ${COLORS.primary}` : '3px solid transparent',
+                                    color: searchType === tab.id ? COLORS.primary : COLORS.textMuted,
+                                    background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                                    textTransform: 'uppercase', letterSpacing: '0.08em'
+                                }}>
+                                    <tab.icon size={15} color={searchType === tab.id ? COLORS.primary : COLORS.textMuted} />
+                                    {tab.label}
                                 </button>
                             ))}
                         </div>
                     </div>
 
                     {/* Search Field */}
-                    <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}`, background: 'white' }}>
-                        <div style={{ position: 'relative' }}>
-                            <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} color={COLORS.textMuted} />
-                            <input type="text" placeholder={`Global Search ${searchType === 'company' ? 'among 18,192 verified sponsors...' : 'across 5,000+ occupation roles...'}`} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} style={{ width: '100%', padding: '14px 20px 14px 48px', borderRadius: '14px', border: `2px solid ${COLORS.border}`, fontSize: '15px', outline: 'none', color: COLORS.primary, fontWeight: 600, transition: 'border-color 0.2s', background: '#fcfcfc' }} onFocus={e => e.target.style.borderColor = COLORS.primary} onBlur={e => e.target.style.borderColor = COLORS.border} />
+                    {searchType === 'company' && (
+                        <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}`, background: 'white' }}>
+                            <div style={{ position: 'relative' }}>
+                                <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} color={COLORS.textMuted} />
+                                <input
+                                    type="text"
+                                    placeholder="Global Search among 18,192 verified sponsors..."
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                    style={{ width: '100%', padding: '14px 20px 14px 48px', borderRadius: '14px', border: `2px solid ${COLORS.border}`, fontSize: '15px', outline: 'none', color: COLORS.primary, fontWeight: 600, transition: 'border-color 0.2s', background: '#fcfcfc' }}
+                                    onFocus={e => e.target.style.borderColor = COLORS.primary}
+                                    onBlur={e => e.target.style.borderColor = COLORS.border}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div style={{ flex: 1, overflowY: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead style={{ background: '#f8fafc', position: 'sticky', top: 0, zIndex: 10 }}>
-                                <tr style={{ borderBottom: `1.5px solid ${COLORS.border}` }}>
-                                    <th style={{ padding: '14px 24px', textAlign: 'left', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Organization / Sponsor</th>
-                                    <th style={{ padding: '14px 10px', textAlign: 'right', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>LCAs</th>
-                                    <th style={{ padding: '14px 10px', textAlign: 'right', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Positions</th>
-                                    <th style={{ padding: '14px 10px', textAlign: 'center', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>HQ</th>
-                                    <th style={{ padding: '14px 10px', textAlign: 'center', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>States</th>
-                                    <th style={{ padding: '14px 10px', textAlign: 'left', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Primary Job Titles</th>
-                                    <th style={{ padding: '14px 10px', textAlign: 'right', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Avg Pay</th>
-                                    <th style={{ padding: '14px 24px', textAlign: 'right', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Median Pay</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {loading ? (
-                                    <tr><td colSpan="8" style={{ padding: '60px', textAlign: 'center' }}><Loader2 size={32} className="animate-spin mx-auto" color={COLORS.primary} /></td></tr>
-                                ) : data.length > 0 ? data.map(row => (
-                                    <React.Fragment key={row.id}>
-                                        <tr onClick={() => toggleCompany(row)} style={{ borderBottom: `1.5px solid #f1f5f9`, cursor: 'pointer', background: expandedRows.has(row.id) ? 'rgba(44,118,255,0.04)' : COLORS.white, transition: 'background 0.2s' }}>
-                                            <td style={{ padding: '16px 24px', fontWeight: 800, color: COLORS.primary, fontSize: '13px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    {expandedRows.has(row.id) ? <ChevronUp size={14} color={COLORS.primary} strokeWidth={3} /> : <ChevronDown size={14} color="#cbd5e1" strokeWidth={3} />}
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                        <span>{row.Company}</span>
-                                                        <div style={{ display: 'flex', gap: '4px' }}>
-                                                            {row["LCA Filings"] > 1000 && <span style={{ fontSize: '9px', background: '#ecfdf5', color: '#059669', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>TOP SPONSOR</span>}
-                                                            {row["Avg Salary"] > 150000 && <span style={{ fontSize: '9px', background: '#fef2f2', color: '#dc2626', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>HIGH WAGE</span>}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td style={{ padding: '16px 10px', textAlign: 'right', color: COLORS.primary, fontWeight: 900, fontSize: '13px' }}>
-                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                                                    {row["LCA Filings"]?.toLocaleString()}
-                                                    <div style={{ fontSize: '9px', fontWeight: 800, color: COLORS.textMuted, textTransform: 'uppercase' }}>LCAs</div>
-                                                </div>
-                                            </td>
-                                            <td style={{ padding: '16px 10px', textAlign: 'right', color: COLORS.textMain, fontWeight: 700, fontSize: '13px' }}>{row["Worker Positions"]?.toLocaleString() || 0}</td>
-                                            <td style={{ padding: '16px 10px', textAlign: 'center' }}>
-                                                <span style={{ border: `1.5px solid ${COLORS.primary}`, color: COLORS.primary, padding: '3px 7px', borderRadius: '8px', fontSize: '10px', fontWeight: 900, background: '#f8fafc' }}>{row["HQ State"] || 'US'}</span>
-                                            </td>
-                                            <td style={{ padding: '16px 10px', textAlign: 'center', color: COLORS.textMuted, fontWeight: 700, fontSize: '13px' }}>{row["# States"] || 1}</td>
-                                            <td style={{ padding: '16px 10px', textAlign: 'left', color: COLORS.textMain, fontSize: '12.5px', fontWeight: 600, maxWidth: '280px', lineHeight: '1.4' }}>
-                                                {row["Common Job Titles"]?.split('|').map((title, i) => (
-                                                    <span key={i} style={{ display: i > 0 ? 'inline' : 'inline' }}>
-                                                        {i > 0 && <span style={{ color: COLORS.primary, margin: '0 4px', fontWeight: 900 }}>|</span>}
-                                                        {title.trim()}
-                                                    </span>
-                                                ))}
-                                            </td>
-                                            <td style={{ padding: '16px 10px', textAlign: 'right', fontWeight: 800, color: COLORS.primary, fontSize: '13px' }}>{formatCurrency(row["Avg Salary"])}</td>
-                                            <td style={{ padding: '16px 24px', textAlign: 'right', fontWeight: 800, color: COLORS.primary, fontSize: '13px' }}>{formatCurrency(row["Median Salary"])}</td>
-                                        </tr>
+                        {searchType === 'role' && !searchTerm ? (
+                            <div style={{ padding: '24px 32px' }}>
+                                <p style={{ fontSize: '14.5px', color: COLORS.textMuted, marginBottom: '24px', fontWeight: 500, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                                    Select a job category below to see which companies are sponsoring that role.
+                                </p>
+                                <h3 style={{ fontSize: '16px', fontWeight: 800, color: COLORS.textMain, margin: '0 0 4px 0', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                                    Top job categories in this dataset:
+                                </h3>
+                                <p style={{ fontSize: '13px', color: COLORS.textMuted, margin: '0 0 16px 0', fontWeight: 500, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                                    Click any category to search it instantly
+                                </p>
 
-                                        {expandedRows.has(row.id) && roleData[row.Company] && (
-                                            roleData[row.Company].map((role, idx) => (
-                                                <React.Fragment key={idx}>
-                                                    <tr onClick={(e) => { e.stopPropagation(); toggleRole(row.Company, role.title); }} style={{ background: '#f8fafc', cursor: 'pointer', borderBottom: `1.5px solid ${COLORS.border}` }}>
-                                                        <td colSpan="3" style={{ padding: '12px 24px 12px 58px', color: COLORS.primary, fontWeight: 800, fontSize: '14px' }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                {expandedRoles.get(row.Company)?.has(role.title) ? <ChevronUp size={14} color={COLORS.primary} strokeWidth={3} /> : <ChevronDown size={14} color="#cbd5e1" strokeWidth={2.5} />}
-                                                                {role.title}
-                                                            </div>
-                                                        </td>
-                                                        <td style={{ padding: '12px 12px', textAlign: 'center' }}>
-                                                            <span style={{ fontSize: '10px', fontWeight: 800, color: COLORS.textMuted, background: '#e2e8f0', padding: '2px 8px', borderRadius: '6px' }}>{role.count} FILINGS</span>
-                                                        </td>
-                                                        <td colSpan="4" style={{ padding: '12px 24px', textAlign: 'right', color: COLORS.primary, fontWeight: 900, fontSize: '14px' }}>
-                                                            <span style={{ fontSize: '11px', color: COLORS.textMuted, fontWeight: 700, marginRight: '8px' }}>AVG PAY</span>
-                                                            {formatCurrency(role.avgPay)}
-                                                        </td>
-                                                    </tr>
-
-                                                    {expandedRoles.get(row.Company)?.has(role.title) && role.items.map((item, iIdx) => (
-                                                        <tr key={iIdx} style={{ background: COLORS.white, borderBottom: `1px dotted ${COLORS.border}` }}>
-                                                            <td colSpan="3" style={{ padding: '10px 24px 10px 92px', color: COLORS.textMuted, fontSize: '13px', fontWeight: 700 }}>
-                                                                <span style={{ marginRight: '8px' }}>📍</span>
-                                                                {item.City || 'Unknown'}, <strong style={{ color: COLORS.primary }}>{item.State || '??'}</strong>
-                                                            </td>
-                                                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                                                                <span style={{ fontSize: '10px', fontWeight: 800, color: '#4338ca', background: '#e0e7ff', padding: '2px 8px', borderRadius: '6px' }}>{item["Visa Type"] || 'H-1B'}</span>
-                                                            </td>
-                                                            <td colSpan="4" style={{ padding: '10px 24px', textAlign: 'right', color: '#059669', fontWeight: 900, fontSize: '13px' }}>
-                                                                <span style={{ fontSize: '11px', color: COLORS.textMuted, fontWeight: 700, marginRight: '8px' }}>SPECIFIC SALARY</span>
-                                                                {formatCurrency(item.Salary)}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </React.Fragment>
-                                            ))
-                                        )}
-                                    </React.Fragment>
-                                )) : (
-                                    <tr><td colSpan="8" style={{ padding: '60px', textAlign: 'center', color: COLORS.textMuted, fontWeight: 700 }}>No sponsor records found for "{searchTerm}".</td></tr>
+                                <div style={{ border: `1.5px solid ${COLORS.border}`, borderRadius: '12px', overflow: 'hidden' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                        <thead style={{ background: '#f8fafc' }}>
+                                            <tr style={{ borderBottom: `1.5px solid ${COLORS.border}` }}>
+                                                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '60px' }}>#</th>
+                                                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Job Category (SOC)</th>
+                                                <th style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '120px' }}>LCA Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {JOB_CATEGORIES.map((cat, index) => (
+                                                <tr key={index} style={{ borderBottom: index < JOB_CATEGORIES.length - 1 ? `1px solid ${COLORS.border}` : 'none', background: COLORS.white }}>
+                                                    <td style={{ padding: '12px 16px', fontSize: '13px', color: COLORS.textMuted, fontWeight: 600 }}>{index + 1}</td>
+                                                    <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 700 }}>
+                                                        <button
+                                                            onClick={() => setSearchTerm(cat.name)}
+                                                            style={{ border: 'none', background: 'none', padding: 0, color: COLORS.primary, cursor: 'pointer', fontWeight: 700, textDecoration: 'none', textAlign: 'left' }}
+                                                            onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
+                                                            onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
+                                                        >
+                                                            {cat.name}
+                                                        </button>
+                                                    </td>
+                                                    <td style={{ padding: '12px 16px', fontSize: '13px', textAlign: 'right', color: COLORS.textMain, fontWeight: 700 }}>
+                                                        {cat.count.toLocaleString()}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                {searchType === 'role' && searchTerm && (
+                                    <div style={{ padding: '16px 24px', background: '#f8fafc', borderBottom: `1.5px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                                        <button
+                                            onClick={() => setSearchTerm('')}
+                                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', border: `1.5px solid ${COLORS.border}`, padding: '8px 16px', borderRadius: '10px', background: 'white', color: COLORS.primary, fontWeight: 700, cursor: 'pointer', fontSize: '13px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'all 0.2s' }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = COLORS.primary; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = COLORS.border; }}
+                                        >
+                                            <span>← Back to Job Categories</span>
+                                        </button>
+                                        <span style={{ fontSize: '13px', fontWeight: 700, color: COLORS.textMuted }}>
+                                            Selected Category: <strong style={{ color: COLORS.textMain, fontSize: '14.5px' }}>{searchTerm}</strong>
+                                        </span>
+                                    </div>
                                 )}
-                            </tbody>
-                        </table>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead style={{ background: '#f8fafc', position: 'sticky', top: 0, zIndex: 10 }}>
+                                        <tr style={{ borderBottom: `1.5px solid ${COLORS.border}` }}>
+                                            <th style={{ padding: '14px 24px', textAlign: 'left', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Organization / Sponsor</th>
+                                            <th style={{ padding: '14px 10px', textAlign: 'right', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>LCAs</th>
+                                            <th style={{ padding: '14px 10px', textAlign: 'right', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Positions</th>
+                                            <th style={{ padding: '14px 10px', textAlign: 'center', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>HQ</th>
+                                            <th style={{ padding: '14px 10px', textAlign: 'center', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>States</th>
+                                            <th style={{ padding: '14px 10px', textAlign: 'left', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Primary Job Titles</th>
+                                            <th style={{ padding: '14px 10px', textAlign: 'right', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Avg Pay</th>
+                                            <th style={{ padding: '14px 24px', textAlign: 'right', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Median Pay</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {loading ? (
+                                            <tr><td colSpan="8" style={{ padding: '60px', textAlign: 'center' }}><Loader2 size={32} className="animate-spin mx-auto" color={COLORS.primary} /></td></tr>
+                                        ) : data.length > 0 ? data.map(row => (
+                                            <React.Fragment key={row.id}>
+                                                <tr onClick={() => toggleCompany(row)} style={{ borderBottom: `1.5px solid #f1f5f9`, cursor: 'pointer', background: expandedRows.has(row.id) ? 'rgba(44,118,255,0.04)' : COLORS.white, transition: 'background 0.2s' }}>
+                                                    <td style={{ padding: '16px 24px', fontWeight: 800, color: COLORS.primary, fontSize: '13px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                            {expandedRows.has(row.id) ? <ChevronUp size={14} color={COLORS.primary} strokeWidth={3} /> : <ChevronDown size={14} color="#cbd5e1" strokeWidth={3} />}
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                                <span>{row.Company}</span>
+                                                                <div style={{ display: 'flex', gap: '4px' }}>
+                                                                    {row["LCA Filings"] > 1000 && <span style={{ fontSize: '9px', background: '#ecfdf5', color: '#059669', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>TOP SPONSOR</span>}
+                                                                    {row["Avg Salary"] > 150000 && <span style={{ fontSize: '9px', background: '#fef2f2', color: '#dc2626', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>HIGH WAGE</span>}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ padding: '16px 10px', textAlign: 'right', color: COLORS.primary, fontWeight: 900, fontSize: '13px' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                                                            {row["LCA Filings"]?.toLocaleString()}
+                                                            <div style={{ fontSize: '9px', fontWeight: 800, color: COLORS.textMuted, textTransform: 'uppercase' }}>LCAs</div>
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ padding: '16px 10px', textAlign: 'right', color: COLORS.textMain, fontWeight: 700, fontSize: '13px' }}>{row["Worker Positions"]?.toLocaleString() || 0}</td>
+                                                    <td style={{ padding: '16px 10px', textAlign: 'center' }}>
+                                                        <span style={{ border: `1.5px solid ${COLORS.primary}`, color: COLORS.primary, padding: '3px 7px', borderRadius: '8px', fontSize: '10px', fontWeight: 900, background: '#f8fafc' }}>{row["HQ State"] || 'US'}</span>
+                                                    </td>
+                                                    <td style={{ padding: '16px 10px', textAlign: 'center', color: COLORS.textMuted, fontWeight: 700, fontSize: '13px' }}>{row["# States"] || 1}</td>
+                                                    <td style={{ padding: '16px 10px', textAlign: 'left', color: COLORS.textMain, fontSize: '12.5px', fontWeight: 600, maxWidth: '280px', lineHeight: '1.4' }}>
+                                                        {row["Common Job Titles"]?.split('|').map((title, i) => (
+                                                            <span key={i} style={{ display: i > 0 ? 'inline' : 'inline' }}>
+                                                                {i > 0 && <span style={{ color: COLORS.primary, margin: '0 4px', fontWeight: 900 }}>|</span>}
+                                                                {title.trim()}
+                                                            </span>
+                                                        ))}
+                                                    </td>
+                                                    <td style={{ padding: '16px 10px', textAlign: 'right', fontWeight: 800, color: COLORS.primary, fontSize: '13px' }}>{formatCurrency(row["Avg Salary"])}</td>
+                                                    <td style={{ padding: '16px 24px', textAlign: 'right', fontWeight: 800, color: COLORS.primary, fontSize: '13px' }}>{formatCurrency(row["Median Salary"])}</td>
+                                                </tr>
+
+                                                {expandedRows.has(row.id) && roleData[row.Company] && (
+                                                    roleData[row.Company].map((role, idx) => (
+                                                        <React.Fragment key={idx}>
+                                                            <tr onClick={(e) => { e.stopPropagation(); toggleRole(row.Company, role.title); }} style={{ background: '#f8fafc', cursor: 'pointer', borderBottom: `1.5px solid ${COLORS.border}` }}>
+                                                                <td colSpan="3" style={{ padding: '12px 24px 12px 58px', color: COLORS.primary, fontWeight: 800, fontSize: '14px' }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                        {expandedRoles.get(row.Company)?.has(role.title) ? <ChevronUp size={14} color={COLORS.primary} strokeWidth={3} /> : <ChevronDown size={14} color="#cbd5e1" strokeWidth={2.5} />}
+                                                                        {role.title}
+                                                                    </div>
+                                                                </td>
+                                                                <td style={{ padding: '12px 12px', textAlign: 'center' }}>
+                                                                    <span style={{ fontSize: '10px', fontWeight: 800, color: COLORS.textMuted, background: '#e2e8f0', padding: '2px 8px', borderRadius: '6px' }}>{role.count} FILINGS</span>
+                                                                </td>
+                                                                <td colSpan="4" style={{ padding: '12px 24px', textAlign: 'right', color: COLORS.primary, fontWeight: 900, fontSize: '14px' }}>
+                                                                    <span style={{ fontSize: '11px', color: COLORS.textMuted, fontWeight: 700, marginRight: '8px' }}>AVG PAY</span>
+                                                                    {formatCurrency(role.avgPay)}
+                                                                </td>
+                                                            </tr>
+
+                                                            {expandedRoles.get(row.Company)?.has(role.title) && role.items.map((item, iIdx) => (
+                                                                <tr key={iIdx} style={{ background: COLORS.white, borderBottom: `1px dotted ${COLORS.border}` }}>
+                                                                    <td colSpan="3" style={{ padding: '10px 24px 10px 92px', color: COLORS.textMuted, fontSize: '13px', fontWeight: 700 }}>
+                                                                        <span style={{ marginRight: '8px' }}>📍</span>
+                                                                        {item.City || 'Unknown'}, <strong style={{ color: COLORS.primary }}>{item.State || '??'}</strong>
+                                                                    </td>
+                                                                    <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                                                                        <span style={{ fontSize: '10px', fontWeight: 800, color: '#4338ca', background: '#e0e7ff', padding: '2px 8px', borderRadius: '6px' }}>{item["Visa Type"] || 'H-1B'}</span>
+                                                                    </td>
+                                                                    <td colSpan="4" style={{ padding: '10px 24px', textAlign: 'right', color: '#059669', fontWeight: 900, fontSize: '13px' }}>
+                                                                        <span style={{ fontSize: '11px', color: COLORS.textMuted, fontWeight: 700, marginRight: '8px' }}>SPECIFIC SALARY</span>
+                                                                        {formatCurrency(item.Salary)}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </React.Fragment>
+                                                    ))
+                                                )}
+                                            </React.Fragment>
+                                        )) : (
+                                            <tr><td colSpan="8" style={{ padding: '60px', textAlign: 'center', color: COLORS.textMuted, fontWeight: 700 }}>No sponsor records found for "{searchTerm}".</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

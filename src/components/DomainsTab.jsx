@@ -146,11 +146,29 @@ const DomainsTab = ({ onSelectDomain, selectedCountry, dateFilter, viewMode = 'g
         dateFilter?.to || null
       );
 
-      const domainList = rows.map(row => ({
-        name:  row.role_name,
-        count: Number(row.job_count),
-        type:  isTechRole(row.role_name) ? 'TECH' : 'NON-TECH',
-      }));
+      const aggregated = {};
+      rows.forEach(row => {
+        let name = row.role_name;
+        if (name) {
+          const lower = name.trim().toLowerCase();
+          if (lower === 'java full stack' || lower === 'java developer' || lower === 'java full stack developer') {
+            name = 'Java Developer';
+          }
+        }
+        
+        if (!name) return;
+
+        if (!aggregated[name]) {
+          aggregated[name] = {
+            name,
+            count: 0,
+            type: isTechRole(name) ? 'TECH' : 'NON-TECH',
+          };
+        }
+        aggregated[name].count += Number(row.job_count);
+      });
+
+      const domainList = Object.values(aggregated);
 
       // Sort: prioritize FEATURED_DOMAINS first, then by count
       const sorted = domainList.sort((a, b) => {

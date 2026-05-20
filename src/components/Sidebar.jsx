@@ -9,7 +9,6 @@ import {
     User,
     CreditCard,
     Shield,
-    PlayCircle,
     HelpCircle,
     LogOut,
     ListFilter,
@@ -180,10 +179,6 @@ const Sidebar = ({ className = "", showHeader = true, onClose }) => {
                 </div>
 
                 <div className="pt-2 space-y-1">
-                    <button className="w-full flex items-center gap-3 px-3 py-2 text-[#666666] hover:text-[#24385E] transition-colors rounded-lg group">
-                        <PlayCircle size={18} className="text-[#999999] group-hover:text-[#24385E]" />
-                        <span className="text-[13px] font-medium">Start Tour</span>
-                    </button>
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-3 py-2 text-[#666666] hover:text-red-600 transition-colors rounded-lg group"

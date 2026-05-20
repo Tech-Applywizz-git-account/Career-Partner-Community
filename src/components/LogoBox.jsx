@@ -11,8 +11,20 @@ import { Globe } from 'lucide-react';
 const LogoBox = ({ name, officialUrl = null, size = 40, fontSize = 12, className = "" }) => {
     const [error, setError] = useState(false);
 
-    // Get the best possible logo URL from our resolver
-    const logoUrl = getCompanyLogo(name, officialUrl);
+    const cleanName = (name || '').trim().toLowerCase();
+    
+    // Hardcoded local image overrides for specific companies
+    let logoUrl = null;
+    if (cleanName === 'kpmg' || cleanName.startsWith('kpmg')) {
+        // Will load public/assets/logos/kpmg.png
+        logoUrl = '/assets/logos/kpmg.png';
+    } else if (cleanName === 'ibm' || cleanName === 'ibm corporation') {
+        // Will load public/assets/logos/ibm.png
+        logoUrl = '/assets/logos/ibm.png';
+    } else {
+        logoUrl = getCompanyLogo(name, officialUrl);
+    }
+    
     const initials = name ? name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() : '??';
 
     // Reset error state when company name changes

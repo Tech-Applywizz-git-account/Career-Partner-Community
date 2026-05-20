@@ -2348,7 +2348,7 @@
 
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { externalSupabase } from '../externalSupabaseClient';
 import useAuth from '../hooks/useAuth';
@@ -2378,7 +2378,7 @@ import GlobalSearchHeader from '../components/GlobalSearchHeader';
 import DomainsTab from '../components/DomainsTab';
 import CompaniesTab from '../components/CompaniesTab';
 import AllCompaniesListTab from '../components/AllCompaniesListTab';
-import H1BSponsorFinderTab from '../components/H1BSponsorFinderTab';
+import H1BSponsorFinder from '../components/H1BSponsorFinder';
 import AdminStatsTab from '../components/AdminStatsTab';
 import AppTour from '../components/AppTour';
 import { fetchJobRoles, filterRoles } from '../utils/rolesSuggestions';
@@ -2823,17 +2823,19 @@ const Homepage = () => {
     navigate('/', { replace: true });
   };
 
-  const location = window.location.pathname;
+  const routerLocation = useLocation();
   const [activeView, setActiveView] = useState(() => {
-    if (location.includes('/h1b-finder')) return 'h1b_finder';
+    if (routerLocation.pathname.includes('/h1b-finder')) return 'h1b_finder';
     return 'all_jobs';
   });
 
   useEffect(() => {
-    if (window.location.pathname.includes('/h1b-finder')) {
+    if (routerLocation.pathname.includes('/h1b-finder')) {
       setActiveView('h1b_finder');
+    } else if (activeView === 'h1b_finder') {
+      setActiveView('all_jobs');
     }
-  }, [window.location.pathname]);
+  }, [routerLocation.pathname, activeView]);
   const [companies, setCompanies] = useState([]);
   const [companiesLoading, setCompaniesLoading] = useState(false);
   const [companySearch, setCompanySearch] = useState('');
@@ -3806,12 +3808,12 @@ const Homepage = () => {
   const S = {
     page: { display: 'flex', height: '100vh', overflow: 'hidden', background: '#FFFFFF', fontFamily: "'Inter', sans-serif" },
     sidebar: {
-      width: sidebarOpen ? '260px' : '0',
-      minWidth: sidebarOpen ? '260px' : '0',
+      width: activeView === 'h1b_finder' ? '0' : (sidebarOpen ? '260px' : '0'),
+      minWidth: activeView === 'h1b_finder' ? '0' : (sidebarOpen ? '260px' : '0'),
       background: 'rgba(255, 255, 255, 0.98)',
       backdropFilter: 'blur(10px)',
-      borderRight: '1px solid rgba(0, 0, 0, 0.05)',
-      display: 'flex',
+      borderRight: activeView === 'h1b_finder' ? 'none' : '1px solid rgba(0, 0, 0, 0.05)',
+      display: activeView === 'h1b_finder' ? 'none' : 'flex',
       flexDirection: 'column',
       flexShrink: 0,
       position: isMobile ? 'fixed' : 'relative',
@@ -4021,36 +4023,43 @@ const Homepage = () => {
       {/* ═══════════════ MAIN ═══════════════ */}
       <div style={S.main}>
 
-        <div style={S.topBar}>
-          {isMobile && !sidebarOpen && (
-            <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
-              <Menu size={24} color="#24385E" />
-            </button>
-          )}
-          {!isMobile && !sidebarOpen && (
-             <div style={{ width: '40px' }} /> // Placeholder to keep title centered if toggle is absolute
-          )}
+        {activeView !== 'h1b_finder' && (
+          <div style={S.topBar}>
+            {isMobile && !sidebarOpen && (
+              <button onClick={() => setSidebarOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
+                <Menu size={24} color="#24385E" />
+              </button>
+            )}
+            {!isMobile && !sidebarOpen && (
+               <div style={{ width: '40px' }} /> // Placeholder to keep title centered if toggle is absolute
+            )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {activeView === 'all_companies' ? <Building2 size={20} color="#2C76FF" /> : <Briefcase size={20} color="#2C76FF" />}
-            <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 700, color: '#1E1E1E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {activeView === 'all_companies' ? 'Search open roles by company' : 'Global Career Acceleration'}
-            </span>
-          </div>
-
-          {!isMobile && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2C76FF' }} />
-              <div style={{ width: '32px', height: '2px', background: '#2C76FF', opacity: 0.2, borderRadius: '3px' }} />
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#eee' }} />
-              <div style={{ width: '32px', height: '2px', background: '#eee', borderRadius: '3px' }} />
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#eee' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {activeView === 'all_companies' ? <Building2 size={20} color="#2C76FF" /> : <Briefcase size={20} color="#2C76FF" />}
+              <span style={{ fontSize: isMobile ? '14px' : '16px', fontWeight: 700, color: '#1E1E1E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {activeView === 'all_companies' ? 'Search open roles by company' : 'Global Career Acceleration'}
+              </span>
             </div>
-          )}
-          {isMobile && <div style={{ width: '32px' }} />}
-        </div>
 
-        <div style={{ ...S.content, flexDirection: 'column', padding: isMobile ? '16px' : '32px', overflowY: 'auto' }}>
+            {!isMobile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: '12px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2C76FF' }} />
+                <div style={{ width: '32px', height: '2px', background: '#2C76FF', opacity: 0.2, borderRadius: '3px' }} />
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#eee' }} />
+                <div style={{ width: '32px', height: '2px', background: '#eee', borderRadius: '3px' }} />
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#eee' }} />
+              </div>
+            )}
+            {isMobile && <div style={{ width: '32px' }} />}
+          </div>
+        )}
+
+        <div style={{ 
+          ...S.content, 
+          flexDirection: 'column', 
+          padding: activeView === 'h1b_finder' ? '0' : (isMobile ? '16px' : '32px'), 
+          overflow: activeView === 'h1b_finder' ? 'hidden' : 'auto' 
+        }}>
 
           {/* Global Search Header - Always visible at top of content for main views */}
           {(activeView === 'all_jobs' || activeView === 'all_companies' || activeView === 'domains' || activeView === 'all_companies_list') && (
@@ -4121,8 +4130,8 @@ const Homepage = () => {
             </div>
           )}
           {activeView === 'h1b_finder' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <H1BSponsorFinderTab />
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+              <H1BSponsorFinder isMobile={isMobile} />
             </div>
           )}
 
