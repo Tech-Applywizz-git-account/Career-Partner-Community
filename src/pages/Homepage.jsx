@@ -2832,6 +2832,7 @@ const Homepage = () => {
   useEffect(() => {
     if (routerLocation.pathname.includes('/h1b-finder')) {
       setActiveView('h1b_finder');
+      setSidebarOpen(false);
     } else if (activeView === 'h1b_finder') {
       setActiveView('all_jobs');
     }
@@ -4058,7 +4059,7 @@ const Homepage = () => {
           ...S.content, 
           flexDirection: 'column', 
           padding: activeView === 'h1b_finder' ? '0' : (isMobile ? '16px' : '32px'), 
-          overflow: activeView === 'h1b_finder' ? 'hidden' : 'auto' 
+          overflow: activeView === 'h1b_finder' ? (isMobile ? 'auto' : 'hidden') : 'auto'
         }}>
 
           {/* Global Search Header - Always visible at top of content for main views */}
@@ -4130,7 +4131,7 @@ const Homepage = () => {
             </div>
           )}
           {activeView === 'h1b_finder' && (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: isMobile ? 'auto' : '100%', overflow: isMobile ? 'visible' : 'hidden' }}>
               <H1BSponsorFinder isMobile={isMobile} />
             </div>
           )}

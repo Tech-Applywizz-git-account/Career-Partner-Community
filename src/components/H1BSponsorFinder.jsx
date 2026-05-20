@@ -916,7 +916,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
     };
 
     return (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: COLORS.background, height: '100%', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: COLORS.background, height: isMobile ? 'auto' : '100%', overflow: isMobile ? 'visible' : 'hidden' }}>
 
             {/* Back Button Top Bar */}
             <div style={{
@@ -1008,7 +1008,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                 display: 'grid',
                 gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
                 gap: '12px',
-                padding: '12px 24px 16px'
+                padding: isMobile ? '12px 12px 16px' : '12px 24px 16px'
             }}>
                 {[
                     { label: 'Sponsors', value: stats.uniqueCompanies.toLocaleString(), icon: Globe, color: '#2C76FF' },
@@ -1049,7 +1049,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                 ))}
             </div>
 
-            <div style={{ flex: 1, display: 'flex', overflow: 'hidden', padding: '0 24px 24px' }}>
+            <div style={{ flex: isMobile ? 'none' : 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', overflow: isMobile ? 'visible' : 'hidden', padding: isMobile ? '0 12px 12px' : '0 24px 24px' }}>
 
                 {!isMobile && (
                     <div style={{ width: '230px', marginRight: '24px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' }}>
@@ -1114,7 +1114,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                 )}
 
                 {/* ═══════════════ MAIN TABLE CONTAINER ═══════════════ */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: COLORS.white, borderRadius: '24px', border: `1.5px solid ${COLORS.border}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+                <div style={{ flex: isMobile ? 'none' : 1, display: 'flex', flexDirection: 'column', background: COLORS.white, borderRadius: isMobile ? '16px' : '24px', border: `1.5px solid ${COLORS.border}`, overflow: isMobile ? 'visible' : 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', marginBottom: isMobile ? '20px' : '0' }}>
 
                     {/* Compact Tabs */}
                     <div style={{ borderBottom: `1.5px solid ${COLORS.border}`, padding: '0 24px', background: '#fafbfc' }}>
@@ -1155,7 +1155,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                         </div>
                     )}
 
-                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                    <div style={{ flex: isMobile ? 'none' : 1, overflowX: 'auto', overflowY: isMobile ? 'visible' : 'auto', WebkitOverflowScrolling: 'touch' }}>
                         {searchType === 'role' && !searchTerm ? (
                             <div style={{ padding: '24px 32px' }}>
                                 <p style={{ fontSize: '14.5px', color: COLORS.textMuted, marginBottom: '24px', fontWeight: 500, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -1217,7 +1217,7 @@ const H1BSponsorFinder = ({ isMobile }) => {
                                         </span>
                                     </div>
                                 )}
-                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: isMobile ? '800px' : '100%' }}>
                                     <thead style={{ background: '#f8fafc', position: 'sticky', top: 0, zIndex: 10 }}>
                                         <tr style={{ borderBottom: `1.5px solid ${COLORS.border}` }}>
                                             <th style={{ padding: '14px 24px', textAlign: 'left', fontWeight: 900, color: COLORS.textMuted, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Organization / Sponsor</th>
