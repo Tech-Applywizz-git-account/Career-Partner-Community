@@ -1007,8 +1007,8 @@ const H1BSponsorFinder = ({ isMobile }) => {
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
-                gap: '16px',
-                padding: '20px 24px'
+                gap: '12px',
+                padding: '12px 24px 16px'
             }}>
                 {[
                     { label: 'Sponsors', value: stats.uniqueCompanies.toLocaleString(), icon: Globe, color: '#2C76FF' },
@@ -1018,12 +1018,12 @@ const H1BSponsorFinder = ({ isMobile }) => {
                 ].map((s, i) => (
                     <div key={i} style={{
                         background: COLORS.white,
-                        padding: '16px 20px',
-                        borderRadius: '16px',
+                        padding: '10px 14px',
+                        borderRadius: '12px',
                         border: `1.5px solid ${COLORS.border}`,
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '8px',
+                        gap: '4px',
                         boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
                         transition: 'transform 0.2s ease'
                     }}
@@ -1032,18 +1032,18 @@ const H1BSponsorFinder = ({ isMobile }) => {
                     >
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{
-                                width: '36px', height: '36px',
+                                width: '28px', height: '28px',
                                 background: s.color === '#29FE29' ? 'rgba(41,254,41,0.15)' : `${s.color}15`,
-                                borderRadius: '10px',
+                                borderRadius: '8px',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center'
                             }}>
-                                <s.icon size={18} color={s.color === '#29FE29' ? '#15803d' : s.color} strokeWidth={2.5} />
+                                <s.icon size={14} color={s.color === '#29FE29' ? '#15803d' : s.color} strokeWidth={2.5} />
                             </div>
-                            <div style={{ fontSize: '10px', fontWeight: 800, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>GLOBAL</div>
+                            <div style={{ fontSize: '9px', fontWeight: 800, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>GLOBAL</div>
                         </div>
                         <div>
-                            <p style={{ fontSize: '11px', color: COLORS.textMuted, fontWeight: 700, margin: '4px 0 0' }}>{s.label}</p>
-                            <p style={{ fontSize: '18px', fontWeight: 950, color: COLORS.textMain, margin: 0 }}>{s.value}</p>
+                            <p style={{ fontSize: '10px', color: COLORS.textMuted, fontWeight: 700, margin: '2px 0 0' }}>{s.label}</p>
+                            <p style={{ fontSize: '15px', fontWeight: 950, color: COLORS.textMain, margin: 0 }}>{s.value}</p>
                         </div>
                     </div>
                 ))}
@@ -1051,42 +1051,41 @@ const H1BSponsorFinder = ({ isMobile }) => {
 
             <div style={{ flex: 1, display: 'flex', overflow: 'hidden', padding: '0 24px 24px' }}>
 
-                {/* ═══════════════ SIDEBAR FILTERS (REDUCED SIZE) ═══════════════ */}
                 {!isMobile && (
-                    <div style={{ width: '230px', marginRight: '24px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div style={{ background: COLORS.white, padding: '24px', borderRadius: '20px', border: `1.5px solid ${COLORS.border}`, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                            <div style={{ fontSize: '12px', fontWeight: 900, color: COLORS.primary, textTransform: 'uppercase', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <div style={{ width: '3px', height: '14px', background: COLORS.primary, borderRadius: '2px' }} />
+                    <div style={{ width: '230px', marginRight: '24px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px', height: '100%' }}>
+                        <div style={{ background: COLORS.white, padding: '16px', borderRadius: '16px', border: `1.5px solid ${COLORS.border}`, boxShadow: '0 4px 12px rgba(0,0,0,0.03)', height: '100%' }}>
+                            <div style={{ fontSize: '11px', fontWeight: 900, color: COLORS.primary, textTransform: 'uppercase', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ width: '3px', height: '12px', background: COLORS.primary, borderRadius: '2px' }} />
                                 Filters
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 800, color: COLORS.textMain, display: 'block', marginBottom: '10px' }}>HQ State</label>
+                                    <label style={{ fontSize: '12px', fontWeight: 800, color: COLORS.textMain, display: 'block', marginBottom: '6px' }}>HQ State</label>
                                     <div style={{ position: 'relative' }}>
                                         <select
                                             value={workState} onChange={e => setWorkState(e.target.value)}
-                                            style={{ width: '100%', padding: '12px', borderRadius: '12px', border: `2px solid ${COLORS.border}`, fontSize: '13px', outline: 'none', cursor: 'pointer', fontWeight: 700, color: COLORS.primary, appearance: 'none', background: 'white' }}
+                                            style={{ width: '100%', padding: '8px 10px', borderRadius: '10px', border: `2px solid ${COLORS.border}`, fontSize: '12px', outline: 'none', cursor: 'pointer', fontWeight: 700, color: COLORS.primary, appearance: 'none', background: 'white' }}
                                         >
                                             {STATES.map(st => (
                                                 <option key={st} value={st}>{st === 'All States' ? 'All States' : st}</option>
                                             ))}
                                         </select>
-                                        <ChevronDown size={14} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} color={COLORS.textMuted} />
+                                        <ChevronDown size={12} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} color={COLORS.textMuted} />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                        <label style={{ fontSize: '13px', fontWeight: 800, color: COLORS.textMain }}>Min Filings</label>
-                                        <span style={{ fontSize: '11px', fontWeight: 900, color: COLORS.primary, background: '#eff6ff', padding: '2px 8px', borderRadius: '6px' }}>{minSponsorships}+</span>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                        <label style={{ fontSize: '12px', fontWeight: 800, color: COLORS.textMain }}>Min Filings</label>
+                                        <span style={{ fontSize: '10px', fontWeight: 900, color: COLORS.primary, background: '#eff6ff', padding: '1px 6px', borderRadius: '4px' }}>{minSponsorships}+</span>
                                     </div>
                                     <input type="range" min="1" max="500" value={minSponsorships} onChange={e => setMinSponsorships(parseInt(e.target.value))} style={{ width: '100%', accentColor: COLORS.secondary, cursor: 'pointer' }} />
                                 </div>
 
                                 <div>
-                                    <label style={{ fontSize: '13px', fontWeight: 800, color: COLORS.textMain, display: 'block', marginBottom: '12px' }}>Sort Precision</label>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontSize: '12px', fontWeight: 800, color: COLORS.textMain, display: 'block', marginBottom: '8px' }}>Sort Precision</label>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                         {[
                                             { id: 'filings', label: 'By Total Filings', icon: Briefcase },
                                             { id: 'salary', label: 'By Avg Salary', icon: DollarSign },
@@ -1096,14 +1095,14 @@ const H1BSponsorFinder = ({ isMobile }) => {
                                                 key={s.id}
                                                 onClick={() => setSortBy(s.id)}
                                                 style={{
-                                                    textAlign: 'left', padding: '12px 14px', borderRadius: '10px', fontSize: '12px', border: 'none', cursor: 'pointer',
+                                                    textAlign: 'left', padding: '8px 10px', borderRadius: '8px', fontSize: '11px', border: 'none', cursor: 'pointer',
                                                     background: sortBy === s.id ? COLORS.primary : '#f8fafc',
                                                     color: sortBy === s.id ? COLORS.white : COLORS.textMain,
                                                     fontWeight: 700, transition: '0.2s',
-                                                    display: 'flex', alignItems: 'center', gap: '10px'
+                                                    display: 'flex', alignItems: 'center', gap: '8px'
                                                 }}
                                             >
-                                                <s.icon size={14} />
+                                                <s.icon size={12} />
                                                 {s.label}
                                             </button>
                                         ))}
