@@ -4150,7 +4150,7 @@ const Homepage = () => {
       </div>
 
       {/* Floating Reopen Button (Desktop) - Premium Glassmorphism */}
-      {!sidebarOpen && !isMobile && (
+      {!sidebarOpen && !isMobile && activeView !== 'h1b_finder' && (
         <button
           onClick={() => setSidebarOpen(true)}
           style={{
