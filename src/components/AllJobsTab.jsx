@@ -461,7 +461,7 @@ const AllJobsTab = ({
         fetchJobRoles().then(setAllRoles);
     }, []);
 
-    const [verifiedSet, setVerifiedSet] = useState(null); // cache Set of confirmed company names
+
     const searchTimer = useRef(null);
     const [debouncedSearch, setDebouncedSearch] = useState('');
     // ── Multi-slot in-memory cache: Map<listCacheKey, {list, total}>
@@ -469,28 +469,7 @@ const AllJobsTab = ({
     // 'all' tab and 'verified' tab are stored independently — switching tabs is instant.
     const processedListCache = useRef(new Map());
 
-    // ── Realtime: refresh verified set whenever a new row is inserted in audit_reviews_backup
-    useEffect(() => {
-        const channel = supabase
-            .channel('audit_reviews_backup_changes')
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'audit_reviews_backup' },
-                (payload) => {
-                    // Only refresh if the new row has tl_confirmation = 'yes'
-                    if (payload?.new?.tl_confirmation === 'yes') {
-                        // Clear caches so next fetch gets fresh data
-                        window._confirmedCompaniesCache = null;
-                        cacheInvalidatePrefix('verifiedSet'); // bust TTL-keyed cache too
-                        processedListCache.current.clear();  // bust both tab caches
-                        setVerifiedSet(null); // triggers re-fetch via getVerifiedSet
-                    }
-                }
-            )
-            .subscribe();
 
-        return () => { supabase.removeChannel(channel); };
-    }, []);
 
     const totalPages = Math.ceil(totalJobs / JOBS_PER_PAGE);
 
@@ -503,7 +482,7 @@ const AllJobsTab = ({
         return () => clearTimeout(searchTimer.current);
     }, [searchTerm]);
 
-    // Load saved job IDs and pre-load verified set
+    // Load saved job IDs
     useEffect(() => {
         const init = async () => {
             if (user) {
@@ -511,55 +490,12 @@ const AllJobsTab = ({
                 const { data } = await supabase.from('saved_jobs').select('job_id').eq('user_id', user.id);
                 if (data) setSavedJobIds(new Set(data.map(r => String(r.job_id))));
             }
-            await getVerifiedSet(); // Pre-load confirmed companies for "isVerified" badges
             setIsInitialLoadDone(true);
         };
         init();
     }, [user]);
 
-    // Load confirmed companies (runs once per session, cached with TTL)
-    const getVerifiedSet = async () => {
-        if (verifiedSet) return verifiedSet;
 
-        // ── Check TTL-keyed cache first (replaces window._confirmedCompaniesCache) ──
-        const CACHE_KEY = 'verifiedSet:global';
-        const cached = cacheGet(CACHE_KEY);
-        if (cached) {
-            setVerifiedSet(cached);
-            return cached;
-        }
-
-        const fetchNames = async (tableName) => {
-            const names = [];
-            let pg = 0;
-            while (true) {
-                const { data, error } = await supabase
-                    .from(tableName)
-                    .select('company')
-                    .eq('tl_confirmation', 'yes')
-                    .range(pg * 1000, (pg + 1) * 1000 - 1);
-                if (error || !data || data.length === 0) break;
-                data.forEach(r => r.company && names.push(r.company));
-                if (data.length < 1000) break;
-                pg++;
-            }
-            return names;
-        };
-
-        // Fetch from backup table only
-        const backupNames = await fetchNames('audit_reviews_backup');
-
-        // Deduplicate — no duplicate company names
-        const unique = Array.from(new Set(backupNames)).filter(Boolean);
-        const s = new Set(unique);
-
-        // Store in TTL-keyed cache (10 min) — expires automatically, no stale data
-        cacheSet(CACHE_KEY, s, TTL.VERIFIED_SET);
-        // Keep window fallback in sync for any legacy references
-        window._confirmedCompaniesCache = unique;
-        setVerifiedSet(s);
-        return s;
-    };
 
     // ── Verified seal SVG ──────────────────────────────────────────────────────
     const VerifiedSeal = ({ size = 16 }) => (
@@ -1393,7 +1329,7 @@ const AllJobsTab = ({
                             const jobEl = viewMode === 'list' ? (
                                 <JobRowList
                                     key={`${job.id || job.url || 'job'}_${i}`}
-                                    job={{ ...job, isVerified: job.isVerified || verifiedSet?.has(job.company) }}
+                                    job={{ ...job, isVerified: false }}
                                     isSaved={savedJobIds.has(String(job.id || job.job_id || ''))}
                                     onSave={handleSave}
                                     onApplyClick={handleApplyClick}
@@ -1402,7 +1338,7 @@ const AllJobsTab = ({
                             ) : (
                                 <JobRow
                                     key={`${job.id || job.url || 'job'}_${i}`}
-                                    job={{ ...job, isVerified: job.isVerified || verifiedSet?.has(job.company) }}
+                                    job={{ ...job, isVerified: false }}
                                     isSaved={savedJobIds.has(String(job.id || job.job_id || ''))}
                                     onSave={handleSave}
                                     scoringPanel={scoringPanel}

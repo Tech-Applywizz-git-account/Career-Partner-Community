@@ -12,6 +12,7 @@ import BlogArticlePage from './pages/BlogArticlePage';
 import JobsAllRoles from './pages/JobsAllRoles';
 import { AuthProvider } from './hooks/useAuth';
 import useDataSync from './hooks/useDataSync';
+import DomainSelectionModal from './components/DomainSelectionModal';
 import './output.css';
 
 
@@ -29,6 +30,7 @@ function App() {
     <Router>
       <AuthProvider>
         <VisitTracker />
+        <DomainSelectionModal />
         <DataSyncWrapper>
           <Routes>
             {/* Authentication is now the entry point */}

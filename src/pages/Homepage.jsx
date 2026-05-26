@@ -3082,37 +3082,18 @@ const Homepage = () => {
     try {
       // ── 3. FAST FIRST PAGE: Show initial companies quickly (single query, no pagination loops) ──
 
-      const fetchAllConfirmed = async (tableName) => {
-        const records = [];
-        let pg = 0;
-        while (true) {
-          const { data, error } = await supabase
-            .from(tableName)
-            .select('company, role, domain, salary, remarks')
-            .eq('tl_confirmation', 'yes')
-            .range(pg * 1000, (pg + 1) * 1000 - 1);
-          if (error || !data || data.length === 0) break;
-          data.forEach(r => r.company && records.push(r));
-          if (data.length < 1000) break;
-          pg++;
-        }
-        return records;
-      };
-
-      const [backupResults, jobsRes] = await Promise.all([
-        fetchAllConfirmed('audit_reviews_backup'),
-        supabase.from('job_jobrole_sponsored_sync').select('company, job_role_name, wage_level, wage_num, url').limit(5000)
-      ]);
-
-      const allVerified = [...backupResults];
-      const confirmedNames = Array.from(new Set(allVerified.map(r => r.company))).filter(Boolean);
+      const jobsRes = await supabase
+        .from('job_jobrole_sponsored_sync')
+        .select('company, job_role_name, wage_level, wage_num, url')
+        .limit(5000);
 
       let jobData = jobsRes.data || [];
+      const confirmedNames = Array.from(new Set(jobData.map(r => r.company))).filter(Boolean);
 
       // If jobs table has more than 5000, fetch remaining pages in background
       if (jobData.length === 5000) {
         // Show first-page results immediately using the data we have, then fill in more
-        buildAndSetCompanies(confirmedNames, jobData, allVerified, true);
+        buildAndSetCompanies(confirmedNames, jobData, [], true);
 
         // Background: fetch remaining pages without blocking UI
         let p = 1;
@@ -3130,7 +3111,7 @@ const Homepage = () => {
         }
       }
 
-      buildAndSetCompanies(confirmedNames, jobData, allVerified, false);
+      buildAndSetCompanies(confirmedNames, jobData, [], false);
 
     } catch (err) {
       if (!err.message?.includes('fetch') && window.navigator.onLine) {
@@ -3377,20 +3358,9 @@ const Homepage = () => {
 
 
 
-      // 3. Audit reviews backup (human verified)
-      let q3 = supabase.from('audit_reviews_backup').select('*').eq('company', selectedCompany).eq('tl_confirmation', 'yes');
-      if (search && search.trim()) {
-        const words = search.trim().split(/\s+/).filter(w => w.length >= 1);
-        if (words.length > 0) {
-          // backup has no title, but we allow company match. Role search disabled as per 'strictly title' requirement.
-          q3 = q3.filter('domain', 'ilike', '%NON_EXISTENT_NONE%');
-        }
-      }
-
-      const [resSponsored, resBackup] = await Promise.all([
-        q1.order('wage_num', { ascending: false, nullsFirst: false }).order('date_posted', { ascending: false }),
-        q3.order('audit_date', { ascending: false })
-      ]);
+      const resSponsored = await q1
+        .order('wage_num', { ascending: false, nullsFirst: false })
+        .order('date_posted', { ascending: false });
 
       // ── Normalize helper ──────────────────────────────────────────────────────
       const _normR = (s) => String(s || '').toLowerCase()
@@ -3433,19 +3403,8 @@ const Homepage = () => {
         return `${co}||${ro}`;
       };
 
-      // ── Pass 1: Flatten + dedup verified jobs (sync + backup) ────────────────
-      const allVerifiedRaw = [
-        ...(resBackup.data || [])
-      ].map(r => ({
-        ...r,
-        title: null, // Strictly from sponsored table only
-        url: r.job_link,
-        date_posted: r.audit_date,
-        job_role_name: r.domain,
-        isVerified: true,
-        isTeaser: paymentStatus === 'pending',
-        job_id: r.job_id || r.id,
-      }));
+      // No audit backup data — all sponsored jobs come from job_jobrole_sponsored_sync
+      const allVerifiedRaw = [];
 
       // Dedup verified jobs by role key — sync and backup share the same records
       const verifiedByRole = new Map(); // roleKey → job
@@ -3712,30 +3671,7 @@ const Homepage = () => {
   }, [fetchCompanyJobs, user, selectedCompany, activeView, isMobile]);
   useEffect(() => { if (user) { fetchSavedJobIds(); fetchAppliedJobIds(); } }, [user]);
 
-  // ── Realtime: when new tl_confirmation='yes' rows are synced into audit_reviews_backup,
-  //             clear company caches and re-fetch so verified badges update automatically
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel('hp_audit_backup_insert')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'audit_reviews_backup' },
-        (payload) => {
-          if (payload?.new?.tl_confirmation === 'yes') {
-            // Clear all company caches so next fetchCompanies gets fresh confirmed list
-            window._allProcessedCompanies = null;
-            window._confirmedCompaniesCache = null;
-            window._companyJobsCache = null; // Clear jobs cache as well
-            try { sessionStorage.removeItem('_companiesCache_v8'); } catch (_) { }
-            setIsInitialLoadDone(false);
-            setAllProcessedCompanies([]);
-          }
-        }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
+
 
 
   const fetchSavedJobIds = async () => {
@@ -3948,6 +3884,10 @@ const Homepage = () => {
                   } else {
                     navigate('/app');
                     setActiveView(item.id);
+                    // Clear company/domain filter when switching back to All Jobs
+                    if (item.id === 'all_jobs') {
+                      setCompanySearch('');
+                    }
                   }
                 }
                 if (isMobile) setSidebarOpen(false);
