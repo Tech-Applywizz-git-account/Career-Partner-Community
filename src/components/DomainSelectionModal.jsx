@@ -50,7 +50,7 @@ export default function DomainSelectionModal() {
     if (e.key === 'Enter') handleSave();
   };
 
-  if (!show) return null;
+  if (!user || !show) return null;
 
   return (
     <div style={{
