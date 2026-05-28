@@ -89,10 +89,17 @@ const JobsAllRoles = () => {
       const { data, error, count } = await q;
       if (error) throw error;
 
-      setJobs(data || []);
+      const filteredData = (data || []).filter(j => 
+        j.company_name && 
+        j.company_name.trim() !== '' && 
+        j.company_name.toLowerCase() !== 'unknown' && 
+        j.company_name.toLowerCase() !== 'unknown company'
+      );
+
+      setJobs(filteredData);
       setTotal(count || 0);
-      if (data && data.length > 0 && !selectedJob) setSelectedJob(data[0]);
-      else if (data && data.length > 0) setSelectedJob(data[0]);
+      if (filteredData.length > 0 && !selectedJob) setSelectedJob(filteredData[0]);
+      else if (filteredData.length > 0) setSelectedJob(filteredData[0]);
     } catch (err) {
       console.error('JobsAllRoles fetch error:', err);
     } finally {

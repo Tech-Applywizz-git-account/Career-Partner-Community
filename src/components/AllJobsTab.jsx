@@ -675,7 +675,7 @@ const AllJobsTab = ({
             const useRangeOffset = pageOffset >= 1000;
             const pageCacheKey = useRangeOffset ? `${listCacheKey}|page_${page}` : listCacheKey;
 
-            const LS_KEY = `ajt_v36_${listCacheKey}`; // bumped: round-robin country mixing
+            const LS_KEY = `ajt_v37_${listCacheKey}`; // bumped: filter out unknown companies
             const LS_TTL_MS = 10 * 60 * 1000; // 10 minutes
             
             if (!useRangeOffset) {
@@ -803,9 +803,11 @@ const AllJobsTab = ({
 
                 if (error) throw error;
 
-                finalJobs = (data || []).map(j => ({
+                finalJobs = (data || [])
+                    .filter(j => j.company_name && j.company_name.trim() !== '' && j.company_name.toLowerCase() !== 'unknown' && j.company_name.toLowerCase() !== 'unknown company')
+                    .map(j => ({
                     ...j,
-                    company: j.company_name || 'Unknown',
+                    company: j.company_name,
                     role: mapJavaRole(j.role_name || j.title || ''),
                     job_role_name: mapJavaRole(j.role_name || j.title || ''),
                     url: j.job_url_direct || j.job_url || '',
@@ -954,9 +956,10 @@ const AllJobsTab = ({
                     if (sRes?.error || famRes?.error) return;
 
                     const merged = [...(famRes.data || []), ...(sRes.data || [])];
-                    const silentJobs = merged.map(j => ({
+                    const validMerged = merged.filter(j => j.company_name && j.company_name.trim() !== '' && j.company_name.toLowerCase() !== 'unknown' && j.company_name.toLowerCase() !== 'unknown company');
+                    const silentJobs = validMerged.map(j => ({
                         ...j,
-                        company: j.company_name || 'Unknown',
+                        company: j.company_name,
                         role: mapJavaRole(j.role_name || j.title || ''),
                         job_role_name: mapJavaRole(j.role_name || j.title || ''),
                         url: j.job_url_direct || j.job_url || '',

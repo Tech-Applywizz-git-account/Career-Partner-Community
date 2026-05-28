@@ -27,7 +27,7 @@ build
 .idea/
 
 # temp output files
-jobs-output.txt
+jobs-output.txt 
 output.txt
 
 # supabase edge functions

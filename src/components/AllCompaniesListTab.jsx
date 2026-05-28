@@ -504,7 +504,7 @@ import { fetchAllCompanies } from '../utils/rpcFetchers';
 
 const ITEMS_PER_PAGE = 12;
 // localStorage stores the raw rows (company_name + job_count only) — keeps size ~3MB which fits
-const LS_RAW_PREFIX = 'cp_companies_raw_v1_';
+const LS_RAW_PREFIX = 'cp_companies_raw_v2_';
 const LS_TTL = 20 * 60 * 1000; // 20 minutes
 
 // Module-level in-memory cache — survives tab switches within same session
@@ -616,7 +616,12 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter, vie
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
+      if (!row.company_name) continue;
+      
       const canonicalName = normalizeDisplayName(row.company_name);
+      if (!canonicalName || canonicalName.toLowerCase() === 'unknown' || canonicalName.toLowerCase() === 'unknown company') {
+        continue;
+      }
 
       if (!aggMap.has(canonicalName)) {
         aggMap.set(canonicalName, {
