@@ -1,8 +1,8 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
-
-const TOUR_COMPLETED_KEY = 'cp_tour_completed_v1';
+import useAuth from '../hooks/useAuth';
+import { supabase } from '../supabaseClient';
 
 // Premium custom CSS injected once
 const injectTourStyles = () => {
@@ -120,11 +120,17 @@ const injectTourStyles = () => {
 
 /**
  * AppTour — Guided onboarding tour for Career Partner.
- * Shows only ONCE per user (stored in localStorage).
+ * Shows only ONCE per user (stored in user metadata).
  * No floating replay button is shown.
  */
 const AppTour = ({ activeView }) => {
+  const { user } = useAuth();
+  const [tourStarted, setTourStarted] = useState(false);
+
   const startTour = useCallback(() => {
+    if (tourStarted || !user) return;
+    setTourStarted(true);
+
     // Wait a tick for DOM elements to be rendered
     setTimeout(() => {
       const navButtons = document.querySelectorAll('nav button');
@@ -189,24 +195,34 @@ const AppTour = ({ activeView }) => {
         doneBtnText: 'Let\'s Go! 🎉',
         progressText: '{{current}} of {{total}}',
         steps,
-        onDestroyed: () => {
-          // Mark as completed so it never auto-starts again for this user
-          localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
+        onDestroyed: async () => {
+          // Mark as completed in backend so it never auto-starts again for this user anywhere
+          if (user) {
+            try {
+              await supabase.auth.updateUser({
+                data: { tour_completed_v1: true }
+              });
+            } catch (err) {
+              console.error("Error updating tour status:", err);
+            }
+          }
         },
       });
 
       driverInstance.drive();
     }, 800);
-  }, []);
+  }, [user, tourStarted]);
 
   useEffect(() => {
     injectTourStyles();
     // Only show if user has never seen it before
-    const tourCompleted = localStorage.getItem(TOUR_COMPLETED_KEY);
-    if (!tourCompleted) {
-      startTour();
+    if (user && user.user_metadata) {
+      const tourCompleted = user.user_metadata.tour_completed_v1;
+      if (!tourCompleted && !tourStarted) {
+        startTour();
+      }
     }
-  }, [startTour]);
+  }, [startTour, user, tourStarted]);
 
   // No UI rendered — no floating button
   return null;
