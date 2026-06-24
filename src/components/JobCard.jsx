@@ -17,8 +17,11 @@ import {
     Heart,
     MoreHorizontal,
     MonitorSmartphone,
-    TrendingUp
+    TrendingUp,
+    Linkedin,
+    ExternalLink
 } from 'lucide-react';
+import RecruiterMessageModal from './RecruiterMessageModal';
 import { supabase } from '../supabaseClient';
 import useAuth from '../hooks/useAuth';
 import { getWageLevel } from '../dataSyncService';
@@ -36,6 +39,8 @@ const JobCard = ({ job, isSaved = false, isApplied = false, onSaveToggle, onAppl
     const [filingCount, setFilingCount] = useState(job.lca_filings || null);
     const [saved, setSaved] = useState(isSaved);
     const [saving, setSaving] = useState(false);
+    const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+    const [hrHovered, setHrHovered] = useState(false);
 
     useEffect(() => setSaved(isSaved), [isSaved]);
 
@@ -72,16 +77,7 @@ const JobCard = ({ job, isSaved = false, isApplied = false, onSaveToggle, onAppl
     const formatTimeAgo = (dateStr) => {
         if (!dateStr) return 'Recently';
         try {
-            const d = new Date(dateStr), now = new Date();
-            const diff = now - d;
-            const mins = Math.floor(diff / 60000);
-            const hours = Math.floor(diff / 3600000);
-            const days = Math.floor(diff / 86400000);
-
-            if (mins < 60) return `${mins} minutes ago`;
-            if (hours < 24) return `${hours} hours ago`;
-            if (days < 7) return `${days} days ago`;
-            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return new Date(dateStr).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' });
         } catch { return 'Recently'; }
     };
 
@@ -173,8 +169,8 @@ const JobCard = ({ job, isSaved = false, isApplied = false, onSaveToggle, onAppl
                     </div>
 
                     {/* Bottom Actions */}
-                    <div className="flex items-center gap-3 mt-auto border-t border-[#f1f5f9] pt-4 shrink-0">
-                        <div className="flex items-center gap-4 mr-auto">
+                    <div className="flex flex-wrap md:flex-nowrap items-center gap-3 md:gap-3 mt-auto border-t border-[#f1f5f9] pt-4 shrink-0">
+                        <div className="flex items-center gap-4 w-full md:w-auto md:mr-auto">
                             <p className="text-[#94a3b8] text-[13px] font-semibold">Less than 25 applicants</p>
                             {job.salary && (
                                 <>
@@ -184,7 +180,79 @@ const JobCard = ({ job, isSaved = false, isApplied = false, onSaveToggle, onAppl
                             )}
                         </div>
                         
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-between md:justify-end mt-2 md:mt-0">
+                            {/* Premium HR Sticker Button - ONLY show if HR profile exists */}
+                            {job.posted_by_profile && String(job.posted_by_profile).toLowerCase() !== 'null' && String(job.posted_by_profile).trim() !== '' && (
+                            <div className="shrink-0 flex items-center gap-3">
+                                {/* 3D Avatar Button */}
+                                <div 
+                                    className="relative cursor-pointer hover:scale-110 transition-transform duration-300 rounded-full shadow-sm"
+                                    onMouseEnter={() => setHrHovered(true)}
+                                    onMouseLeave={() => setHrHovered(false)}
+                                    onClick={(e) => { e.preventDefault(); setIsMessageModalOpen(true); }}
+                                >
+                                    <div style={{ width: '48px', height: '48px' }} className="rounded-full overflow-hidden flex items-center justify-center border-2 border-blue-100 shadow-sm bg-white">
+                                        <img src="/linkedin-recruiter.png" alt="HR Recruiter" style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.05)' }} className="rounded-full" />
+                                    </div>
+                                    
+
+                                    
+                                    {/* Custom Premium Tooltip */}
+                                    <div 
+                                        className="absolute z-50 pointer-events-none transition-all duration-300"
+                                        style={{
+                                            opacity: hrHovered ? 1 : 0,
+                                            visibility: hrHovered ? 'visible' : 'hidden',
+                                            bottom: '130%', left: '50%', transform: hrHovered ? 'translateX(-50%) translateY(0px)' : 'translateX(-50%) translateY(4px)',
+                                            width: '220px', background: 'rgba(10, 10, 20, 0.98)', borderRadius: '12px',
+                                            boxShadow: '0 15px 40px rgba(0,0,0,0.7)', border: '1px solid rgba(41,254,41,0.3)',
+                                            padding: '14px'
+                                        }}
+                                    >
+                                        <div style={{ color: '#29FE29', fontSize: '12px', fontWeight: 900, lineHeight: 1.4, textAlign: 'center' }}>
+                                            AI Recruiter Message<br />
+                                            <span style={{ color: '#fff', fontSize: '10px', opacity: 0.8, fontWeight: 500, display: 'block', marginTop: '4px' }}>
+                                                Message the recruiter directly with a personalized, AI-crafted note!
+                                            </span>
+                                        </div>
+                                        {/* Tooltip Arrow pointing down to the center of the avatar */}
+                                        <div style={{
+                                            position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                                            borderWidth: '7px', borderStyle: 'solid', borderColor: 'rgba(10, 10, 20, 0.98) transparent transparent transparent'
+                                        }} />
+                                    </div>
+                                </div>
+                                
+                                {/* HR Actions Column */}
+                                <div className="flex flex-col gap-1.5 items-start">
+                                    {/* View HR Link */}
+                                    <a 
+                                        href={job.posted_by_profile || '#'}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg transition-colors shadow-sm whitespace-nowrap hover:opacity-90"
+                                        style={{ backgroundColor: '#0A66C2' }}
+                                        onClick={(e) => {
+                                            if (!job.posted_by_profile) e.preventDefault();
+                                        }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" className="md:w-[18px] md:h-[18px]" viewBox="0 0 24 24" fill="#ffffff">
+                                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                        </svg>
+                                        <span className="text-[13px] md:text-[14px] font-bold" style={{ color: '#ffffff' }}>HR LinkedIn</span>
+                                    </a>
+
+                                    {/* Craft Message Button */}
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); setIsMessageModalOpen(true); }}
+                                        className="flex items-center justify-center gap-1.5 rounded-full font-bold shadow-sm transition-all hover:scale-105 active:scale-95 px-3 py-1 text-[11px] md:text-[12px]"
+                                        style={{ backgroundColor: '#29FE29', color: '#111' }}
+                                    >
+                                        <Sparkles size={14} /> Craft Message
+                                    </button>
+                                </div>
+                            </div>
+                            )}
                             <button className="w-12 h-12 border border-[#e2e8f0] rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all">
                                 <Ban size={20} />
                             </button>
@@ -262,6 +330,12 @@ const JobCard = ({ job, isSaved = false, isApplied = false, onSaveToggle, onAppl
                     )}
                 </div>
             </div>
+
+            <RecruiterMessageModal 
+                isOpen={isMessageModalOpen} 
+                job={job} 
+                onClose={() => setIsMessageModalOpen(false)} 
+            />
         </div>
     );
 };

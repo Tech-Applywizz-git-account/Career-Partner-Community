@@ -9,15 +9,16 @@ import { getWageLevel } from '../dataSyncService';
 import {
     ChevronLeft, ChevronRight, Search, Loader2, AlertCircle,
     Briefcase, ExternalLink, MapPin, Clock, Star, Bookmark, BookmarkCheck,
-    SlidersHorizontal, X, Globe, TrendingUp, Building2, CheckCircle
+    SlidersHorizontal, X, Globe, TrendingUp, Building2, CheckCircle, Linkedin, Sparkles
 } from 'lucide-react';
+import RecruiterMessageModal from './RecruiterMessageModal';
 import { isFamous, getCompanyRank, RANKED_COMPANIES } from '../utils/famousCompanies';
 import { cacheGet, cacheSet, cacheInvalidatePrefix, TTL } from '../utils/queryCache';
 import { COUNTRY_MAP, PRIORITY } from '../utils/countryHelper';
 
 const JOBS_PER_PAGE = 15;
 
-const LIGHTWEIGHT_COLUMNS = 'id, role_id, role_name, indeed_search_country, country, location, title, company_name, job_url, job_url_direct, date_posted, is_remote, created_at, job_id, source, salary';
+const LIGHTWEIGHT_COLUMNS = 'id, role_id, role_name, indeed_search_country, country, location, title, company_name, job_url, job_url_direct, date_posted, is_remote, created_at, job_id, source, salary, posted_by_profile';
 
 // Helper to identify if a job is in the IT / Tech field
 function isITJob(job) {
@@ -133,8 +134,9 @@ const applyDateFilter = (query, df) => {
     return query;
 };
 
-const JobRow = ({ job, isSaved, onSave, scoringPanel, onApplyClick }) => {
+const JobRow = ({ job, isSaved, onSave, scoringPanel, onApplyClick, onMessageHRClick }) => {
     const [hovered, setHovered] = useState(false);
+    const [hrHovered, setHrHovered] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
     useEffect(() => {
@@ -148,13 +150,7 @@ const JobRow = ({ job, isSaved, onSave, scoringPanel, onApplyClick }) => {
     const formatTimeAgo = (d) => {
         if (!d) return 'Recently';
         try {
-            const dt = new Date(d), now = new Date();
-            const hours = Math.floor((now - dt) / 36e5);
-            if (hours < 1) return 'Just now';
-            if (hours < 24) return `${hours} hours ago`;
-            const days = Math.floor(hours / 24);
-            if (days < 7) return `${days} days ago`;
-            return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return new Date(d).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' });
         } catch { return 'Recently'; }
     };
 
@@ -166,137 +162,216 @@ const JobRow = ({ job, isSaved, onSave, scoringPanel, onApplyClick }) => {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
-            {/* Main Content Area */}
-            <div className="flex-1 p-6 flex flex-col min-w-0">
-                {/* Top Badges */}
-                <div className="flex flex-wrap gap-2 mb-5">
-                    {getCompanyRank(job.company) !== Infinity && (
-                        <div className="bg-[#eaffea] text-[#1E1E1E] px-3 py-1 rounded-full text-[11px] font-bold border border-[#29FE29]/30 flex items-center gap-1.5 shadow-sm">
-                            <TrendingUp size={12} className="stroke-[3] text-[#29FE29]" /> Top Tier
+            {/* Main Content & Avatar Area */}
+            <div className={`flex-1 flex min-w-0 ${isMobile ? 'flex-col' : 'flex-row'}`}>
+                {/* Left Column: Job Details */}
+                <div className="flex-1 p-6 flex flex-col min-w-0">
+                    {/* Top Badges */}
+                    <div className="flex flex-wrap gap-2 mb-5">
+                        <span className="bg-[#e8f5e9] text-[#2e7d32] px-3 py-1 rounded-full text-[12px] font-semibold border border-[#2e7d32]/20">
+                            {formatTimeAgo(job.date_posted || job.time)}
+                        </span>
+                        {getCompanyRank(job.company) !== Infinity && (
+                            <div className="bg-[#eaffea] text-[#1E1E1E] px-3 py-1 rounded-full text-[11px] font-bold border border-[#29FE29]/30 flex items-center gap-1.5 shadow-sm">
+                                <TrendingUp size={12} className="stroke-[3] text-[#29FE29]" /> Top Tier
+                            </div>
+                        )}
+                        <div className="bg-[#f8fafc] text-[#64748b] px-3 py-1 rounded-full text-[11px] font-bold border border-[#f1f5f9]">
+                            ✨ Early Applicant
                         </div>
-                    )}
-                    <div className="bg-[#f8fafc] text-[#64748b] px-3 py-1 rounded-full text-[11px] font-bold border border-[#f1f5f9]">
-                        ✨ Early Applicant
                     </div>
-                </div>
 
-                {/* Title & Company Section */}
-                <div className="flex items-start gap-4 mb-6">
-                    <div className="shrink-0 bg-white border border-[#f1f5f9] rounded-2xl p-2 shadow-sm group-hover:border-[#2C76FF]/20 transition-colors">
-                        <LogoBox name={job.company} officialUrl={job.url} size={52} fontSize={18} />
+                    {/* Title & Company Section */}
+                    <div className="flex items-start gap-4 mb-6">
+                        <div className="shrink-0 bg-white border border-[#f1f5f9] rounded-2xl p-2 shadow-sm group-hover:border-[#2C76FF]/20 transition-colors">
+                            <LogoBox name={job.company} officialUrl={job.url} size={52} fontSize={18} />
+                        </div>
+                        <div className="flex-1 min-w-0 pt-1">
+                            <div className="min-w-0">
+                                <h3 className="text-[20px] font-black text-[#1E1E1E] leading-[1.3] mb-1.5 h-[52px] line-clamp-2">
+                                    {job.isTeaser ? (
+                                        <Link to="/pricing" className="hover:text-[#2C76FF] transition-colors">{job.title}</Link>
+                                    ) : (
+                                        <a href={job.url || job.apply_url} target="_blank" rel="noopener noreferrer" className="hover:text-[#2C76FF] transition-colors">{job.title}</a>
+                                    )}
+                                </h3>
+                                <div className="flex items-center gap-2 text-[#64748b] text-[14px] font-semibold">
+                                    <span className="text-[#1E1E1E] font-bold">{job.company}</span>
+                                    <span className="opacity-30">/</span>
+                                    <span className="truncate">{job.role || 'Software Engineering'}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="min-w-0 pt-1">
-                        <h3 className="text-[20px] font-black text-[#1E1E1E] leading-[1.3] mb-1.5 h-[52px] line-clamp-2">
-                            {job.isTeaser ? (
-                                <Link to="/pricing" className="hover:text-[#2C76FF] transition-colors">{job.title}</Link>
-                            ) : (
-                                <a href={job.url || job.apply_url} target="_blank" rel="noopener noreferrer" className="hover:text-[#2C76FF] transition-colors">{job.title}</a>
+
+                    {/* Metadata Grid */}
+                    <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mb-8">
+                        {(() => {
+                            // Helper: reject garbage values like "None state=None, None"
+                            const isValidLoc = (s) => {
+                                if (!s || typeof s !== 'string') return false;
+                                const lower = s.toLowerCase().trim();
+                                if (!lower || lower === 'none' || lower === 'null' || lower === 'remote') return false;
+                                // Reject strings that are mostly "none" values
+                                if (lower.includes('none') && lower.includes('state') && lower.includes('none')) return false;
+                                return true;
+                            };
+
+                            // Parse structured location strings
+                            const p1 = parseLoc(job.location);
+                            const p2 = parseLoc(job.country);
+                            const p3 = parseLoc(job.indeed_search_country);
+
+                            const finalL = p1.l || p2.l || p3.l;
+                            const finalC = p1.c || p2.c || p3.c;
+
+                            // Only show location if valid — never fall back to garbage
+                            const rawLoc = finalL || (job.location && !job.location.includes('=') ? job.location : null);
+                            const displayLoc = isValidLoc(rawLoc) ? rawLoc : null;
+
+                            const displayCountry = finalC || job.indeed_search_country ||
+                                (job.country && !job.country.includes('=') ? job.country : null);
+                            const countryLabel = displayCountry
+                                ? (COUNTRY_MAP[displayCountry.toUpperCase()]?.label || COUNTRY_MAP[displayCountry]?.label || displayCountry)
+                                : null;
+
+                            return (
+                                <>
+                                    {/* Only render location row if it's meaningful */}
+                                    {displayLoc && (
+                                        <div className="flex items-center gap-2.5 text-[#334155] font-semibold">
+                                            <MapPin size={18} className="text-[#94a3b8]" />
+                                            <span className="text-[14px] truncate max-w-[200px]">{displayLoc}</span>
+                                        </div>
+                                    )}
+                                    {countryLabel && (
+                                        <div className="flex items-center gap-2.5 text-[#334155] font-semibold">
+                                            <Globe size={18} className="text-[#94a3b8]" />
+                                            <span className="text-[14px]">{countryLabel}</span>
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()}
+                        <div className="flex items-center gap-2.5 text-[#334155] font-semibold">
+                            <Clock size={18} className="text-[#94a3b8]" />
+                            <span className="text-[14px]">{job.employment_type || job.type || 'Full-time'}</span>
+                        </div>
+
+                        {job.isVerified && (
+                            <div className="flex items-center bg-[#eaffea] border border-[#29FE29]/30 px-3 py-1 rounded-lg">
+                                <span className="text-[10px] font-black text-[#1E1E1E] uppercase tracking-wider mr-2">HUMAN VERIFIED</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#29FE29" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2L14.43 3.63L17.29 2.89L18.47 5.56L21.31 6.36L21.14 9.3L23 11.5L21.14 13.7L21.31 16.64L18.47 17.44L17.29 20.11L14.43 19.37L12 21L9.57 19.37L6.71 20.11L5.53 17.44L2.69 16.64L2.86 13.7L1 11.5L2.86 9.3L2.69 6.36L5.53 5.56L6.71 2.89L9.57 3.63L12 2Z" />
+                                    <path d="M10 14.5L7.5 12L6.5 13L10 16.5L17.5 9L16.5 8L10 14.5Z" fill="#1E1E1E" />
+                                </svg>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Bottom Actions Bar */}
+                    <div className="flex flex-wrap items-center justify-between gap-6 mt-auto pt-5 border-t border-[#f1f5f9] shrink-0">
+                        <div className="flex items-center gap-4 text-[#94a3b8] text-[13px] font-semibold">
+                            {job.salary && (
+                                <span className="text-[#1e293b] font-bold">{job.salary}</span>
                             )}
-                        </h3>
-                        <div className="flex items-center gap-2 text-[#64748b] text-[14px] font-semibold">
-                            <span className="text-[#1E1E1E] font-bold">{job.company}</span>
-                            <span className="opacity-30">/</span>
-                            <span className="truncate">{job.role || 'Software Engineering'}</span>
+                        </div>
+
+                        <div className="flex items-center gap-3 ml-auto">
+                            {job.isTeaser ? (
+                                <Link
+                                    to="/pricing"
+                                    className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
+                                    style={{ backgroundColor: '#29FE29', color: '#FFFFFF' }}
+                                >
+                                    Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
+                                </Link>
+                            ) : (
+                                <a
+                                    href={job.url || job.apply_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
+                                    style={{ backgroundColor: '#29FE29', color: '#FFFFFF' }}
+                                    onClick={onApplyClick ? (e) => { e.preventDefault(); onApplyClick(job.url || job.apply_url); } : undefined}
+                                >
+                                    Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
+                                </a>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                {/* Metadata Grid */}
-                <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mb-8">
-                    {(() => {
-                        // Helper: reject garbage values like "None state=None, None"
-                        const isValidLoc = (s) => {
-                            if (!s || typeof s !== 'string') return false;
-                            const lower = s.toLowerCase().trim();
-                            if (!lower || lower === 'none' || lower === 'null' || lower === 'remote') return false;
-                            // Reject strings that are mostly "none" values
-                            if (lower.includes('none') && lower.includes('state') && lower.includes('none')) return false;
-                            return true;
-                        };
+                {/* Right Column: HR Avatar & Link - ONLY show if HR profile exists */}
+                {job.posted_by_profile && String(job.posted_by_profile).toLowerCase() !== 'null' && String(job.posted_by_profile).trim() !== '' && (
+                    <div className={`shrink-0 flex items-center justify-center bg-[#fafafa]/50 ${isMobile ? 'w-full border-t border-[#f1f5f9] flex-col gap-4 p-6' : 'w-[200px] border-l border-[#f1f5f9] flex-col p-6'}`}>
+                        <div
+                            className="relative cursor-pointer hover:scale-110 transition-transform duration-300 rounded-full shadow-sm"
+                            onMouseEnter={() => setHrHovered(true)}
+                            onMouseLeave={() => setHrHovered(false)}
+                            onClick={(e) => { e.preventDefault(); onMessageHRClick?.(job); }}
+                        >
+                            <div style={{ width: '130px', height: '130px' }} className="rounded-full overflow-hidden flex items-center justify-center border-2 border-blue-100 shadow-sm bg-white">
+                                <img src="/linkedin-recruiter.png" alt="HR Recruiter" style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.05)' }} className="rounded-full" />
+                            </div>
 
-                        // Parse structured location strings
-                        const p1 = parseLoc(job.location);
-                        const p2 = parseLoc(job.country);
-                        const p3 = parseLoc(job.indeed_search_country);
+                            {/* Custom Tooltip */}
+                            <div
+                                className="absolute z-50 pointer-events-none transition-all duration-300"
+                                style={{
+                                    opacity: hrHovered ? 1 : 0,
+                                    visibility: hrHovered ? 'visible' : 'hidden',
+                                    bottom: '110%', left: '50%',
+                                    marginLeft: '-110px',
+                                    width: '220px', background: 'rgba(10, 10, 20, 0.98)', borderRadius: '12px',
+                                    boxShadow: '0 15px 40px rgba(0,0,0,0.7)', border: '1px solid rgba(41,254,41,0.3)',
+                                    padding: '14px',
+                                    transform: hrHovered ? 'translateY(0px)' : 'translateY(4px)'
+                                }}
+                            >
+                                <div style={{ color: '#29FE29', fontSize: '12px', fontWeight: 900, lineHeight: 1.4, textAlign: 'center' }}>
+                                    AI Recruiter Message<br />
+                                    <span style={{ color: '#fff', fontSize: '10px', opacity: 0.8, fontWeight: 500, display: 'block', marginTop: '4px' }}>
+                                        Message the recruiter directly with a personalized, AI-crafted note!
+                                    </span>
+                                </div>
+                                {/* Tooltip Arrow pointing down */}
+                                <div style={{
+                                    position: 'absolute', top: '100%', left: '50%', marginLeft: '-7px',
+                                    borderWidth: '7px', borderStyle: 'solid', borderColor: 'rgba(10, 10, 20, 0.98) transparent transparent transparent'
+                                }} />
+                            </div>
+                        </div>
 
-                        const finalL = p1.l || p2.l || p3.l;
-                        const finalC = p1.c || p2.c || p3.c;
-
-                        // Only show location if valid — never fall back to garbage
-                        const rawLoc = finalL || (job.location && !job.location.includes('=') ? job.location : null);
-                        const displayLoc = isValidLoc(rawLoc) ? rawLoc : null;
-
-                        const displayCountry = finalC || job.indeed_search_country ||
-                            (job.country && !job.country.includes('=') ? job.country : null);
-                        const countryLabel = displayCountry
-                            ? (COUNTRY_MAP[displayCountry.toUpperCase()]?.label || COUNTRY_MAP[displayCountry]?.label || displayCountry)
-                            : null;
-
-                        return (
-                            <>
-                                {/* Only render location row if it's meaningful */}
-                                {displayLoc && (
-                                    <div className="flex items-center gap-2.5 text-[#334155] font-semibold">
-                                        <MapPin size={18} className="text-[#94a3b8]" />
-                                        <span className="text-[14px] truncate max-w-[200px]">{displayLoc}</span>
-                                    </div>
-                                )}
-                                {countryLabel && (
-                                    <div className="flex items-center gap-2.5 text-[#334155] font-semibold">
-                                        <Globe size={18} className="text-[#94a3b8]" />
-                                        <span className="text-[14px]">{countryLabel}</span>
-                                    </div>
-                                )}
-                            </>
-                        );
-                    })()}
-                    <div className="flex items-center gap-2.5 text-[#334155] font-semibold">
-                        <Clock size={18} className="text-[#94a3b8]" />
-                        <span className="text-[14px]">{job.employment_type || job.type || 'Full-time'}</span>
-                    </div>
-
-                    {job.isVerified && (
-                        <div className="flex items-center bg-[#eaffea] border border-[#29FE29]/30 px-3 py-1 rounded-lg">
-                            <span className="text-[10px] font-black text-[#1E1E1E] uppercase tracking-wider mr-2">HUMAN VERIFIED</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#29FE29" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2L14.43 3.63L17.29 2.89L18.47 5.56L21.31 6.36L21.14 9.3L23 11.5L21.14 13.7L21.31 16.64L18.47 17.44L17.29 20.11L14.43 19.37L12 21L9.57 19.37L6.71 20.11L5.53 17.44L2.69 16.64L2.86 13.7L1 11.5L2.86 9.3L2.69 6.36L5.53 5.56L6.71 2.89L9.57 3.63L12 2Z" />
-                                <path d="M10 14.5L7.5 12L6.5 13L10 16.5L17.5 9L16.5 8L10 14.5Z" fill="#1E1E1E" />
+                        {/* View HR Link Below Avatar */}
+                        <a
+                            href={job.posted_by_profile || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center justify-center gap-2 rounded-lg transition-colors shadow-sm whitespace-nowrap hover:opacity-90 ${isMobile ? 'px-4 py-2 mt-2 w-full' : 'px-3 py-1.5 mt-4'}`}
+                            style={{ backgroundColor: '#0A66C2' }}
+                            onClick={(e) => {
+                                if (!job.posted_by_profile) e.preventDefault();
+                            }}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width={isMobile ? "20" : "18"} height={isMobile ? "20" : "18"} viewBox="0 0 24 24" fill="#ffffff">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                             </svg>
-                        </div>
-                    )}
-                </div>
+                            <span className="text-[14px] font-bold" style={{ color: '#ffffff' }}>
+                                HR LinkedIn
+                            </span>
+                        </a>
 
-                {/* Bottom Actions Bar */}
-                <div className="flex flex-wrap items-center justify-between gap-6 mt-auto pt-5 border-t border-[#f1f5f9] shrink-0">
-                    <div className="flex items-center gap-4 text-[#94a3b8] text-[13px] font-semibold">
-                        {job.salary && (
-                            <span className="text-[#1e293b] font-bold">{job.salary}</span>
-                        )}
+                        {/* Craft Message Button */}
+                        <button
+                            onClick={(e) => { e.preventDefault(); onMessageHRClick?.(job); }}
+                            className={`flex items-center justify-center gap-2 rounded-full font-bold shadow-sm transition-all hover:scale-105 active:scale-95 ${isMobile ? 'px-6 py-2.5 w-full mt-3' : 'px-4 py-2 mt-3 w-full text-[13px]'}`}
+                            style={{ backgroundColor: '#ffffffff', color: '#111', border: '1px solid #000000' }}
+                        >
+                            <Sparkles size={16} /> Craft Message
+                        </button>
                     </div>
-
-                    <div className="flex items-center gap-3 ml-auto">
-                        {job.isTeaser ? (
-                            <Link
-                                to="/pricing"
-                                className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
-                                style={{ backgroundColor: '#29FE29', color: '#FFFFFF' }}
-                            >
-                                Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
-                            </Link>
-                        ) : (
-                            <a
-                                href={job.url || job.apply_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="h-12 px-8 rounded-full flex items-center justify-center gap-2.5 font-extrabold text-[15px] transition-all active:scale-95"
-                                style={{ backgroundColor: '#29FE29', color: '#FFFFFF' }}
-                                onClick={onApplyClick ? (e) => { e.preventDefault(); onApplyClick(job.url || job.apply_url); } : undefined}
-                            >
-                                Apply Now <ExternalLink size={20} className="stroke-[2.5]" />
-                            </a>
-                        )}
-                    </div>
-                </div>
+                )}
             </div>
 
             {/* Optional scoring right panel — only rendered for the first 2 cards */}
@@ -413,6 +488,7 @@ const AllJobsTab = ({
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [allRoles, setAllRoles] = useState([]);
     const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
+    const [messageModalJob, setMessageModalJob] = useState(null);
 
     // ── Apply-click interception: show upgrade modal at thresholds ──────────
     const POPUP_THRESHOLDS = new Set([3, 8, 14, 21, 30]);
@@ -675,9 +751,9 @@ const AllJobsTab = ({
             const useRangeOffset = pageOffset >= 1000;
             const pageCacheKey = useRangeOffset ? `${listCacheKey}|page_${page}` : listCacheKey;
 
-            const LS_KEY = `ajt_v37_${listCacheKey}`; // bumped: filter out unknown companies
+            const LS_KEY = `ajt_v41_${listCacheKey}`; // bumped: revert to date_posted to prevent DB timeout
             const LS_TTL_MS = 10 * 60 * 1000; // 10 minutes
-            
+
             if (!useRangeOffset) {
                 try {
                     const raw = localStorage.getItem(LS_KEY);
@@ -806,16 +882,16 @@ const AllJobsTab = ({
                 finalJobs = (data || [])
                     .filter(j => j.company_name && j.company_name.trim() !== '' && j.company_name.toLowerCase() !== 'unknown' && j.company_name.toLowerCase() !== 'unknown company')
                     .map(j => ({
-                    ...j,
-                    company: j.company_name,
-                    role: mapJavaRole(j.role_name || j.title || ''),
-                    job_role_name: mapJavaRole(j.role_name || j.title || ''),
-                    url: j.job_url_direct || j.job_url || '',
-                    apply_url: j.job_url || j.job_url_direct || '',
-                    job_id: j.id,
-                    isVerified: false,
-                    isTeaser: paymentStatus === 'pending'
-                }));
+                        ...j,
+                        company: j.company_name,
+                        role: mapJavaRole(j.role_name || j.title || ''),
+                        job_role_name: mapJavaRole(j.role_name || j.title || ''),
+                        url: j.job_url_direct || j.job_url || '',
+                        apply_url: j.job_url || j.job_url_direct || '',
+                        job_id: j.id,
+                        isVerified: false,
+                        isTeaser: paymentStatus === 'pending'
+                    }));
                 totalCount = count || finalJobs.length;
             }
 
@@ -1021,12 +1097,12 @@ const AllJobsTab = ({
 
     const getPageNumbers = () => {
         const pages = [];
-        
+
         // Always include pages 1, 2, 3, 4 if they exist
         for (let i = 1; i <= Math.min(4, totalPages); i++) {
             pages.push(i);
         }
-        
+
         // Include currentPage and its neighbors (currentPage-1, currentPage+1) if they are valid (> 4 and < totalPages)
         const neighbors = [currentPage - 1, currentPage, currentPage + 1];
         neighbors.forEach(p => {
@@ -1034,7 +1110,7 @@ const AllJobsTab = ({
                 pages.push(p);
             }
         });
-        
+
         // Include requested jumps (25, 50, 100, 200, 500) if they are valid (> 4 and < totalPages)
         const jumps = [25, 50, 100, 200, 500];
         jumps.forEach(j => {
@@ -1042,15 +1118,15 @@ const AllJobsTab = ({
                 pages.push(j);
             }
         });
-        
+
         // Always include the last page if it is greater than 4
         if (totalPages > 4) {
             pages.push(totalPages);
         }
-        
+
         // Deduplicate and sort numerically
         const uniqueSorted = Array.from(new Set(pages)).sort((a, b) => a - b);
-        
+
         // Add '...' between non-consecutive pages
         const result = [];
         for (let i = 0; i < uniqueSorted.length; i++) {
@@ -1059,7 +1135,7 @@ const AllJobsTab = ({
             }
             result.push(uniqueSorted[i]);
         }
-        
+
         return result;
     };
 
@@ -1346,6 +1422,7 @@ const AllJobsTab = ({
                                     onSave={handleSave}
                                     scoringPanel={scoringPanel}
                                     onApplyClick={handleApplyClick}
+                                    onMessageHRClick={setMessageModalJob}
                                 />
                             );
 
@@ -1497,6 +1574,12 @@ const AllJobsTab = ({
                     </div>
                 </div>
             )}
+
+            <RecruiterMessageModal
+                isOpen={!!messageModalJob}
+                job={messageModalJob}
+                onClose={() => setMessageModalJob(null)}
+            />
         </>
     );
 };
