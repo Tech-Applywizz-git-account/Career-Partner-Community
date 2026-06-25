@@ -12,7 +12,8 @@ import {
     HelpCircle,
     LogOut,
     ListFilter,
-    X
+    X,
+    Users
 } from "lucide-react";
 import useAuth from '../hooks/useAuth';
 
@@ -44,6 +45,7 @@ const Sidebar = ({ className = "", showHeader = true, onClose }) => {
     const tabs = [
         { id: "overview", label: "Overview", icon: LayoutDashboard },
         { id: "all_jobs", label: "All Jobs", icon: ListFilter },
+        { id: "hr_finder", label: "RecruitReach", icon: Users },
         { id: "saved", label: "Saved Jobs", icon: Heart },
         { id: "applied", label: "Applied Jobs", icon: Briefcase },
         { id: "profile", label: "Profile", icon: User },
@@ -70,7 +72,7 @@ const Sidebar = ({ className = "", showHeader = true, onClose }) => {
         <aside className={`flex h-full flex-col bg-white w-56 border-r border-[#f0f0f0] transition-all duration-300 relative ${className}`}>
             {/* Close Button (Mobile Only) */}
             {onClose && (
-                <button 
+                <button
                     onClick={onClose}
                     className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-[#2C76FF] hover:bg-gray-100 rounded-lg transition-all z-10"
                     aria-label="Close Sidebar"
@@ -83,9 +85,9 @@ const Sidebar = ({ className = "", showHeader = true, onClose }) => {
             <div className="p-6 mb-2">
                 <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
                     <div className="relative shrink-0">
-                        <img 
-                            src="https://res.cloudinary.com/dpuziwnvl/image/upload/v1751357541/apply_wizz_logo_hrvtmm.jpg" 
-                            alt="Apply Wizz" 
+                        <img
+                            src="https://res.cloudinary.com/dpuziwnvl/image/upload/v1751357541/apply_wizz_logo_hrvtmm.jpg"
+                            alt="Apply Wizz"
                             className="w-10 h-10 rounded-xl object-contain shadow-sm"
                         />
                     </div>

@@ -461,6 +461,19 @@ const JobRowList = ({ job, isSaved, onSave, onApplyClick, scoringPanel }) => {
 
 // SUGGESTED_ROLES is now fetched dynamically from Supabase via rolesSuggestions utility
 
+const loadingMessages = [
+    "Finding jobs that match your profile...",
+    "Searching for the best opportunities for you...",
+    "Matching jobs to your skills and experience...",
+    "Gathering the latest job openings...",
+    "Preparing your personalized job recommendations...",
+    "Looking for relevant jobs for you...",
+    "Finding opportunities you'll love...",
+    "Connecting you with the latest job listings...",
+    "Building your personalized job feed...",
+    "Finding your next career opportunity..."
+];
+
 // ── Main Component ─────────────────────────────────────────────────────────
 const AllJobsTab = ({
     searchTerm: propSearchTerm = '',
@@ -475,6 +488,7 @@ const AllJobsTab = ({
     const { user, paymentStatus } = useAuth();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMessageIdx, setLoadingMessageIdx] = useState(0);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalJobs, setTotalJobs] = useState(0);
@@ -489,6 +503,15 @@ const AllJobsTab = ({
     const [allRoles, setAllRoles] = useState([]);
     const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
     const [messageModalJob, setMessageModalJob] = useState(null);
+
+    // Rotate loading message randomly every 2 seconds
+    useEffect(() => {
+        if (!loading) return;
+        const interval = setInterval(() => {
+            setLoadingMessageIdx(Math.floor(Math.random() * loadingMessages.length));
+        }, 2000);
+        return () => clearInterval(interval);
+    }, [loading]);
 
     // ── Apply-click interception: show upgrade modal at thresholds ──────────
     const POPUP_THRESHOLDS = new Set([3, 8, 14, 21, 30]);
@@ -751,7 +774,7 @@ const AllJobsTab = ({
             const useRangeOffset = pageOffset >= 1000;
             const pageCacheKey = useRangeOffset ? `${listCacheKey}|page_${page}` : listCacheKey;
 
-            const LS_KEY = `ajt_v41_${listCacheKey}`; // bumped: revert to date_posted to prevent DB timeout
+            const LS_KEY = `ajt_v42_${listCacheKey}`; // bumped: clear polluted hr_finder cache
             const LS_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
             if (!useRangeOffset) {
@@ -771,7 +794,7 @@ const AllJobsTab = ({
                                 setTotalJobs(parsed.total);
                                 setCurrentPage(page);
                                 setLoading(false);
-                                return; // ⚡ Done — served from localStorage in <50ms
+                                // ⚡ Removed return; so it updates UI instantly but continues DB fetch in background
                             }
                         }
                     }
@@ -789,16 +812,16 @@ const AllJobsTab = ({
                     setTotalJobs(cached.total);
                     setCurrentPage(page);
                     setLoading(false);
-                    return; // Done — no DB hit
+                    // ⚡ Removed return; so it updates UI instantly but continues DB fetch in background
                 }
             }
 
             // ══════════════════════════════════════════════════════════════════════
             // UNIFIED DATABASE FETCH  —  STABLE & ULTRA-FAST
             // ══════════════════════════════════════════════════════════════════════
-            const LIMIT = 3000;
+            const LIMIT = 300;
             const dbStart = useRangeOffset ? pageOffset : 0;
-            const dbEnd = useRangeOffset ? (pageOffset + 500) : LIMIT;
+            const dbEnd = useRangeOffset ? (pageOffset + 300) : LIMIT;
             let finalJobs = [];
             let totalCount = 0;
 
@@ -814,6 +837,10 @@ const AllJobsTab = ({
 
                 if (useRangeOffset) {
                     query = query.range(dbStart, dbEnd);
+                } else if (filter === 'hr_finder') {
+                    // Use a very small limit for hr_finder to prevent DB statement timeout —
+                    // the posted_by_profile column has no index yet, so scanning large amounts times out.
+                    query = query.limit(100);
                 } else {
                     query = query.limit(LIMIT);
                 }
@@ -840,22 +867,35 @@ const AllJobsTab = ({
                 if (activeCountries.length > 0) {
                     query = query.in('indeed_search_country', activeCountries);
                 }
+                if (filter === 'hr_finder') {
+                    query = query.not('posted_by_profile', 'is', null)
+                                 .neq('posted_by_profile', '')
+                                 .neq('posted_by_profile', 'null');
+                }
                 query = applyDateFilter(query, dateFilter);
 
                 let data = [];
                 let count = 0;
                 let error = null;
 
-                if (!fixedCompany && !fixedDomain && (!activeSearch || !activeSearch.trim())) {
+                // ── HR FINDER: single focused query, skip famousQuery parallel path ──
+                // Root cause of 500 timeout: the famousQuery (ranked companies list) ran
+                // in parallel and caused a full-table sequential scan with no usable index.
+                if (filter === 'hr_finder') {
+                    const res = await query;
+                    data = res.data || [];
+                    count = res.count || data.length;
+                    error = res.error;
+                } else if (!fixedCompany && !fixedDomain && (!activeSearch || !activeSearch.trim())) {
                     let famousQuery = supabase.from('jobs_all_roles')
                         .select(LIGHTWEIGHT_COLUMNS)
                         .in('company_name', RANKED_COMPANIES)
                         .order('date_posted', { ascending: false });
 
                     if (useRangeOffset) {
-                        famousQuery = famousQuery.range(dbStart, dbStart + 500);
+                        famousQuery = famousQuery.range(dbStart, dbStart + 800);
                     } else {
-                        famousQuery = famousQuery.limit(1500);
+                        famousQuery = famousQuery.limit(800);
                     }
 
                     if (activeCountries.length > 0) {
@@ -863,7 +903,9 @@ const AllJobsTab = ({
                     }
                     famousQuery = applyDateFilter(famousQuery, dateFilter);
 
-                    const [res, famRes] = await Promise.all([query, famousQuery]);
+                    // Execute sequentially to prevent DB CPU spikes and 500 timeouts
+                    const famRes = await famousQuery;
+                    const res = await query;
                     error = res.error || famRes.error;
 
                     // Merge results, putting famous jobs first to make sure they are parsed and de-duplicated
@@ -971,6 +1013,10 @@ const AllJobsTab = ({
             setCurrentPage(page);
         } catch (err) {
             console.warn('AllJobsTab fetchJobs error gracefully handled:', err);
+            if (page === 1) {
+                setJobs([]);
+                setTotalJobs(0);
+            }
         } finally {
             setLoading(false);
         }
@@ -1010,10 +1056,15 @@ const AllJobsTab = ({
                     let sQ = supabase.from('jobs_all_roles')
                         .select(LIGHTWEIGHT_COLUMNS, { count: 'estimated' })
                         .order('date_posted', { ascending: false, nullsFirst: false })
-                        .limit(500);
+                        .limit(300);
 
                     if (activeCountries.length > 0) {
                         sQ = sQ.in('indeed_search_country', activeCountries);
+                    }
+                    if (otherFilter === 'hr_finder') {
+                        sQ = sQ.not('posted_by_profile', 'is', null)
+                               .neq('posted_by_profile', '')
+                               .neq('posted_by_profile', 'null');
                     }
                     sQ = applyDateFilter(sQ, dateFilter);
 
@@ -1021,14 +1072,21 @@ const AllJobsTab = ({
                         .select(LIGHTWEIGHT_COLUMNS)
                         .in('company_name', RANKED_COMPANIES)
                         .order('date_posted', { ascending: false })
-                        .limit(1500);
+                        .limit(200);
 
                     if (activeCountries.length > 0) {
                         famousQuery = famousQuery.in('indeed_search_country', activeCountries);
                     }
+                    if (otherFilter === 'hr_finder') {
+                        famousQuery = famousQuery.not('posted_by_profile', 'is', null)
+                                                 .neq('posted_by_profile', '')
+                                                 .neq('posted_by_profile', 'null');
+                    }
                     famousQuery = applyDateFilter(famousQuery, dateFilter);
 
-                    const [sRes, famRes] = await Promise.all([sQ, famousQuery]);
+                    // Execute sequentially in background as well
+                    const famRes = await famousQuery;
+                    const sRes = await sQ;
                     if (sRes?.error || famRes?.error) return;
 
                     const merged = [...(famRes.data || []), ...(sRes.data || [])];
@@ -1278,7 +1336,7 @@ const AllJobsTab = ({
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 0' }}>
                         <div style={{ textAlign: 'center' }}>
                             <Loader2 style={{ width: 32, height: 32, color: '#24385E', animation: 'spin 1s linear infinite', margin: '0 auto 10px', display: 'block' }} />
-                            <p style={{ color: '#aaa', fontSize: '13px', margin: 0 }}>Loading jobs…</p>
+                            <p style={{ color: '#aaa', fontSize: '13px', margin: 0, fontWeight: 500 }}>{loadingMessages[loadingMessageIdx]}</p>
                         </div>
                     </div>
                 )}

@@ -2877,6 +2877,27 @@ const Homepage = () => {
     activeCompanyRef.current = selectedCompany;
   }, [selectedCompany]);
 
+  // Force clear legacy local storage caches on mount to guarantee fresh results
+  useEffect(() => {
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('ajt_') || key.startsWith('acl_'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch (e) {
+      console.warn('Failed to clear legacy cache', e);
+    }
+  }, []);
+
+  // Reset filters when switching between main dashboard views
+  useEffect(() => {
+    setDateFilter({ quickDate: 'all', from: null, to: null });
+  }, [activeView, activeJobFilter]);
+
   // Moved normalizeName to top level
 
   // Global filing count fetcher disabled per user request
@@ -3736,6 +3757,7 @@ const Homepage = () => {
     { id: 'all_companies_list', label: 'All Companies', icon: Building2 },
     { id: 'domains', label: 'Domains', icon: Globe },
     { id: 'h1b_finder', label: 'H-1B Finder', icon: Shield },
+    { id: 'hr_finder', label: 'RecruitReach', icon: Users },
     ...(isAdmin ? [{ id: 'admin_stats', label: 'Admin Stats', icon: Activity }] : []),
   ];
 
@@ -3907,7 +3929,7 @@ const Homepage = () => {
 
         {/* Bottom */}
         <div style={S.sidebarBottom}>
-          <button style={S.navItem(activeView === 'settings')} onClick={() => { setActiveView('settings'); if (isMobile) setsidebarOpen(false); }}
+          <button style={S.navItem(activeView === 'settings')} onClick={() => { setActiveView('settings'); if (isMobile) setSidebarOpen(false); }}
             onMouseEnter={e => { if (activeView !== 'settings') { e.currentTarget.style.background = '#f5f5f5'; } }}
             onMouseLeave={e => { if (activeView !== 'settings') { e.currentTarget.style.background = 'transparent'; } }}
           >
@@ -4003,7 +4025,7 @@ const Homepage = () => {
         }}>
 
           {/* Global Search Header - Always visible at top of content for main views */}
-          {(activeView === 'all_jobs' || activeView === 'all_companies' || activeView === 'domains' || activeView === 'all_companies_list') && (
+          {(activeView === 'all_jobs' || activeView === 'all_companies' || activeView === 'domains' || activeView === 'all_companies_list' || activeView === 'hr_finder') && (
             <GlobalSearchHeader
               selectedCountry={countryFilter}
               onCountryChange={setCountryFilter}
@@ -4011,14 +4033,24 @@ const Homepage = () => {
               onDateRangeChange={setDateFilter}
               viewMode={viewMode}
               onViewModeChange={setViewMode}
+              showHRFinder={activeView === 'all_jobs' || activeView === 'hr_finder'}
+              isHRFinderActive={activeJobFilter === 'hr_finder' || activeView === 'hr_finder'}
+              onHRFinderToggle={() => {
+                if (activeView === 'hr_finder') {
+                  setActiveView('all_jobs');
+                  setActiveJobFilter('all');
+                } else {
+                  setActiveJobFilter(activeJobFilter === 'hr_finder' ? 'all' : 'hr_finder');
+                }
+              }}
             />
           )}
 
           {/* ━━━━━━ ALL JOBS VIEW ━━━━━━ */}
-          {activeView === 'all_jobs' && (
+          {(activeView === 'all_jobs' || activeView === 'hr_finder') && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <AllJobsTab
-                activeFilter={activeJobFilter}
+                activeFilter={activeView === 'hr_finder' ? 'hr_finder' : activeJobFilter}
                 searchTerm={Array.isArray(companySearch) ? '' : companySearch}
                 fixedCompany={Array.isArray(companySearch) ? companySearch : null}
                 countryFilter={countryFilter}

@@ -56,6 +56,8 @@ const Dashboard = () => {
                 return isAdmin ? <AdminOverview /> : <UserOverview />;
             case "all_jobs":
                 return <AllJobsTab />;
+            case "hr_finder":
+                return <AllJobsTab activeFilter="hr_finder" />;
             case "saved":
                 return <SavedJobsTab />;
             case "applied":
@@ -77,6 +79,7 @@ const Dashboard = () => {
             overview: 'Dashboard Overview',
             dashboard: 'Dashboard Overview',
             all_jobs: 'All Sponsored Jobs',
+            hr_finder: 'RecruitReach',
             saved: 'Saved Jobs',
             applied: 'Applied Jobs',
             profile: 'Profile Settings',

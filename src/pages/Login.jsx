@@ -96,7 +96,7 @@ const Login = () => {
                 <form onSubmit={handleSubmit} className="space-y-5">
                     {/* Email */}
                     <div>
-                        <label htmlFor="email" className="block text-xs font-black text-[#1E1E1E] uppercase tracking-wider mb-2">
+                        <label htmlFor="email" className="block text-sm font-medium text-[#1E1E1E] mb-2">
                             Email Address
                         </label>
                         <div className="relative">
@@ -110,7 +110,7 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2C76FF] focus:border-transparent text-[#1E1E1E] font-bold placeholder:text-gray-300 bg-gray-50/50"
+                                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2C76FF] focus:border-transparent text-[#1E1E1E] font-normal placeholder:text-gray-400 bg-gray-50/50"
                                 aria-label="Email address"
                             />
                         </div>
@@ -118,7 +118,7 @@ const Login = () => {
 
                     {/* Password */}
                     <div>
-                        <label htmlFor="password" className="block text-xs font-black text-[#1E1E1E] uppercase tracking-wider mb-2">
+                        <label htmlFor="password" className="block text-sm font-medium text-[#1E1E1E] mb-2">
                             Password
                         </label>
                         <div className="relative">
@@ -132,7 +132,7 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="w-full pl-12 pr-12 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2C76FF] focus:border-transparent text-[#1E1E1E] font-bold placeholder:text-gray-300 bg-gray-50/50"
+                                className="w-full pl-12 pr-12 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2C76FF] focus:border-transparent text-[#1E1E1E] font-normal placeholder:text-gray-400 bg-gray-50/50"
                                 aria-label="Password"
                             />
                             <button
@@ -149,7 +149,7 @@ const Login = () => {
                             </button>
                         </div>
                         <div className="mt-2.5 text-right">
-                            <Link to="/forgot-password" style={{ color: '#2C76FF' }} className="text-sm font-bold hover:underline transition-colors">
+                            <Link to="/forgot-password" style={{ color: '#2C76FF' }} className="text-sm font-medium hover:underline transition-colors">
                                 Forgot password?
                             </Link>
                         </div>

@@ -551,6 +551,19 @@ FAMOUS_COMPANIES.forEach(f => {
 });
 
 
+const loadingMessages = [
+  "Loading companies for you...",
+  "Finding companies that match your interests...",
+  "Gathering company profiles...",
+  "Preparing your company directory...",
+  "Discovering top companies...",
+  "Searching companies across industries...",
+  "Finding employers that are hiring...",
+  "Building your company list...",
+  "Connecting you with great employers...",
+  "Finding companies worth exploring..."
+];
+
 const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter, viewMode = 'grid' }) => {
   const fetchInProgress = useRef(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -566,6 +579,17 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter, vie
     const ck = buildCacheKey(selectedCountry, dateFilter);
     return !(_memCache.key === ck && _memCache.data);
   });
+  
+  const [loadingMessageIdx, setLoadingMessageIdx] = useState(0);
+
+  // Rotate loading message randomly every 2 seconds
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setLoadingMessageIdx(Math.floor(Math.random() * loadingMessages.length));
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [page, setPage] = useState(0);
@@ -664,6 +688,8 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter, vie
     if (_memCache.key === ck && _memCache.data && (Date.now() - _memCache.ts) < LS_TTL) {
       setCompanies(_memCache.data);
       if (!backgroundOnly) { setLoading(false); setPage(0); }
+      // Silently revalidate in background
+      setTimeout(() => fetchCompanies(true), 500);
       fetchInProgress.current = false;
       return;
     }
@@ -762,7 +788,7 @@ const AllCompaniesListTab = ({ onSelectCompany, selectedCountry, dateFilter, vie
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <Loader2 className="w-10 h-10 text-[#2C76FF] animate-spin mb-4" />
-        <p className="text-gray-500 font-bold">Loading Companies...</p>
+        <p className="text-gray-500 font-bold">{loadingMessages[loadingMessageIdx]}</p>
       </div>
     );
   }

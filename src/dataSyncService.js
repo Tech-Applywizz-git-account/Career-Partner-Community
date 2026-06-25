@@ -15,7 +15,7 @@ import { externalSupabase } from './externalSupabaseClient.js';
 
 const SYNC_CACHE_KEY = 'lastSyncTimestamp';
 const SYNC_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes — pick up new source data faster
-const IS_SYNC_ENABLED = true; // Enabled for incremental sync as requested
+const IS_SYNC_ENABLED = false; // Disabled completely. Legacy sync was crashing the DB by paginating 229k rows into stubbed tables.
 
 /**
  * Check if sync is needed (hasn't run in the last 24 hours)
